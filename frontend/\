@@ -1,0 +1,111 @@
+import { Box, Typography, Grid, Paper, Stack } from "@mui/material";
+import ConstructionRoundedIcon from "@mui/icons-material/ConstructionRounded";
+import PendingActionsRoundedIcon from "@mui/icons-material/PendingActionsRounded";
+import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
+import ErrorOutlineRoundedIcon from "@mui/icons-material/ErrorOutlineRounded";
+import { amber, green, red } from "@mui/material/colors";
+
+import axios from "axios";
+
+import React from "react";
+import { useEffect } from "react";
+import { useState } from "react";
+import { useSelector } from "react-redux";
+import Paperui from "../ui/Paperui";
+import PaperuiV2 from "../ui/PaperuiV2";
+
+function Technicianpage() {
+  const [casedata, setcasedata] = useState([]);
+  const technician_id = useSelector((state) => state.user.users_id);
+  console.log(technician_id);
+  console.log(casedata);
+  const casedatalenght = () => {
+    return casedata.length;
+  };
+  const datafilterstatuscase4 = () => {
+    return casedata.filter((data) => data.status_id === 4).length;
+  };
+
+  const datafilterstatuscase3 = () => {
+    return casedata.filter((data) => data.status_id === 3).length;
+  };
+  const datafilterstatuscase2 = () => {
+    return casedata.filter((data) => data.status_id === 2).length;
+  };
+  const datafilterstatuscase1 = () => {
+    return casedata.filter((data) => data.status_id === 1).length;
+  };
+
+  useEffect(() => {
+    axios
+      .get(`http://localhost:5011/case/user/${technician_id}`)
+      .then((response) => {
+        setcasedata(response.data);
+      });
+  }, []);
+  return (
+    <Box>
+      <Typography variant="h4" fontWeight="fontWeightBold">
+        Dashboard ช่าง
+      </Typography>
+      <Typography color="grey" sx={{ mb: 4, mt: 1 }}>
+        จัดการงานและติดตามงานที่ได้รับมอบหมาย{" "}
+      </Typography>
+      <Grid container spacing={4}>
+        <Grid item md={3}>
+          <PaperuiV2
+            title="งานที่ได้รับมอบหมาย"
+            icon={
+              <ConstructionRoundedIcon
+                sx={{ fontSize: 50, color: "#2463EB" }}
+              />
+            }
+          />
+        </Grid>
+        <Grid item md={3}>
+          <PaperuiV2
+            title="รอการยืนยันจากผู้ใช้"
+            icon={
+              <PendingActionsRoundedIcon
+                sx={{ fontSize: 50, color: amber[400] }}
+              />
+            }
+          />
+        </Grid>
+        <Grid item md={3}>
+          <PaperuiV2
+            title="เสร็จสิ้น"
+            icon={
+              <CheckCircleOutlineRoundedIcon
+                sx={{ fontSize: 50, color: green[500] }}
+              />
+            }
+          />
+        </Grid>
+        <Grid item md={3}>
+          <PaperuiV2
+            title="เกินกำหนด"
+            icon={
+              <ErrorOutlineRoundedIcon sx={{ fontSize: 50, color: red[400] }} />
+            }
+          />
+        </Grid>
+      </Grid>
+      <Typography variant="h4" fontWeight="fontWeightBold" sx={{ mt: 4 }}>
+        งานที่ได้รับมอยหมาย
+      </Typography>
+      <Grid container>
+        <Grid item md={12}>
+          <Paper sx={{ minHeight: 220, borderRadius: 3, p: 5 }}>
+            <Stack direction="row" justifyContent="space-between">
+              <Typography>title</Typography>
+              <Typography>test</Typography>
+            </Stack>
+            <Typography>รายละเอียด</Typography>
+          </Paper>
+        </Grid>
+      </Grid>
+    </Box>
+  );
+}
+export default Technicianpage;

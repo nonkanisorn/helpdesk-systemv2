@@ -1,0 +1,30 @@
+package service
+
+import "github.com/nonkanisorn/helpdesk-system/internal/domain"
+
+type TicketService interface {
+	CreateTicket(*domain.CreateTicketRequest) error
+	GetAllTickets() ([]domain.TicketsResponse, error)
+	GetTicketByID(int) (*domain.TicketsResponse, error)
+}
+type TicketQueryService interface {
+	// ---- technician part ----
+	StartJobByTechnicianID(int) error
+	CompletedJobByTechnician(int, string, string) error
+	WaitingForPartByTechnicianID(ticketID int) error
+	// ---- end technicina part ----
+	// ---- manager part ----
+	AssignTechToTicket(int, int, int) error
+	// ---- end manager part ----
+	// ---- user part ----
+	ConfirmAndCloseTicketByUser(int) error
+	// ---- end user part ----
+	GetTicketsByTechnicianID(int) ([]domain.TicketsResponse, error)
+	UpdateStatusTicket(*domain.UpdateTicketRequest) error
+	GetTicketForTechnicianByTicketID(int) (*domain.TicketsForTechnicianResponse, error)
+	UpdateStatusCompleteByTechnician(string) error
+	GetLatestTickets(int, int) ([]domain.TicketsResponse, error)
+	GetTicketsByStatusID(int) ([]domain.TicketsResponse, error)
+	GetTicketsByUsersID(int) ([]domain.TicketsResponse, error)
+	AutoCloseTickets() error
+}

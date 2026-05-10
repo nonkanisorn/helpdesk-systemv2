@@ -1,0 +1,967 @@
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: helpdesk-go
+meta:
+  id: wrk_53dc87e8b1b149ad8f059d81632a130b
+  created: 1774532669052
+  modified: 1774532669052
+  description: ""
+collection:
+  - name: helpdesk-go
+    meta:
+      id: fld_b3e3fc62e2564120a88d2ba67ce9018e
+      created: 1774532669062
+      modified: 1774533576744
+      sortKey: -1774532666035
+      description: ""
+    children:
+      - url: http://localhost:5011/register
+        name: register
+        meta:
+          id: req_f78e8d8e1ebd4f1fa79bd74171e98865
+          created: 1774532669183
+          modified: 1774532669183
+          isPrivate: false
+          description: ""
+          sortKey: -1774532666006
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "username": "u",
+              "password": "1",
+              "first_name":"dsa", 
+              "last_name": "das", 
+              "email":"es", 
+              "phone": "123", 
+              "role_id": 4, 
+              "department_id": 1, 
+              "avatar_path": null, 
+              "is_active": 1 
+
+
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{baseURL}}/login"
+        name: login
+        meta:
+          id: req_9ff18c5b61c6431dbe946f950c7afa4b
+          created: 1774532669190
+          modified: 1774533675338
+          isPrivate: false
+          description: ""
+          sortKey: -1774532666003
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"username": "u",
+            	"password": "1"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: ""
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - name: users
+        meta:
+          id: fld_7cb9e207eda345208a8f5173a84363f6
+          created: 1774532669069
+          modified: 1774532669069
+          sortKey: -1774532666034
+          description: ""
+        children:
+          - url: http://localhost:5011/users
+            name: users
+            meta:
+              id: req_c93a9dcefc8748b99a05caff875c3af0
+              created: 1774532669078
+              modified: 1774532669078
+              isPrivate: false
+              description: ""
+              sortKey: -1774532666033
+            method: GET
+            body:
+              mimeType: text/plain
+              text: |-
+                {
+                    "username": "eiei1",
+                    "password": "1"
+                }
+            headers:
+              - name: Authorization
+                value: Bearer
+                  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njc4NTgxMzEsImZpc3RuYW1lIjoiZHNhIiwibGFzdG5hbWUiOiJkYXMiLCJyb2xlX2lkIjoxfQ.H_tqR7J-umHqqU2b7Bl-KxKHpk018pkecIZDVps-JGk
+              - name: Content-Type
+                value: text/plain
+            authentication:
+              type: bearer
+              disabled: false
+              token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njc4NTgxMzEsImZpc3RuYW1lIjoiZHNhIiwibGFzdG5hbWUiOiJkYXMiLCJyb2xlX2lkIjoxfQ.H_tqR7J-umHqqU2b7Bl-KxKHpk018pkecIZDVps-JGk
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: http://localhost:5011/users/56
+            name: getbyid
+            meta:
+              id: req_953fdd4b1609431089b6e86a92675a47
+              created: 1774532669086
+              modified: 1774532669086
+              isPrivate: false
+              description: ""
+              sortKey: -1774532666032
+            method: GET
+            body:
+              mimeType: text/plain
+              text: |-
+                {
+                    "username": "eiei1",
+                    "password": "1"
+                }
+            headers:
+              - name: Authorization
+                value: Bearer
+                  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njc3ODg0MzksImZpc3RuYW1lIjoiZHNhIiwibGFzdG5hbWUiOiJkYXMiLCJyb2xlX2lkIjoxfQ.hO4tQMztaAkJi92tZRd9LSCT8-d7umBEY01oVFTsFfo
+              - name: Content-Type
+                value: text/plain
+            authentication:
+              type: bearer
+              disabled: false
+              token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njc3ODg0MzksImZpc3RuYW1lIjoiZHNhIiwibGFzdG5hbWUiOiJkYXMiLCJyb2xlX2lkIjoxfQ.hO4tQMztaAkJi92tZRd9LSCT8-d7umBEY01oVFTsFfo
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: http://localhost:5011/users/view
+            name: getuserswithrole
+            meta:
+              id: req_3f9feee428fb44c6a77252b501ee1fae
+              created: 1774532669094
+              modified: 1774532669094
+              isPrivate: false
+              description: ""
+              sortKey: -1774532666031
+            method: GET
+            headers:
+              - name: Authorization
+                value: Bearer
+                  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njc4NTczOTQsImZpc3RuYW1lIjoiZHNhIiwibGFzdG5hbWUiOiJkYXMiLCJyb2xlX2lkIjoxfQ.TA2mg790L36lPIbGvqCrI0s4mwlJmphP0WWGKRLJLXY
+            authentication:
+              type: bearer
+              disabled: false
+              token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njc4NTczOTQsImZpc3RuYW1lIjoiZHNhIiwibGFzdG5hbWUiOiJkYXMiLCJyb2xlX2lkIjoxfQ.TA2mg790L36lPIbGvqCrI0s4mwlJmphP0WWGKRLJLXY
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: http://localhost:5011/users/54
+            name: New Request
+            meta:
+              id: req_2e54967c8bbf41dca3b4d97d71a39815
+              created: 1774532669097
+              modified: 1774532669097
+              isPrivate: false
+              description: ""
+              sortKey: -1774532666030
+            method: DELETE
+            body:
+              mimeType: text/plain
+              text: |-
+                {
+                    "username": "eiei1",
+                    "password": "1"
+                }
+            headers:
+              - name: Authorization
+                value: Bearer
+                  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njc4NTgxMzEsImZpc3RuYW1lIjoiZHNhIiwibGFzdG5hbWUiOiJkYXMiLCJyb2xlX2lkIjoxfQ.H_tqR7J-umHqqU2b7Bl-KxKHpk018pkecIZDVps-JGk
+              - name: Content-Type
+                value: text/plain
+            authentication:
+              type: bearer
+              disabled: false
+              token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njc4NTgxMzEsImZpc3RuYW1lIjoiZHNhIiwibGFzdG5hbWUiOiJkYXMiLCJyb2xlX2lkIjoxfQ.H_tqR7J-umHqqU2b7Bl-KxKHpk018pkecIZDVps-JGk
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: http://localhost:5011/current-user/122
+            name: current-user
+            meta:
+              id: req_e0a5425e0d5b45f09415308a8f84bc5d
+              created: 1774532669100
+              modified: 1774532669100
+              isPrivate: false
+              description: ""
+              sortKey: -1774532666029
+            method: GET
+            body:
+              mimeType: text/plain
+              text: |-
+                {
+                    "user_id": 122,
+                    "status_id": 1,
+                    "title": "test titleasd",
+                    "description": "sdzxcz",
+                    "issue_categories_id": 1
+                }
+            headers:
+              - name: Authorization
+                value: Bearer
+                  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njg2NjE2MDQsImZpc3RuYW1lIjoia25zIiwibGFzdG5hbWUiOiJkYXNkIiwicm9sZV9pZCI6MX0.tkpUXQ8suH_4oHf42OBobcSjDP67AXIyriF3WWxf5_E
+              - name: Content-Type
+                value: text/plain
+            authentication:
+              type: bearer
+              disabled: false
+              token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njg2NjE2MDQsImZpc3RuYW1lIjoia25zIiwibGFzdG5hbWUiOiJkYXNkIiwicm9sZV9pZCI6MX0.tkpUXQ8suH_4oHf42OBobcSjDP67AXIyriF3WWxf5_E
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: http://localhost:5011/users/1/role
+            name: getbyrolesid
+            meta:
+              id: req_83606f9657734d53ac08cc6a296a7cb3
+              created: 1774532669102
+              modified: 1774532669102
+              isPrivate: false
+              description: ""
+              sortKey: -1774532666028
+            method: GET
+            body:
+              mimeType: text/plain
+              text: |-
+                {
+                    "user_id": 122,
+                    "status_id": 1,
+                    "title": "test titleasd",
+                    "description": "sdzxcz",
+                    "issue_categories_id": 1
+                }
+            headers:
+              - name: Authorization
+                value: Bearer
+                  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njk1MjA4MTMsImZpc3RuYW1lIjoia25zIiwibGFzdG5hbWUiOiJkYXNkIiwicm9sZV9pZCI6MX0.w3bVcvuzLYnyeb5U60hNPKRiB2ozNtNIs8xpoGSi3vg
+              - name: Content-Type
+                value: text/plain
+            authentication:
+              type: bearer
+              disabled: false
+              token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njk1MjA4MTMsImZpc3RuYW1lIjoia25zIiwibGFzdG5hbWUiOiJkYXNkIiwicm9sZV9pZCI6MX0.w3bVcvuzLYnyeb5U60hNPKRiB2ozNtNIs8xpoGSi3vg
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: roles
+        meta:
+          id: fld_802cad30690a4757908614132666a90c
+          created: 1774532669109
+          modified: 1774532669109
+          sortKey: -1774532666027
+          description: ""
+        children:
+          - url: http://localhost:5011/roles/14
+            name: New Request
+            meta:
+              id: req_934f5851de614d0ea07d9e2f763c17dc
+              created: 1774532669113
+              modified: 1774532669113
+              isPrivate: false
+              description: ""
+              sortKey: -1774532666026
+            method: DELETE
+            body:
+              mimeType: text/plain
+              text: |-
+                {
+                    "username": "eiei1",
+                    "password": "1"
+                }
+            headers:
+              - name: Authorization
+                value: Bearer
+                  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njc4NTgxMzEsImZpc3RuYW1lIjoiZHNhIiwibGFzdG5hbWUiOiJkYXMiLCJyb2xlX2lkIjoxfQ.H_tqR7J-umHqqU2b7Bl-KxKHpk018pkecIZDVps-JGk
+              - name: Content-Type
+                value: text/plain
+            authentication:
+              type: bearer
+              disabled: false
+              token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njc4NTgxMzEsImZpc3RuYW1lIjoiZHNhIiwibGFzdG5hbWUiOiJkYXMiLCJyb2xlX2lkIjoxfQ.H_tqR7J-umHqqU2b7Bl-KxKHpk018pkecIZDVps-JGk
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{baseURL}}/roles"
+            name: roles
+            meta:
+              id: req_8bdb751c569e4aafbc0516e72538d3f4
+              created: 1774532669115
+              modified: 1774584682675
+              isPrivate: false
+              description: ""
+              sortKey: -1774532666025
+            method: GET
+            parameters:
+              - name: ""
+                value: "Bearer "
+                disabled: true
+            headers:
+              - name: Authorization
+                value: Bearer
+                  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzQ4NDM4NjksImZpc3RuYW1lIjoiZHNhIiwibGFzdG5hbWUiOiJkYXMiLCJyb2xlX2lkIjo0fQ.1YTRfinYTUPNGXybH2Mga-kqFf8pagUm0jbTGHgV_EA
+            authentication:
+              type: none
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: http://localhost:5011/roles
+            name: New Request
+            meta:
+              id: req_e1df91a2970b4fbab4a40af8fb6a0e90
+              created: 1774532669119
+              modified: 1774532669119
+              isPrivate: false
+              description: ""
+              sortKey: -1774532666024
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                    "role_name": "testtttt"
+                }
+            parameters:
+              - name: ""
+                value: "Bearer "
+                disabled: true
+            headers:
+              - name: Authorization
+                value: Bearer
+                  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjgzMzIyMzksImZpc3RuYW1lIjoia25zIiwibGFzdG5hbWUiOiJkYXNkIiwicm9sZV9pZCI6MX0.9grQvIhFfcA8BSCQqXaOj4BkiYlPh4L6B3OqImsPRD8
+              - name: Content-Type
+                value: application/json
+            authentication:
+              type: bearer
+              disabled: false
+              token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjgzMzIyMzksImZpc3RuYW1lIjoia25zIiwibGFzdG5hbWUiOiJkYXNkIiwicm9sZV9pZCI6MX0.9grQvIhFfcA8BSCQqXaOj4BkiYlPh4L6B3OqImsPRD8
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: devices
+        meta:
+          id: fld_9313a96d3f7441488eccbaa5f6b7d268
+          created: 1774532669121
+          modified: 1774533745426
+          sortKey: -1774532666023
+          description: ""
+        children:
+          - url: http://localhost:5011/devices
+            name: devices
+            meta:
+              id: req_dbf0bdbc4b944d5eb8aad0f6b6d719c7
+              created: 1774532669127
+              modified: 1774532669127
+              isPrivate: false
+              description: ""
+              sortKey: -1774532666022
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                    "dev_name": "testtttt123",
+                    "dev_type": 1
+                }
+            parameters:
+              - name: ""
+                value: "Bearer "
+                disabled: true
+            headers:
+              - name: Authorization
+                value: Bearer
+                  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjgzMzc4ODAsImZpc3RuYW1lIjoia25zIiwibGFzdG5hbWUiOiJkYXNkIiwicm9sZV9pZCI6MX0.s01aLebVqO3LUbdVTXqYKqGMhkrsiwRBlac6KnMwSL0
+              - name: Content-Type
+                value: application/json
+            authentication:
+              type: bearer
+              disabled: false
+              token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjgzMzc4ODAsImZpc3RuYW1lIjoia25zIiwibGFzdG5hbWUiOiJkYXNkIiwicm9sZV9pZCI6MX0.s01aLebVqO3LUbdVTXqYKqGMhkrsiwRBlac6KnMwSL0
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: http://localhost:5011/devices/28
+            name: devices
+            meta:
+              id: req_c26cdf9dd91e471183e6beb6985b268e
+              created: 1774532669129
+              modified: 1774532669129
+              isPrivate: false
+              description: ""
+              sortKey: -1774532666021
+            method: DELETE
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{baseURL}}/devices"
+            name: devices
+            meta:
+              id: req_0cf8e5be9e7944848dea082014437ab4
+              created: 1774533740661
+              modified: 1774533782314
+              isPrivate: false
+              description: ""
+              sortKey: -1774533740661
+            method: GET
+            headers:
+              - name: User-Agent
+                value: insomnia/12.4.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzQ3OTI4NzksImZpc3RuYW1lIjoiZHNhIiwibGFzdG5hbWUiOiJkYXMiLCJyb2xlX2lkIjo0fQ.bLA1ntGPSnh_mHh0ssCWsBCP8YUSwTMIWDbcZ9-Xovg
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: departments
+        meta:
+          id: fld_755ef94c2021415ca171c832aed71c6d
+          created: 1774532669133
+          modified: 1774533748211
+          sortKey: -1774532666020
+          description: ""
+        children:
+          - url: http://localhost:5011/departments
+            name: departments
+            meta:
+              id: req_796f518143dd4faeaee9ecdb3cf0ae5c
+              created: 1774532669136
+              modified: 1774532669136
+              isPrivate: false
+              description: ""
+              sortKey: -1774532666019
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                    "dep_name": "testtttt123"
+                }
+            parameters:
+              - name: ""
+                value: "Bearer "
+                disabled: true
+            headers:
+              - name: Authorization
+                value: Bearer
+                  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjgzNzkxNTQsImZpc3RuYW1lIjoia25zIiwibGFzdG5hbWUiOiJkYXNkIiwicm9sZV9pZCI6MX0.2E2efTZcZPyjRFZ9UvmmHM-PDy7pafysMGfPBRPu7yU
+              - name: Content-Type
+                value: application/json
+            authentication:
+              type: bearer
+              disabled: false
+              token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjgzNzkxNTQsImZpc3RuYW1lIjoia25zIiwibGFzdG5hbWUiOiJkYXNkIiwicm9sZV9pZCI6MX0.2E2efTZcZPyjRFZ9UvmmHM-PDy7pafysMGfPBRPu7yU
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: http://localhost:5011/departments/13
+            name: departments
+            meta:
+              id: req_e5c5941a9ef04c408268a4b0aa7d6ede
+              created: 1774532669139
+              modified: 1774532669139
+              isPrivate: false
+              description: ""
+              sortKey: -1774532666018
+            method: DELETE
+            body:
+              mimeType: text/plain
+              text: |-
+                {
+                    "username": "admin",
+                    "password": "1"
+                }
+            headers:
+              - name: Authorization
+                value: Bearer
+                  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjgzOTM3NTUsImZpc3RuYW1lIjoia25zIiwibGFzdG5hbWUiOiJkYXNkIiwicm9sZV9pZCI6MX0.js7i2LrrcvpU5ALpBuWkvHms5NiMDtn4AcWKL7LJy1g
+              - name: Content-Type
+                value: text/plain
+            authentication:
+              type: bearer
+              disabled: false
+              token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjgzOTM3NTUsImZpc3RuYW1lIjoia25zIiwibGFzdG5hbWUiOiJkYXNkIiwicm9sZV9pZCI6MX0.js7i2LrrcvpU5ALpBuWkvHms5NiMDtn4AcWKL7LJy1g
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: ticket
+        meta:
+          id: fld_0b689de558094940b02a71fe1940a232
+          created: 1774532669145
+          modified: 1774532669145
+          sortKey: -1774532666017
+          description: ""
+        children:
+          - url: http://localhost:5011/ticket/status
+            name: ticketupdatestatus
+            meta:
+              id: req_fcb5be3c370747a2bd24e353bbc88d6e
+              created: 1774532669147
+              modified: 1774532669147
+              isPrivate: false
+              description: ""
+              sortKey: -1774532666016
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "ticket_id": 4,
+                  "status_id": 2,
+                 "manager_id": 121,
+                 "technician_id": 122
+
+                }
+            headers:
+              - name: Authorization
+                value: Bearer
+                  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njg2NjE2MDQsImZpc3RuYW1lIjoia25zIiwibGFzdG5hbWUiOiJkYXNkIiwicm9sZV9pZCI6MX0.tkpUXQ8suH_4oHf42OBobcSjDP67AXIyriF3WWxf5_E
+              - name: Content-Type
+                value: application/json
+            authentication:
+              type: bearer
+              disabled: false
+              token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njg2NjE2MDQsImZpc3RuYW1lIjoia25zIiwibGFzdG5hbWUiOiJkYXNkIiwicm9sZV9pZCI6MX0.tkpUXQ8suH_4oHf42OBobcSjDP67AXIyriF3WWxf5_E
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: http://localhost:5011/tickets
+            name: ticket
+            meta:
+              id: req_7ed181bb2e5e4cad94a51f66b75d7eaf
+              created: 1774532669150
+              modified: 1774532669150
+              isPrivate: false
+              description: ""
+              sortKey: -1774532666015
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                    "user_id": 122,
+                    "status_id": 1,
+                    "title": "eieinaja",
+                    "description": "sdz",
+                    "issue_categories_id": 1
+                }
+            headers:
+              - name: Authorization
+                value: Bearer
+                  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njk1NTMzNjMsImZpc3RuYW1lIjoia25zIiwibGFzdG5hbWUiOiJkYXNkIiwicm9sZV9pZCI6MX0.1RCOU-ZPNpG0tySxANhwpnqAlNPN-TZXXrDDn3tsyN8
+              - name: Content-Type
+                value: application/json
+            authentication:
+              type: bearer
+              disabled: false
+              token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njk1NTMzNjMsImZpc3RuYW1lIjoia25zIiwibGFzdG5hbWUiOiJkYXNkIiwicm9sZV9pZCI6MX0.1RCOU-ZPNpG0tySxANhwpnqAlNPN-TZXXrDDn3tsyN8
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: http://localhost:5011/tickets
+            name: tickets
+            meta:
+              id: req_b9fa99bcfbae4d539a709d578b90b2c0
+              created: 1774532669156
+              modified: 1774532669156
+              isPrivate: false
+              description: ""
+              sortKey: -1774532666014
+            method: GET
+            body:
+              mimeType: text/plain
+              text: |-
+                {
+                    "user_id": 122,
+                    "status_id": 1,
+                    "title": "test titleasd",
+                    "description": "sdzxcz",
+                    "issue_categories_id": 1
+                }
+            headers:
+              - name: Authorization
+                value: Bearer
+                  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjkwNjE0NTIsImZpc3RuYW1lIjoia25zIiwibGFzdG5hbWUiOiJkYXNkIiwicm9sZV9pZCI6MX0.22tf_BoTh4LtYXpK5DvJI3jisu2euZ3J8GCmeyN3o_g
+              - name: Content-Type
+                value: text/plain
+            authentication:
+              type: bearer
+              disabled: false
+              token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjkwNjE0NTIsImZpc3RuYW1lIjoia25zIiwibGFzdG5hbWUiOiJkYXNkIiwicm9sZV9pZCI6MX0.22tf_BoTh4LtYXpK5DvJI3jisu2euZ3J8GCmeyN3o_g
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: http://localhost:5011/tickets/45
+            name: ticketsByTicketID
+            meta:
+              id: req_c7bf07bcc1ed49cca0b4de06392fe487
+              created: 1774532669160
+              modified: 1775570660417
+              isPrivate: false
+              description: ""
+              sortKey: -1774532666013
+            method: GET
+            body:
+              mimeType: text/plain
+              text: |-
+                {
+                    "user_id": 122,
+                    "status_id": 1,
+                    "title": "test titleasd",
+                    "description": "sdzxcz",
+                    "issue_categories_id": 1
+                }
+            headers:
+              - name: Authorization
+                value: Bearer
+                  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njk3NjIxOTIsImZpc3RuYW1lIjoia25zIiwibGFzdG5hbWUiOiJkYXNkIiwicm9sZV9pZCI6MX0.kKTvWgGOJcOtCIzHlJviRXWpV19frDkfUEkIAV-zMSE
+              - name: Content-Type
+                value: text/plain
+            authentication:
+              type: bearer
+              disabled: false
+              token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njk3NjIxOTIsImZpc3RuYW1lIjoia25zIiwibGFzdG5hbWUiOiJkYXNkIiwicm9sZV9pZCI6MX0.kKTvWgGOJcOtCIzHlJviRXWpV19frDkfUEkIAV-zMSE
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: http://localhost:5011/tickets/45/assign-technician
+            name: assigntechtoticket
+            meta:
+              id: req_6b4fad5d2fa34fbe806bae96fb2ecf58
+              created: 1774532669164
+              modified: 1774532669164
+              isPrivate: false
+              description: ""
+              sortKey: -1774532666012
+            method: PATCH
+            body:
+              mimeType: application/json
+              text: |-
+                {   
+                    "technician_id": 120,
+                    "manager_id": 121
+                }
+            headers:
+              - name: Authorization
+                value: Bearer
+                  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njk2MzgyMjEsImZpc3RuYW1lIjoia25zIiwibGFzdG5hbWUiOiJkYXNkIiwicm9sZV9pZCI6MX0.l2fVrFQtVDMjbxQIX5UitQSSi1GwOmijDK2exzjYYWk
+              - name: Content-Type
+                value: application/json
+            authentication:
+              type: bearer
+              disabled: false
+              token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njk2MzgyMjEsImZpc3RuYW1lIjoia25zIiwibGFzdG5hbWUiOiJkYXNkIiwicm9sZV9pZCI6MX0.l2fVrFQtVDMjbxQIX5UitQSSi1GwOmijDK2exzjYYWk
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: http://localhost:5011/technician/120/tickets
+            name: technician
+            meta:
+              id: req_df96a54cfbfe416e8734e13970fdab99
+              created: 1774532669167
+              modified: 1774532669167
+              isPrivate: false
+              description: ""
+              sortKey: -1774532666011
+            method: GET
+            body:
+              mimeType: text/plain
+              text: |-
+                {
+                    "user_id": 122,
+                    "status_id": 1,
+                    "title": "test titleasd",
+                    "description": "sdzxcz",
+                    "issue_categories_id": 1
+                }
+            headers:
+              - name: Authorization
+                value: Bearer
+                  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njk1ODkwNTYsImZpc3RuYW1lIjoia25zIiwibGFzdG5hbWUiOiJkYXNkIiwicm9sZV9pZCI6MX0.YB8b6a6lLu2vkO0osjchGUYFhhdG7PpWfZdjAzUAK3I
+              - name: Content-Type
+                value: text/plain
+            authentication:
+              type: bearer
+              disabled: false
+              token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njk1ODkwNTYsImZpc3RuYW1lIjoia25zIiwibGFzdG5hbWUiOiJkYXNkIiwicm9sZV9pZCI6MX0.YB8b6a6lLu2vkO0osjchGUYFhhdG7PpWfZdjAzUAK3I
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: http://localhost:5011/tickets/45/technician
+            name: ticketsfortechnician
+            meta:
+              id: req_0f6399ef5b2545889e557bcb23e9fdd2
+              created: 1774532669170
+              modified: 1774532669170
+              isPrivate: false
+              description: ""
+              sortKey: -1774532666010
+            method: GET
+            body:
+              mimeType: text/plain
+              text: |-
+                {
+                    "user_id": 122,
+                    "status_id": 1,
+                    "title": "test titleasd",
+                    "description": "sdzxcz",
+                    "issue_categories_id": 1
+                }
+            headers:
+              - name: Authorization
+                value: Bearer
+                  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njk3NjIxOTIsImZpc3RuYW1lIjoia25zIiwibGFzdG5hbWUiOiJkYXNkIiwicm9sZV9pZCI6MX0.kKTvWgGOJcOtCIzHlJviRXWpV19frDkfUEkIAV-zMSE
+              - name: Content-Type
+                value: text/plain
+            authentication:
+              type: bearer
+              disabled: false
+              token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njk3NjIxOTIsImZpc3RuYW1lIjoia25zIiwibGFzdG5hbWUiOiJkYXNkIiwicm9sZV9pZCI6MX0.kKTvWgGOJcOtCIzHlJviRXWpV19frDkfUEkIAV-zMSE
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{baseURL}}/tickets/status/1"
+            name: ticketsByStatusID
+            meta:
+              id: req_7515c8b8b79648bb80577eb48e8ef442
+              created: 1774532669174
+              modified: 1774588164342
+              isPrivate: false
+              description: ""
+              sortKey: -1774532666009
+            method: GET
+            authentication:
+              type: bearer
+              token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzQ4NDczNTIsImZpc3RuYW1lIjoiZHNhIiwibGFzdG5hbWUiOiJkYXMiLCJyb2xlX2lkIjo0fQ.01r_Yhaek5pCMbGhGuJeWYi9WW4jD2AF2744MEfYbXA
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{baseURL}}/tickets/users/122"
+            name: New Request
+            meta:
+              id: req_f1060943acfc4a6db2d9c7c0255aa139
+              created: 1775570672862
+              modified: 1775570720240
+              isPrivate: false
+              description: ""
+              sortKey: -1775570672862
+            method: GET
+            headers:
+              - name: User-Agent
+                value: insomnia/12.4.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzU4Mjk4MjYsImZpc3RuYW1lIjoiZHNhIiwibGFzdG5hbWUiOiJkYXMiLCJyb2xlX2lkIjo0fQ.CUOqM95cjQfaWP4U05BeVsCGlBRjL6A1Z0EJq1Bvlsk
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: issues
+        meta:
+          id: fld_381e9de329b346b0aae768a96f6685c4
+          created: 1774533313102
+          modified: 1774533313102
+          sortKey: -1774533313102
+          description: ""
+        children:
+          - url: "{{baseURL}}/issues"
+            name: GetAll Issues
+            meta:
+              id: req_60b548c893544fc59a7365f61550d969
+              created: 1774533492707
+              modified: 1774533569226
+              isPrivate: false
+              description: ""
+              sortKey: -1774533492707
+            method: GET
+            headers:
+              - name: User-Agent
+                value: insomnia/12.4.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzQ3OTI2NjIsImZpc3RuYW1lIjoiZHNhIiwibGFzdG5hbWUiOiJkYXMiLCJyb2xlX2lkIjo0fQ.X8QdT2wq68E_cNZAjt91lyFLhhTtDmVa60QD1MSoJac
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_e8882b110c3aba8d8bd57c4dc5a4f1abf75f2013
+    created: 1774532669566
+    modified: 1774532669566
+environments:
+  name: Base Environment
+  meta:
+    id: env_e8882b110c3aba8d8bd57c4dc5a4f1abf75f2013
+    created: 1774532669194
+    modified: 1774533172879
+    isPrivate: false
+  data:
+    baseURL: http://localhost:5011
