@@ -44,3 +44,11 @@ type UserResponse struct {
 	AvatarPath   *string `db:"avatar_path" json:"avatar_path"`
 	IsActive     *int    `db:"is_active" json:"is_active"`
 }
+type Usertest struct {
+	ID       *int    `db:"id" json:"id"`
+	Email    *string `db:"email" json:"email"`
+	Password *string `db:"password_hash" json:"password"`
+	Status   *int    `db:"status" json:"status"`
+	Token    *string `db:"token_hash" json:"token"`
+	UserID   *int    `db:"users_id" json:"users_id"`
+}

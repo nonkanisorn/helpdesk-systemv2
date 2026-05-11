@@ -188,26 +188,52 @@ func (t ticketQueryService) StartJobByTechnicianID(ticketID int) error {
 //		fmt.Println("resolutionNote from service = ", resolutionNote)
 //		return nil
 //	}
-func (t ticketQueryService) CompletedJobByTechnician(ticketID int, resolutionNote string, serialNumber string) error {
+//
+//	func (t ticketQueryService) CompletedJobByTechnician(ticketID int, resolutionNote string, serialNumber *string) error {
+//		var instanceID *int
+//
+//
+//		if serialNumber != nil {
+//			id, err := t.deviceInstanceQueryRepo.CheckSerialNumber(strings.TrimSpace(*serialNumber))
+//			if err != nil {
+//				return err
+//			}
+//			instanceID = &id
+//		}
+//		err := t.ticketRepo.CompletedJobByTechnician(ticketID, instanceID, resolutionNote)
+//		if err != nil {
+//			return err
+//		}
+//
+//		fmt.Println("resolutionNote from service = ", resolutionNote)
+//		return nil
+//	}
+func (t ticketQueryService) CompletedJobByTechnician(
+	ticketID int,
+	resolutionNote string,
+	serialNumber *string,
+) error {
 	var instanceID *int
 
-	if strings.TrimSpace(serialNumber) != "" {
-		// id, err := t.deviceInstanceQueryRepo.CheckSerialNumber(strings.TrimSpace(*serialNumber))
-		id, err := t.deviceInstanceQueryRepo.CheckSerialNumber(strings.TrimSpace(serialNumber))
-		if err != nil {
-			fmt.Println("error", err)
-			return err
+	if serialNumber != nil {
+		sn := strings.TrimSpace(*serialNumber)
+
+		if sn != "" {
+			id, err := t.deviceInstanceQueryRepo.CheckSerialNumber(sn)
+			if err != nil {
+				return err
+			}
+
+			instanceID = &id
 		}
-
-		instanceID = &id
 	}
-
-	err := t.ticketRepo.CompletedJobByTechnician(ticketID, instanceID, resolutionNote)
+	err := t.ticketRepo.CompletedJobByTechnician(ticketID,
+		instanceID,
+		resolutionNote,
+	)
 	if err != nil {
 		return err
 	}
-
-	fmt.Println("resolutionNote from service = ", resolutionNote)
 	return nil
 }
 
@@ -242,4 +268,12 @@ func (t ticketQueryService) WaitingForPartByTechnicianID(ticketID int) error {
 		return err
 	}
 	return nil
+}
+
+func (t ticketQueryService) GetTicketDetailByID(ticketID int) (*domain.TicketDetail, error) {
+	tickets, err := t.ticketRepo.GetTicketDetailByID(ticketID)
+	if err != nil {
+		return nil, err
+	}
+	return tickets, nil
 }

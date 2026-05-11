@@ -4,8 +4,8 @@ import "github.com/nonkanisorn/helpdesk-system/internal/domain"
 
 type DeviceInstanceRepository interface {
 	GetAll() ([]domain.DeviceInstance, error)
-	Create(int, int, int, string) error
-	DeleteDeviceInstanceByID(int) error
+	Create(deviceID int, depID int, serialNumber string) error
+	DeleteDeviceInstanceByID(instanceID int) error
 }
 type DeviceInstanceQueryRepository interface {
 	CheckSerialNumber(string) (int, error)

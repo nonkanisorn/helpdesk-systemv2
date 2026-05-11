@@ -79,7 +79,7 @@ function Detailcasetech() {
         `${apiUrl}/technician/${ticket_id}/complete`,
         {
           status_id: statusId,
-          serial_number: noSerial ? "" : data.serial_number.trim(),
+          serial_number: noSerial ? null : data.serial_number.trim(),
           resolution_note: data.resolution_note.trim(),
         },
         {

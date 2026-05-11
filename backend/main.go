@@ -60,6 +60,7 @@ import (
 	loginHand "github.com/nonkanisorn/helpdesk-system/internal/auth/login/handler"
 	loginRepo "github.com/nonkanisorn/helpdesk-system/internal/auth/login/repository"
 	loginServ "github.com/nonkanisorn/helpdesk-system/internal/auth/login/service"
+	gomailServ "github.com/nonkanisorn/helpdesk-system/internal/gomail/service"
 )
 
 type Role struct {
@@ -81,11 +82,16 @@ func main() {
 	}
 	h := wire.NewHandlers(db)
 	routes.RegisterLogin(app, h)
+	// gomail
+	gomailService := gomailServ.NewGomailService()
 	// Auth
+
 	registerRepo := registerRepo.NewRegisterRepository(db)
-	registerServ := registerServ.NewRegisterService(registerRepo)
+	registerServ := registerServ.NewRegisterService(registerRepo, gomailService)
 	registerHandler := registerHand.NewRegisterHandler(registerServ)
 	app.Post("/register", registerHandler.CreateUser)
+	app.Post("/register-test", registerHandler.CreateTest)
+	app.Post("/set-password", registerHandler.SetPassword)
 	// login
 	loginRepo := loginRepo.NewLoginRepository(db)
 	loginServ := loginServ.NewLoginService(loginRepo)
@@ -118,6 +124,7 @@ func main() {
 	app.Get("/tickets/:userID<int>/latest/:limit<int>", ticketQueryHand.GetLatestTickets)
 	app.Get("/tickets/users/:userID<int>", ticketQueryHand.GetTicketsByUsersID)
 	app.Get("/tickets/status/:statusID<int>", ticketQueryHand.GetTicketsByStatusID)
+	app.Get("/tickets-detail/:ticketID<int>", ticketQueryHand.GetTicketDetailByID)
 
 	app.Patch("technician/:ticketID<int>/start", ticketQueryHand.StartJobByTechnicianID)
 	app.Patch("technician/:ticketID<int>/complete", ticketQueryHand.CompletedJobByTechnician)
@@ -197,7 +204,7 @@ func main() {
 	deviceInstanceHandler := deviceInstanceHand.NewDeviceInstanceHandler(deviceInstanceServ)
 	app.Get("/device-instances", deviceInstanceHandler.GetAllDeviceInstance)
 	app.Post("/device-instances", deviceInstanceHandler.Create)
-	app.Delete("/device-instances/:deviceInstanceID<int>", deviceInstanceHandler.DeleteDeviceInstanceByID)
+	app.Delete("/device-instances/:instanceID<int>", deviceInstanceHandler.DeleteDeviceInstanceByID)
 	deviceInstanceQueryServ := deviceInstanceQueryServ.NewDeviceInstanceQueryService(deviceInstanceQueryRepo)
 	deviceInstanceQueryHand := deviceInstanceQueryHand.NewDeviceInstanceQueryHandler(deviceInstanceQueryServ)
 	app.Get("/device-instances/device/:deviceID<int>", deviceInstanceQueryHand.GetDeviceInstanceByDeviceID)
@@ -206,7 +213,7 @@ func main() {
 	issueRepo := issueRepo.NewIssueRepository(db)
 	issueServ := issueServ.NewIssueService(issueRepo)
 	issueHandler := issueHand.NewIssueHandler(issueServ)
-	app.Get("/issues", issueHandler.GetAllIssues)
+	app.Get("/issue-categories", issueHandler.GetAllIssues)
 
 	if err := app.Listen(":5011"); err != nil {
 		panic(err)

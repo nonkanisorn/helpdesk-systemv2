@@ -10,7 +10,7 @@ type TicketService interface {
 type TicketQueryService interface {
 	// ---- technician part ----
 	StartJobByTechnicianID(int) error
-	CompletedJobByTechnician(int, string, string) error
+	CompletedJobByTechnician(ticketID int, resolutionNote string, serialNumber *string) error
 	WaitingForPartByTechnicianID(ticketID int) error
 	// ---- end technicina part ----
 	// ---- manager part ----
@@ -19,6 +19,10 @@ type TicketQueryService interface {
 	// ---- user part ----
 	ConfirmAndCloseTicketByUser(int) error
 	// ---- end user part ----
+	// ----dashboard----
+
+	GetTicketDetailByID(ticketID int) (*domain.TicketDetail, error)
+	// ----enddashboard ----
 	GetTicketsByTechnicianID(int) ([]domain.TicketsResponse, error)
 	UpdateStatusTicket(*domain.UpdateTicketRequest) error
 	GetTicketForTechnicianByTicketID(int) (*domain.TicketsForTechnicianResponse, error)

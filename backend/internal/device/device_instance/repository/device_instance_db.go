@@ -22,3 +22,36 @@ func (d deviceInstanceRepository) GetAll() ([]domain.DeviceInstance, error) {
 	}
 	return deviceInstances, nil
 }
+
+func (d deviceInstanceRepository) Create(deviceID int, depID int, serialNumber string) error {
+	query := `INSERT INTO helpdesk_system.device_instances (
+    device_id,
+    serial_number,
+    device_number,
+    dep_id
+)
+VALUES (
+    ?,
+    ?,
+    (
+        SELECT *
+        FROM (
+            SELECT COALESCE(MAX(device_number), 0) + 1
+            FROM device_instances
+            WHERE device_id = ?
+        ) AS temp
+    ),
+    ?
+);`
+	_, err := d.db.Exec(query, deviceID, serialNumber, deviceID, depID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (d deviceInstanceRepository) DeleteDeviceInstanceByID(instanceID int) error {
+	query := "delete from device_instances where instance_id = ? "
+	d.db.Exec(query, instanceID)
+	return nil
+}

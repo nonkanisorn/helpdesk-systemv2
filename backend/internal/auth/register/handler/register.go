@@ -28,3 +28,31 @@ func (r registerHandler) CreateUser(c *fiber.Ctx) error {
 	}
 	return c.Status(fiber.StatusOK).SendString("success")
 }
+
+func (r registerHandler) CreateTest(c *fiber.Ctx) error {
+	var user domain.Usertest
+	err := c.BodyParser(&user)
+	if err != nil {
+		fmt.Println(err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
+	}
+	if err = r.registerServ.CreateTest(&user); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
+	}
+	return c.Status(fiber.StatusOK).SendString("success")
+}
+
+func (r registerHandler) SetPassword(c *fiber.Ctx) error {
+	var req domain.Usertest
+	err := c.BodyParser(&req)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+	fmt.Println("req", req)
+
+	err = r.registerServ.SetPassword(&req, *req.Token)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+	return nil
+}

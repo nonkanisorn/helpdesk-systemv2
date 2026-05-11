@@ -17,7 +17,6 @@ import DateRangeRoundedIcon from "@mui/icons-material/DateRangeRounded";
 import OutlinedFlagRoundedIcon from "@mui/icons-material/OutlinedFlagRounded";
 import AccountCircleRoundedIcon from "@mui/icons-material/AccountCircleRounded";
 import ErrorOutlineRoundedIcon from "@mui/icons-material/ErrorOutlineRounded";
-import AccessTimeRoundedIcon from "@mui/icons-material/AccessTimeRounded";
 import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
 import HandymanIcon from "@mui/icons-material/Handyman";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
@@ -33,7 +32,6 @@ import { amber, blue, green, grey, orange, red } from "@mui/material/colors";
 
 function Detailcase() {
   const { ticket_id } = useParams();
-  console.log("dsada");
   const navigate = useNavigate();
 
   const apiUrl = process.env.REACT_APP_API_URL;
@@ -43,7 +41,6 @@ function Detailcase() {
 
   const roleId = useSelector((state) => state.user.role_id);
   const token = useSelector((state) => state.user.token);
-  const userId = useSelector((state) => state.user.user_id);
 
   const statusMap = {
     1: {
@@ -71,6 +68,11 @@ function Detailcase() {
       color: "success",
       icon: <CheckCircleOutlineRoundedIcon sx={{ color: green[700] }} />,
     },
+    6: {
+      label: "ยกเลิก",
+      color: "error",
+      icon: <ErrorOutlineRoundedIcon sx={{ color: red[600] }} />,
+    },
     7: {
       label: "รออะไหล่",
       color: "default",
@@ -78,8 +80,15 @@ function Detailcase() {
     },
   };
 
+  const categoryMap = {
+    1: "ฮาร์ดแวร์",
+    2: "ซอฟต์แวร์",
+    3: "อินเทอร์เน็ต / เครือข่าย",
+    4: "อื่นๆ",
+  };
+
   const formatDateTime = (date) => {
-    if (!date) return "-";
+    if (!date) return "ยังไม่มีข้อมูล";
 
     return new Date(date).toLocaleString("th-TH", {
       dateStyle: "long",
@@ -87,9 +96,63 @@ function Detailcase() {
     });
   };
 
+  const showText = (value, fallback = "ยังไม่มีข้อมูล") => {
+    if (value === null || value === undefined || value === "") return fallback;
+    return value;
+  };
+
+  const getFullName = (firstName, lastName, fallback = "ยังไม่มีข้อมูล") => {
+    const fullName = `${firstName ?? ""} ${lastName ?? ""}`.trim();
+    return fullName || fallback;
+  };
+
+  const getCategoryName = () => {
+    if (ticketData.issues_categories_name) {
+      return ticketData.issues_categories_name;
+    }
+
+    return (
+      categoryMap[ticketData.issue_categories_id] ||
+      categoryMap[ticketData.issues_categories_id] ||
+      "ไม่ระบุประเภทปัญหา"
+    );
+  };
+
+  const isHardwareCategory = () => {
+    return (
+      ticketData.issue_categories_id === 1 ||
+      ticketData.issues_categories_id === 1 ||
+      ticketData.issues_categories_name === "ฮาร์ดแวร์"
+    );
+  };
+
+  const getUserFullName = () => {
+    return getFullName(ticketData.user_first_name, ticketData.user_last_name);
+  };
+
+  const getManagerFullName = () => {
+    return getFullName(
+      ticketData.manager_first_name,
+      ticketData.manager_last_name,
+      ticketData.manager_id
+        ? `รหัสผู้มอบหมาย ${ticketData.manager_id}`
+        : "ยังไม่ได้มอบหมาย",
+    );
+  };
+
+  const getTechnicianFullName = () => {
+    return getFullName(
+      ticketData.technician_first_name,
+      ticketData.technician_last_name,
+      ticketData.technician_id
+        ? `รหัสช่าง ${ticketData.technician_id}`
+        : "ยังไม่ได้มอบหมายช่าง",
+    );
+  };
+
   const fetchDetail = async () => {
     try {
-      const res = await axios.get(`${apiUrl}/tickets/${ticket_id}`, {
+      const res = await axios.get(`${apiUrl}/tickets-detail/${ticket_id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -166,7 +229,7 @@ function Detailcase() {
         },
       );
 
-      navigate(-1);
+      await fetchDetail();
     } catch (error) {
       console.error("Error confirming repair:", error);
     } finally {
@@ -174,49 +237,9 @@ function Detailcase() {
     }
   };
 
-  const timelineItems = [
-    {
-      label: "เปิดงาน",
-      date: ticketData?.created_at,
-      icon: <ErrorOutlineRoundedIcon />,
-      color: amber[600],
-    },
-    {
-      label: "มอบหมายแล้ว",
-      date: ticketData?.assigned_at,
-      icon: <AccessTimeRoundedIcon />,
-      color: blue[600],
-    },
-    {
-      label: "กำลังดำเนินการ",
-      date: ticketData?.started_at,
-      icon: <HandymanIcon />,
-      color: red[500],
-    },
-    {
-      label: "รอผู้ใช้ยืนยัน",
-      date: ticketData?.completed_at,
-      icon: <HourglassEmptyIcon />,
-      color: orange[700],
-    },
-    {
-      label: "เสร็จสิ้น",
-      date: ticketData?.closed_at,
-      icon: <CheckCircleOutlineRoundedIcon />,
-      color: green[700],
-    },
-  ];
-
   if (!ticketData) {
     return (
-      <Paper
-        elevation={2}
-        sx={{
-          p: 3,
-          borderRadius: 3,
-          textAlign: "center",
-        }}
-      >
+      <Paper elevation={2} sx={{ p: 3, borderRadius: 3, textAlign: "center" }}>
         <CircularProgress size={28} />
         <Typography sx={{ mt: 2 }} color="text.secondary">
           กำลังโหลดข้อมูล...
@@ -231,16 +254,43 @@ function Detailcase() {
     icon: null,
   };
 
+  const timelineItems = [
+    {
+      label: "เปิดงาน",
+      date: ticketData.created_at,
+      icon: <ErrorOutlineRoundedIcon />,
+      color: amber[600],
+    },
+    {
+      label: "มอบหมายแล้ว",
+      date: ticketData.assigned_at,
+      icon: <AssignmentIndIcon />,
+      color: blue[600],
+    },
+    {
+      label: "กำลังดำเนินการ",
+      date: ticketData.started_at,
+      icon: <HandymanIcon />,
+      color: red[500],
+    },
+    {
+      label: "รอผู้ใช้ยืนยัน",
+      date: ticketData.completed_at,
+      icon: <HourglassEmptyIcon />,
+      color: orange[700],
+    },
+    {
+      label: "เสร็จสิ้น",
+      date: ticketData.closed_at,
+      icon: <CheckCircleOutlineRoundedIcon />,
+      color: green[700],
+    },
+  ];
+
   return (
     <Box sx={{ width: "100%" }}>
       <Stack spacing={3}>
-        <Paper
-          elevation={2}
-          sx={{
-            p: { xs: 2, sm: 3 },
-            borderRadius: 3,
-          }}
-        >
+        <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
           <Stack
             direction={{ xs: "column", sm: "row" }}
             justifyContent="space-between"
@@ -272,10 +322,7 @@ function Detailcase() {
             <Stack spacing={3}>
               <Paper
                 elevation={2}
-                sx={{
-                  p: { xs: 2, sm: 3 },
-                  borderRadius: 3,
-                }}
+                sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}
               >
                 <Stack spacing={2}>
                   <Typography
@@ -283,22 +330,17 @@ function Detailcase() {
                     fontWeight={600}
                     sx={{ wordBreak: "break-word" }}
                   >
-                    {ticketData.title}
+                    {showText(ticketData.title, "ไม่มีหัวข้อ")}
                   </Typography>
 
                   <Grid container spacing={2}>
                     <Grid item xs={12} sm={6}>
                       <Paper
                         variant="outlined"
-                        sx={{
-                          p: 2,
-                          borderRadius: 2.5,
-                          height: "100%",
-                        }}
+                        sx={{ p: 2, borderRadius: 2.5, height: "100%" }}
                       >
                         <Stack direction="row" spacing={1.5}>
                           <DateRangeRoundedIcon sx={{ color: grey[600] }} />
-
                           <Box>
                             <Typography
                               variant="caption"
@@ -306,7 +348,6 @@ function Detailcase() {
                             >
                               วันที่แจ้ง
                             </Typography>
-
                             <Typography variant="body2" fontWeight={500}>
                               {formatDateTime(ticketData.created_at)}
                             </Typography>
@@ -318,15 +359,10 @@ function Detailcase() {
                     <Grid item xs={12} sm={6}>
                       <Paper
                         variant="outlined"
-                        sx={{
-                          p: 2,
-                          borderRadius: 2.5,
-                          height: "100%",
-                        }}
+                        sx={{ p: 2, borderRadius: 2.5, height: "100%" }}
                       >
                         <Stack direction="row" spacing={1.5}>
                           <OutlinedFlagRoundedIcon sx={{ color: grey[600] }} />
-
                           <Box>
                             <Typography
                               variant="caption"
@@ -334,9 +370,8 @@ function Detailcase() {
                             >
                               ประเภทปัญหา
                             </Typography>
-
                             <Typography variant="body2" fontWeight={500}>
-                              {ticketData.issues_categories_name ?? "-"}
+                              {getCategoryName()}
                             </Typography>
                           </Box>
                         </Stack>
@@ -356,7 +391,7 @@ function Detailcase() {
                       color="text.secondary"
                       sx={{ wordBreak: "break-word", whiteSpace: "pre-line" }}
                     >
-                      {ticketData.description || "-"}
+                      {showText(ticketData.description, "ไม่มีรายละเอียดปัญหา")}
                     </Typography>
                   </Box>
                 </Stack>
@@ -364,10 +399,27 @@ function Detailcase() {
 
               <Paper
                 elevation={2}
-                sx={{
-                  p: { xs: 2, sm: 3 },
-                  borderRadius: 3,
-                }}
+                sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}
+              >
+                <Typography variant="h5" fontWeight={600} sx={{ mb: 2 }}>
+                  ผลการซ่อม
+                </Typography>
+
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ wordBreak: "break-word", whiteSpace: "pre-line" }}
+                >
+                  {showText(
+                    ticketData.resolution_note,
+                    "ยังไม่มีการบันทึกผลการซ่อม",
+                  )}
+                </Typography>
+              </Paper>
+
+              <Paper
+                elevation={2}
+                sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}
               >
                 <Typography variant="h5" fontWeight={600} sx={{ mb: 2 }}>
                   ประวัติการดำเนินงาน
@@ -378,9 +430,7 @@ function Detailcase() {
                   sx={{
                     p: 0,
                     m: 0,
-                    "& .MuiTimelineItem-root": {
-                      minHeight: "unset",
-                    },
+                    "& .MuiTimelineItem-root": { minHeight: "unset" },
                     "& .MuiTimelineItem-root:before": {
                       flex: 0,
                       padding: 0,
@@ -423,16 +473,13 @@ function Detailcase() {
             <Stack spacing={3}>
               <Paper
                 elevation={2}
-                sx={{
-                  p: { xs: 2, sm: 3 },
-                  borderRadius: 3,
-                }}
+                sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}
               >
                 <Typography fontWeight={600} sx={{ mb: 2 }}>
                   ข้อมูลผู้แจ้ง
                 </Typography>
 
-                <Stack direction="row" spacing={1.5} alignItems="center">
+                <Stack direction="row" spacing={1.5} alignItems="flex-start">
                   <AccountCircleRoundedIcon
                     sx={{ fontSize: 48, color: blue[500] }}
                   />
@@ -442,13 +489,19 @@ function Detailcase() {
                       fontWeight={600}
                       sx={{ wordBreak: "break-word" }}
                     >
-                      {ticketData.user_first_name +
-                        " " +
-                        ticketData.user_last_name}
+                      {getUserFullName()}
                     </Typography>
 
                     <Typography variant="body2" color="text.secondary">
-                      {ticketData.user_email ?? "-"}
+                      Email: {showText(ticketData.user_email)}
+                    </Typography>
+
+                    <Typography variant="body2" color="text.secondary">
+                      เบอร์โทร: {showText(ticketData.user_phone)}
+                    </Typography>
+
+                    <Typography variant="body2" color="text.secondary">
+                      รหัสแผนก: {showText(ticketData.user_department_id)}
                     </Typography>
                   </Box>
                 </Stack>
@@ -456,10 +509,86 @@ function Detailcase() {
 
               <Paper
                 elevation={2}
-                sx={{
-                  p: { xs: 2, sm: 3 },
-                  borderRadius: 3,
-                }}
+                sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}
+              >
+                <Typography fontWeight={600} sx={{ mb: 2 }}>
+                  ข้อมูลผู้มอบหมาย
+                </Typography>
+
+                <Stack spacing={1}>
+                  <Typography variant="body2">
+                    <b>ชื่อ:</b> {getManagerFullName()}
+                  </Typography>
+
+                  <Typography variant="body2">
+                    <b>Email:</b> {showText(ticketData.manager_email)}
+                  </Typography>
+
+                  <Typography variant="body2">
+                    <b>เบอร์โทร:</b> {showText(ticketData.manager_phone)}
+                  </Typography>
+                </Stack>
+              </Paper>
+
+              <Paper
+                elevation={2}
+                sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}
+              >
+                <Typography fontWeight={600} sx={{ mb: 2 }}>
+                  ข้อมูลช่าง
+                </Typography>
+
+                <Stack spacing={1}>
+                  <Typography variant="body2">
+                    <b>ชื่อ:</b> {getTechnicianFullName()}
+                  </Typography>
+
+                  <Typography variant="body2">
+                    <b>Email:</b> {showText(ticketData.technician_email)}
+                  </Typography>
+
+                  <Typography variant="body2">
+                    <b>เบอร์โทร:</b> {showText(ticketData.technician_phone)}
+                  </Typography>
+                </Stack>
+              </Paper>
+
+              {isHardwareCategory() && (
+                <Paper
+                  elevation={2}
+                  sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}
+                >
+                  <Typography fontWeight={600} sx={{ mb: 2 }}>
+                    ข้อมูลอุปกรณ์
+                  </Typography>
+
+                  <Stack spacing={1}>
+                    <Typography variant="body2">
+                      <b>รหัสอุปกรณ์:</b> {showText(ticketData.instance_id)}
+                    </Typography>
+
+                    <Typography variant="body2">
+                      <b>ชื่ออุปกรณ์:</b> {showText(ticketData.device_name)}
+                    </Typography>
+
+                    {/* <Typography variant="body2"> */}
+                    {/*   <b>รุ่น:</b> {showText(ticketData.device_model)} */}
+                    {/* </Typography> */}
+
+                    <Typography variant="body2">
+                      <b>Serial Number:</b> {showText(ticketData.serial_number)}
+                    </Typography>
+
+                    {/* <Typography variant="body2"> */}
+                    {/*   <b>สถานที่:</b> {showText(ticketData.device_location)} */}
+                    {/* </Typography> */}
+                  </Stack>
+                </Paper>
+              )}
+
+              <Paper
+                elevation={2}
+                sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}
               >
                 <Typography fontWeight={600} sx={{ mb: 2 }}>
                   การดำเนินการ
@@ -501,9 +630,9 @@ function Detailcase() {
                     </>
                   )}
 
-                  {roleId === 3 && [5, 6].includes(ticketData.status_id) && (
+                  {roleId === 3 && [4, 5, 6].includes(ticketData.status_id) && (
                     <Button variant="contained" fullWidth disabled>
-                      บันทึกการซ่อม
+                      บันทึกการซ่อมแล้ว
                     </Button>
                   )}
 
@@ -519,7 +648,7 @@ function Detailcase() {
                     </Button>
                   )}
 
-                  {roleId === 2 && (
+                  {roleId === 2 && ticketData.status_id === 1 && (
                     <Button
                       variant="contained"
                       fullWidth
@@ -534,9 +663,9 @@ function Detailcase() {
 
                   {!(
                     (roleId === 3 &&
-                      [2, 3, 5, 6].includes(ticketData.status_id)) ||
+                      [2, 3, 4, 5, 6].includes(ticketData.status_id)) ||
                     (roleId === 4 && ticketData.status_id === 4) ||
-                    roleId === 2
+                    (roleId === 2 && ticketData.status_id === 1)
                   ) && (
                     <Paper
                       variant="outlined"

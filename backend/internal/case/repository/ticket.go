@@ -2,6 +2,8 @@ package repository
 
 import (
 	"time"
+
+	"github.com/nonkanisorn/helpdesk-system/internal/domain"
 )
 
 type CreateTicketRow struct {
@@ -62,7 +64,7 @@ type TicketsForTechnicianRow struct {
 type TicketQueryRepository interface {
 	// ---- technician part ----
 	StartJobByTechnicianID(int) error
-	CompletedJobByTechnician(int, *int, string) error
+	CompletedJobByTechnician(ticketID int, instanceDeviceID *int, resolutionNote string) error
 	WaitingForPartByTechnicianID(ticketID int) error
 	// ---- end technicina part ----
 
@@ -73,6 +75,9 @@ type TicketQueryRepository interface {
 	// ---- user part ----
 	ConfirmAndCloseTicketByUser(int) error
 	// ---- end user part ----
+	// ---- dashboard -----
+	GetTicketDetailByID(ticketID int) (*domain.TicketDetail, error)
+	// ---- end dashboard ----
 	UpdateStatusTicket(*UpdateTicketRow) error
 	GetTicketsByTechnicianID(int) ([]TicketRow, error)
 	GetTicketForTechnicianByTicketID(int) (*TicketsForTechnicianRow, error)

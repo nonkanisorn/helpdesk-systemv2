@@ -29,6 +29,8 @@ import { useSelector } from "react-redux";
 
 const DeviceDetailPages = () => {
   const { dev_id } = useParams();
+  const deviceId = Number(dev_id);
+
   const apiUrl = process.env.REACT_APP_API_URL;
   const token = useSelector((state) => state.user.token);
 
@@ -85,7 +87,7 @@ const DeviceDetailPages = () => {
   const fetchDeviceDetail = async () => {
     try {
       const res = await axios.get(
-        `${apiUrl}/device-instances/device/${dev_id}`,
+        `${apiUrl}/device-instances/device/${deviceId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -120,8 +122,8 @@ const DeviceDetailPages = () => {
   };
 
   useEffect(() => {
-    if (token && dev_id) fetchDeviceDetail();
-  }, [token, dev_id, refreshKey]);
+    if (token && deviceId) fetchDeviceDetail();
+  }, [token, deviceId, refreshKey]);
 
   useEffect(() => {
     if (token) fetchDepartments();
@@ -161,7 +163,7 @@ const DeviceDetailPages = () => {
 
     resetEditForm({
       serial_number: row.serial_number ?? "",
-      dep_id: row.dep_id ?? "",
+      dep_id: row.dep_id ? Number(row.dep_id) : "",
     });
 
     setOpenEditDialog(true);
@@ -176,11 +178,11 @@ const DeviceDetailPages = () => {
   const onAddSubmit = async (data) => {
     try {
       await axios.post(
-        `${apiUrl}/device/instance`,
+        `${apiUrl}/device-instances`,
         {
-          device_id: dev_id,
+          device_id: deviceId,
           serial_number: data.serial_number.trim(),
-          dep_id: data.dep_id || null,
+          dep_id: data.dep_id ? Number(data.dep_id) : null,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -204,7 +206,7 @@ const DeviceDetailPages = () => {
         `${apiUrl}/device/instance/${getInstanceId(selectedInstance)}`,
         {
           serial_number: data.serial_number.trim(),
-          dep_id: data.dep_id || null,
+          dep_id: data.dep_id ? Number(data.dep_id) : null,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -224,7 +226,7 @@ const DeviceDetailPages = () => {
     if (!shouldDelete) return;
 
     try {
-      await axios.delete(`${apiUrl}/device/instance/${getInstanceId(row)}`, {
+      await axios.delete(`${apiUrl}/device-instances/${getInstanceId(row)}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -245,11 +247,7 @@ const DeviceDetailPages = () => {
       <Box sx={{ p: { xs: 2, sm: 3 } }}>
         <Paper
           elevation={2}
-          sx={{
-            p: 3,
-            borderRadius: 3,
-            textAlign: "center",
-          }}
+          sx={{ p: 3, borderRadius: 3, textAlign: "center" }}
         >
           <Typography color="error">โหลดข้อมูลล้มเหลว</Typography>
         </Paper>
@@ -316,7 +314,7 @@ const DeviceDetailPages = () => {
                     </MenuItem>
 
                     {departments.map((item) => (
-                      <MenuItem key={item.dep_id} value={item.dep_id}>
+                      <MenuItem key={item.dep_id} value={Number(item.dep_id)}>
                         {item.dep_name}
                       </MenuItem>
                     ))}
@@ -432,7 +430,7 @@ const DeviceDetailPages = () => {
                     </MenuItem>
 
                     {departments.map((item) => (
-                      <MenuItem key={item.dep_id} value={item.dep_id}>
+                      <MenuItem key={item.dep_id} value={Number(item.dep_id)}>
                         {item.dep_name}
                       </MenuItem>
                     ))}
@@ -471,13 +469,7 @@ const DeviceDetailPages = () => {
       </Dialog>
 
       <Box sx={{ p: { xs: 2, sm: 3 } }}>
-        <Paper
-          elevation={2}
-          sx={{
-            p: { xs: 2, sm: 3 },
-            borderRadius: 3,
-          }}
-        >
+        <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
           <Stack
             direction={{ xs: "column", sm: "row" }}
             justifyContent="space-between"
@@ -504,14 +496,7 @@ const DeviceDetailPages = () => {
             </Button>
           </Stack>
 
-          <Paper
-            variant="outlined"
-            sx={{
-              p: 2,
-              borderRadius: 2.5,
-              mb: 3,
-            }}
-          >
+          <Paper variant="outlined" sx={{ p: 2, borderRadius: 2.5, mb: 3 }}>
             <Stack spacing={2}>
               <Stack
                 direction={{ xs: "column", sm: "row" }}
@@ -526,7 +511,7 @@ const DeviceDetailPages = () => {
                   <Typography fontWeight={600}>
                     {deviceInfo?.dev_name ??
                       deviceInfo?.device_name ??
-                      `Device ID: ${dev_id}`}
+                      `Device ID: ${deviceId}`}
                   </Typography>
                 </Box>
 
@@ -579,10 +564,7 @@ const DeviceDetailPages = () => {
           />
 
           <TableContainer
-            sx={{
-              display: { xs: "none", md: "block" },
-              overflowX: "auto",
-            }}
+            sx={{ display: { xs: "none", md: "block" }, overflowX: "auto" }}
           >
             <Table sx={{ minWidth: 750 }}>
               <TableHead>
@@ -656,20 +638,12 @@ const DeviceDetailPages = () => {
             </Table>
           </TableContainer>
 
-          <Stack
-            spacing={1.5}
-            sx={{
-              display: { xs: "flex", md: "none" },
-            }}
-          >
+          <Stack spacing={1.5} sx={{ display: { xs: "flex", md: "none" } }}>
             {paginated.map((row, index) => (
               <Paper
                 key={getInstanceId(row) ?? index}
                 variant="outlined"
-                sx={{
-                  p: 2,
-                  borderRadius: 2.5,
-                }}
+                sx={{ p: 2, borderRadius: 2.5 }}
               >
                 <Stack spacing={1.5}>
                   <Stack
@@ -685,10 +659,7 @@ const DeviceDetailPages = () => {
 
                       <Typography
                         fontWeight={600}
-                        sx={{
-                          mt: 0.25,
-                          wordBreak: "break-word",
-                        }}
+                        sx={{ mt: 0.25, wordBreak: "break-word" }}
                       >
                         {row.serial_number ?? "-"}
                       </Typography>
@@ -749,11 +720,7 @@ const DeviceDetailPages = () => {
             {filtered.length === 0 && (
               <Paper
                 variant="outlined"
-                sx={{
-                  p: 3,
-                  borderRadius: 2.5,
-                  textAlign: "center",
-                }}
+                sx={{ p: 3, borderRadius: 2.5, textAlign: "center" }}
               >
                 <Typography color="text.secondary">
                   ยังไม่มีรายการอุปกรณ์
