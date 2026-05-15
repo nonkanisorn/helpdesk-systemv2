@@ -23,7 +23,7 @@ func (l LoginHandler) Login(c *fiber.Ctx) error {
 		fmt.Println(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(err)
 	}
-	user, token, err := l.loginServ.Login(userRequest.UserName, userRequest.Password)
+	user, token, err := l.loginServ.Login(userRequest.Email, userRequest.Password)
 	if err != nil {
 		fmt.Println(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(err)

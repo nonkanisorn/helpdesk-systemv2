@@ -23,6 +23,14 @@ const AddDeviceDialog = ({
   newDeviceDescription,
   setNewDeviceDescription,
 }) => {
+  const deviceTypes = Array.isArray(typeDevice) ? typeDevice : [];
+
+  const getTypeId = (item) =>
+    item.devicetype_id ?? item.id ?? item.device_type_id;
+
+  const getTypeName = (item) =>
+    item.devicetype_name ?? item.name ?? item.device_type_name ?? "-";
+
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>
@@ -62,18 +70,28 @@ const AddDeviceDialog = ({
           <TextField
             select
             label="ประเภทอุปกรณ์"
-            value={newDeviceType}
+            value={String(newDeviceType ?? "")}
             onChange={(e) => setNewDeviceType(e.target.value)}
             fullWidth
             required
             error={!newDeviceType}
             helperText={!newDeviceType ? "กรุณาเลือกประเภทอุปกรณ์" : " "}
           >
-            {typeDevice.map((item) => (
-              <MenuItem key={item.devicetype_id} value={item.devicetype_id}>
-                {item.devicetype_name}
+            {deviceTypes.map((item) => {
+              const typeId = getTypeId(item);
+
+              return (
+                <MenuItem key={typeId} value={String(typeId)}>
+                  {getTypeName(item)}
+                </MenuItem>
+              );
+            })}
+
+            {deviceTypes.length === 0 && (
+              <MenuItem disabled value="">
+                ไม่พบประเภทอุปกรณ์
               </MenuItem>
-            ))}
+            )}
           </TextField>
 
           <TextField

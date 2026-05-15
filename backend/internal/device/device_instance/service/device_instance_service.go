@@ -15,32 +15,38 @@ func (d deviceInstanceService) GetAllDeviceInstance() ([]DeviceInstanceResponse,
 	if err != nil {
 		return nil, err
 	}
+
 	deviceInstanceResponse := []DeviceInstanceResponse{}
+
 	for _, device := range deviceInstances {
 		deviceInstance := DeviceInstanceResponse{
-			DeviceInstanceID: device.DeviceInstanceID,
-			DeviceID:         device.DeviceID,
-			SerialNumber:     device.SerialNumber,
-			DeviceName:       device.DeviceName,
-			DepID:            device.DepID,
+			ID:           device.ID,
+			DeviceID:     device.DeviceID,
+			SerialNumber: device.SerialNumber,
+			DeviceNumber: device.DeviceNumber,
+			DepartmentID: device.DepartmentID,
 		}
+
 		deviceInstanceResponse = append(deviceInstanceResponse, deviceInstance)
 	}
+
 	return deviceInstanceResponse, nil
 }
 
-func (d deviceInstanceService) Create(deviceID int, depID int, serialNumber string) error {
-	err := d.deviceInstanceRepo.Create(deviceID, depID, serialNumber)
+func (d deviceInstanceService) Create(deviceID int, departmentID int, serialNumber string) error {
+	err := d.deviceInstanceRepo.Create(deviceID, departmentID, serialNumber)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
-func (d deviceInstanceService) DeleteDeviceInstanceByID(instanceID int) error {
-	err := d.deviceInstanceRepo.DeleteDeviceInstanceByID(instanceID)
+func (d deviceInstanceService) DeleteDeviceInstanceByID(id int) error {
+	err := d.deviceInstanceRepo.DeleteDeviceInstanceByID(id)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }

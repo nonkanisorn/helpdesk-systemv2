@@ -10,6 +10,7 @@ import (
 func CheckRoleAdmin(c *fiber.Ctx) error {
 	fmt.Println("middleware")
 	user, ok := c.Locals("user").(*jwt.Token)
+	fmt.Println("handler", user)
 	if !ok {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"success": false,

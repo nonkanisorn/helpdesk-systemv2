@@ -51,7 +51,7 @@ VALUES (
 }
 
 func (d deviceInstanceRepository) DeleteDeviceInstanceByID(instanceID int) error {
-	query := "delete from device_instances where instance_id = ? "
+	query := "delete from device_instances where id = ? "
 	d.db.Exec(query, instanceID)
 	return nil
 }

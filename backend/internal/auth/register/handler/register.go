@@ -16,20 +16,20 @@ func NewRegisterHandler(registerServ service.RegisterService) registerHandler {
 	return registerHandler{registerServ: registerServ}
 }
 
-func (r registerHandler) CreateUser(c *fiber.Ctx) error {
-	var user domain.User
-	err := c.BodyParser(&user)
-	if err != nil {
-		fmt.Println(err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
-	}
-	if err = r.registerServ.CreateUser(&user); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
-	}
-	return c.Status(fiber.StatusOK).SendString("success")
-}
+// func (r registerHandler) CreateUser(c *fiber.Ctx) error {
+// 	var user domain.User
+// 	err := c.BodyParser(&user)
+// 	if err != nil {
+// 		fmt.Println(err)
+// 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
+// 	}
+// 	if err = r.registerServ.CreateUser(&user); err != nil {
+// 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
+// 	}
+// 	return c.Status(fiber.StatusOK).SendString("success")
+// }
 
-func (r registerHandler) CreateTest(c *fiber.Ctx) error {
+func (r registerHandler) CreateUser(c *fiber.Ctx) error {
 	var user domain.Usertest
 	err := c.BodyParser(&user)
 	if err != nil {
@@ -50,7 +50,7 @@ func (r registerHandler) SetPassword(c *fiber.Ctx) error {
 	}
 	fmt.Println("req", req)
 
-	err = r.registerServ.SetPassword(&req, *req.Token)
+	err = r.registerServ.SetPassword(&req, *req.TokenHash)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}

@@ -1,8 +1,8 @@
 package service
 
 type Role struct {
-	RoleID   int    `db:"role_id" json:"role_id"`
-	RoleName string `db:"role_name" json:"role_name"`
+	RoleID   int    `db:"id" json:"role_id"`
+	RoleName string `db:"name" json:"role_name"`
 }
 type RoleService interface {
 	GetRole() ([]Role, error)

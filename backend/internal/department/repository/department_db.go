@@ -11,46 +11,71 @@ func NewDepartmentRepositoryDB(db *sqlx.DB) DepartmentRepository {
 }
 
 type departmentRow struct {
-	DepartmentID   int64  `db:"dep_id"`
-	DepartmentName string `db:"dep_name"`
+	ID   int64  `db:"id"`
+	Name string `db:"name"`
 }
 
 func (d departmentRepositoryDB) GetAll() ([]Department, error) {
-	department := []Department{}
-	query := "select dep_id, dep_name from departments"
-	err := d.db.Select(&department, query)
+	departments := []Department{}
+
+	query := `
+		SELECT 
+			id,
+			name
+		FROM departments
+	`
+
+	err := d.db.Select(&departments, query)
 	if err != nil {
 		return nil, err
 	}
-	return department, nil
+
+	return departments, nil
 }
 
 func (d departmentRepositoryDB) GetByID(id int) (*Department, error) {
 	var department Department
-	query := "select dep_id,dep_name from departments where dep_id = ? "
-	row := d.db.QueryRow(query, id)
-	err := row.Scan(&department.DepartmentID, &department.DepartmentName)
+
+	query := `
+		SELECT 
+			id,
+			name
+		FROM departments
+		WHERE id = ?
+	`
+
+	err := d.db.Get(&department, query, id)
 	if err != nil {
 		return nil, err
 	}
+
 	return &department, nil
 }
 
 func (d departmentRepositoryDB) Create(departmentName string) error {
-	// var departments departmentRow
-	query := "insert into departments (dep_name) values (?)"
+	query := `
+		INSERT INTO departments (name)
+		VALUES (?)
+	`
+
 	_, err := d.db.Exec(query, departmentName)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
 func (d departmentRepositoryDB) DeleteByID(id int) error {
-	query := "delete from departments where dep_id = ? "
+	query := `
+		DELETE FROM departments
+		WHERE id = ?
+	`
+
 	_, err := d.db.Exec(query, id)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }

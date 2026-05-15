@@ -31,12 +31,12 @@ func NewRegisterService(
 
 func (r registerService) CreateUser(user *domain.User) error {
 	// fmt.Println("user", user)
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(user.PasswordHash), 10)
 	if err != nil {
 		return err
 	}
 	// fmt.Println("hash", string(passwordHash))
-	user.Password = string(passwordHash)
+	user.PasswordHash = string(passwordHash)
 	err = r.registerRepo.Create(user)
 	if err != nil {
 		return err
@@ -46,14 +46,15 @@ func (r registerService) CreateUser(user *domain.User) error {
 
 func (r registerService) CreateTest(users *domain.Usertest) error {
 	// fmt.Println("from service createtest ", users)
-	rawToken, err := r.gomailService.SendEmailRegister(*users.Email)
-	if err != nil {
-		return err
-	}
 	lastID, err := r.registerRepo.CreateTest(users)
 	if err != nil {
 		return err
 	}
+	rawToken, err := r.gomailService.SendEmailRegister(*users.Email)
+	if err != nil {
+		return err
+	}
+
 	hashToken := sha256.Sum256([]byte(*rawToken))
 	hashedToken := hex.EncodeToString(hashToken[:])
 	err = r.registerRepo.SaveToken(lastID, hashedToken)
@@ -71,15 +72,15 @@ func (r registerService) SetPassword(users *domain.Usertest, rawToken string) er
 		return err
 	}
 
-	fmt.Printf("%+v", *users.Password)
+	fmt.Printf("%+v", *users.PasswordHash)
 
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(*users.Password), 10)
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(*users.PasswordHash), 10)
 	if err != nil {
 		return err
 	}
 	// fmt.Println(passwordHash)
 	users.UserID = user.UserID
-	*users.Password = string(passwordHash)
+	*users.PasswordHash = string(passwordHash)
 	// fmt.Println(*users.Password)
 	fmt.Println(*users.UserID)
 	fmt.Println("usesrs", users)

@@ -15,14 +15,17 @@ func (i issueService) GetAllIssues() ([]IssueResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	var issuesResponse []IssueResponse
-	for _, issue := range issues {
-		issueforappend := IssueResponse{
-			ID:        issue.ID,
-			IssueName: issue.IssueName,
-		}
-		issuesResponse = append(issuesResponse, issueforappend)
 
+	var issuesResponse []IssueResponse
+
+	for _, issue := range issues {
+		issueForAppend := IssueResponse{
+			ID:   issue.ID,
+			Name: issue.Name,
+		}
+
+		issuesResponse = append(issuesResponse, issueForAppend)
 	}
+
 	return issuesResponse, nil
 }

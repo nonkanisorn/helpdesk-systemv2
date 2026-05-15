@@ -18,28 +18,60 @@ func NewLoginService(loginRepo repository.LoginRepository) LoginService {
 	return loginService{loginRepo: loginRepo}
 }
 
-func (l loginService) Login(username string, password string) (*domain.User, *string, error) {
-	user, err := l.loginRepo.GetByUsername(username)
+//	func (l loginService) Login(username string, password string) (*domain.User, *string, error) {
+//		user, err := l.loginRepo.GetByUsername(username)
+//		if err != nil {
+//			fmt.Println("no username")
+//			return nil, nil, err
+//		}
+//		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+//		if err != nil {
+//			fmt.Println("not compare")
+//			return nil, nil, err
+//		}
+//		claims := jwt.MapClaims{
+//			"fistname": user.FirstName,
+//			"lastname": user.LastName,
+//			"role_id":  user.RoleID,
+//			"exp":      time.Now().Add(time.Hour * 72).Unix(),
+//		}
+//		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+//		t, err := token.SignedString([]byte("secret"))
+//		if err != nil {
+//			return nil, nil, err
+//		}
+//		fmt.Println("login success")
+//		return user, &t, nil
+//	}
+func (l loginService) Login(email string, password string) (*domain.User, *string, error) {
+	fmt.Println("serv", email)
+	user, err := l.loginRepo.GetByEmail(email)
 	if err != nil {
-		fmt.Println("no username")
+		fmt.Println("no email")
 		return nil, nil, err
 	}
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
 	if err != nil {
 		fmt.Println("not compare")
 		return nil, nil, err
 	}
+
 	claims := jwt.MapClaims{
-		"fistname": user.FirstName,
-		"lastname": user.LastName,
-		"role_id":  user.RoleID,
-		"exp":      time.Now().Add(time.Hour * 72).Unix(),
+		"user_id":    user.ID,
+		"first_name": user.FirstName,
+		"last_name":  user.LastName,
+		"role_id":    user.RoleID,
+		"exp":        time.Now().Add(time.Hour * 72).Unix(),
 	}
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
 	t, err := token.SignedString([]byte("secret"))
 	if err != nil {
 		return nil, nil, err
 	}
+
 	fmt.Println("login success")
 	return user, &t, nil
 }

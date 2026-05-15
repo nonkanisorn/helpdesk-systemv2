@@ -6,12 +6,19 @@ import (
 	"github.com/nonkanisorn/helpdesk-system/internal/domain"
 )
 
-type CreateTicketRow struct {
+type CreateTicketRowold struct {
 	UserID            int    `db:"user_id"`
 	StatusID          int    `db:"status_id"`
 	Title             string `db:"title"`
 	Description       string `db:"description"`
 	IssueCategoriesID int    `db:"issue_categories_id"`
+}
+type CreateTicketRow struct {
+	UserID          int    `db:"user_id"`
+	StatusID        int    `db:"status_id"`
+	Title           string `db:"title"`
+	Description     string `db:"description"`
+	IssueCategoryID int    `db:"issue_category_id"`
 }
 type UpdateTicketRow struct {
 	TicketID     int  `db:"ticket_id"`
@@ -19,7 +26,7 @@ type UpdateTicketRow struct {
 	TechnicianID *int `db:"technician_id"`
 	ManagerID    *int `db:"manager_id"`
 }
-type TicketRow struct {
+type TicketRowold struct {
 	TicketID          int        `db:"ticket_id" json:"ticket_id"`
 	Title             string     `db:"title" json:"title"`
 	Description       string     `db:"description" json:"description"`
@@ -37,6 +44,33 @@ type TicketRow struct {
 	ClosedAt          *time.Time `db:"closed_at" json:"closed_at"`
 
 	// 🔥 user (match alias จาก query)
+	UserIDJoin       int     `db:"user_id_join" json:"user_id_join"`
+	UserUsername     string  `db:"user_username" json:"user_username"`
+	UserFirstName    string  `db:"user_first_name" json:"user_first_name"`
+	UserLastName     string  `db:"user_last_name" json:"user_last_name"`
+	UserEmail        string  `db:"user_email" json:"user_email"`
+	UserPhone        *string `db:"user_phone" json:"user_phone"`
+	UserRoleID       int     `db:"user_role_id" json:"user_role_id"`
+	UserDepartmentID *int    `db:"user_department_id" json:"user_department_id"`
+}
+type TicketRow struct {
+	ID               int        `db:"id" json:"ticket_id"`
+	Title            string     `db:"title" json:"title"`
+	Description      string     `db:"description" json:"description"`
+	ResolutionNote   *string    `db:"resolution_note" json:"resolution_note"`
+	IssueCategoryID  int        `db:"issue_category_id" json:"issue_categories_id"`
+	DeviceInstanceID *int       `db:"device_instance_id" json:"instance_id"`
+	UserID           int        `db:"user_id" json:"user_id"`
+	TechnicianID     *int       `db:"technician_id" json:"technician_id"`
+	ManagerID        *int       `db:"manager_id" json:"manager_id"`
+	StatusID         int        `db:"status_id" json:"status_id"`
+	CreatedAt        time.Time  `db:"created_at" json:"created_at"`
+	AssignedAt       *time.Time `db:"assigned_at" json:"assigned_at"`
+	StartedAt        *time.Time `db:"started_at" json:"started_at"`
+	CompletedAt      *time.Time `db:"completed_at" json:"completed_at"`
+	ClosedAt         *time.Time `db:"closed_at" json:"closed_at"`
+
+	// user join
 	UserIDJoin       int     `db:"user_id_join" json:"user_id_join"`
 	UserUsername     string  `db:"user_username" json:"user_username"`
 	UserFirstName    string  `db:"user_first_name" json:"user_first_name"`

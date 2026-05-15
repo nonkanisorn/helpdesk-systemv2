@@ -53,6 +53,19 @@ const ManageDevice = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
+  const normalizeDeviceTypes = (payload) => {
+    const list = Array.isArray(payload)
+      ? payload
+      : (payload?.data ?? payload?.result ?? []);
+
+    return list.map((item) => ({
+      ...item,
+      devicetype_id: item.devicetype_id ?? item.id ?? item.device_type_id,
+      devicetype_name:
+        item.devicetype_name ?? item.name ?? item.device_type_name,
+    }));
+  };
+
   const getDeviceTypeName = (typeId) => {
     const found = typeDevice.find(
       (item) => Number(item.devicetype_id) === Number(typeId),
@@ -104,7 +117,7 @@ const ManageDevice = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      setTypeDevice(res.data.data ?? res.data.result ?? res.data ?? []);
+      setTypeDevice(normalizeDeviceTypes(res.data));
     } catch (error) {
       console.error("Error fetching device types:", error);
     }
@@ -125,7 +138,7 @@ const ManageDevice = () => {
         `${apiUrl}/devices`,
         {
           dev_name: newDeviceName.trim(),
-          dev_type: newDeviceType,
+          dev_type: Number(newDeviceType),
           dev_description: newDeviceDescription.trim(),
         },
         { headers: { Authorization: `Bearer ${token}` } },
@@ -166,7 +179,7 @@ const ManageDevice = () => {
         `${apiUrl}/devices/${selectedDevice.dev_id}`,
         {
           newdevicename: editDeviceName.trim(),
-          dev_type: editDeviceType,
+          dev_type: Number(editDeviceType),
           dev_description: editDeviceDescription.trim(),
         },
         { headers: { Authorization: `Bearer ${token}` } },

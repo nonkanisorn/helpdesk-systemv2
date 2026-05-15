@@ -14,10 +14,18 @@ func NewIssueRepository(db *sqlx.DB) IssueRepository {
 
 func (i issueRepositoryDB) GetAll() ([]Issue, error) {
 	var issues []Issue
-	query := "select id,issue_name from issue_categories"
+
+	query := `
+		SELECT 
+			id,
+			name
+		FROM issue_categories
+	`
+
 	err := i.db.Select(&issues, query)
 	if err != nil {
 		return nil, err
 	}
+
 	return issues, nil
 }

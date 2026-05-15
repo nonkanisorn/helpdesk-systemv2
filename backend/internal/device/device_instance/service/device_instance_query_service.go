@@ -15,38 +15,43 @@ func NewDeviceInstanceQueryService(deviceInstanceRepo repository.DeviceInstanceQ
 
 func ToResponse(d []domain.DeviceInstance) []domain.DeviceInstanceResponse {
 	var devicesInstance []domain.DeviceInstanceResponse
+
 	for _, v := range d {
 		devicesInstance = append(devicesInstance, domain.DeviceInstanceResponse{
-			DeviceInstanceID: *v.DeviceInstanceID,
-			DeviceID:         v.DeviceID,
-			SerialNumber:     v.SerialNumber,
-			DeviceName:       v.DeviceName,
-			DepID:            v.DepID,
+			ID:           *v.ID,
+			DeviceID:     v.DeviceID,
+			SerialNumber: v.SerialNumber,
+			DeviceNumber: v.DeviceNumber,
+			DepartmentID: v.DepartmentID,
 		})
 	}
+
 	return devicesInstance
 }
 
 func ToHistoryRepairDeviceInstanceResponse(h []domain.HistoryRepairDeviceInstance) []domain.HistoryRepairDeviceInstanceResponse {
 	var devicesInstanceRes []domain.HistoryRepairDeviceInstanceResponse
-	for _, h := range h {
+
+	for _, v := range h {
 		devicesInstanceRes = append(devicesInstanceRes, domain.HistoryRepairDeviceInstanceResponse{
-			TicketID:          h.TicketID,
-			Description:       h.Description,
-			ResolutionNote:    h.ResolutionNote,
-			IssueCategoriesID: h.IssueCategoriesID,
-			InstanceID:        h.InstanceID,
-			UserID:            h.UserID,
-			TechnicianID:      h.TechnicianID,
-			ManagerID:         h.ManagerID,
-			StatusID:          h.StatusID,
-			CreatedAt:         h.CreatedAt,
-			AssignedAt:        h.AssignedAt,
-			StartedAt:         h.StartedAt,
-			CompletedAt:       h.CompletedAt,
-			ClosedAt:          h.ClosedAt,
+			ID:               v.ID,
+			Title:            v.Title,
+			Description:      v.Description,
+			ResolutionNote:   v.ResolutionNote,
+			IssueCategoryID:  v.IssueCategoryID,
+			DeviceInstanceID: v.DeviceInstanceID,
+			UserID:           v.UserID,
+			TechnicianID:     v.TechnicianID,
+			ManagerID:        v.ManagerID,
+			StatusID:         v.StatusID,
+			CreatedAt:        v.CreatedAt,
+			AssignedAt:       v.AssignedAt,
+			StartedAt:        v.StartedAt,
+			CompletedAt:      v.CompletedAt,
+			ClosedAt:         v.ClosedAt,
 		})
 	}
+
 	return devicesInstanceRes
 }
 
@@ -55,8 +60,9 @@ func (d deviceInstanceQueryService) CheckSerialNumber(serialNumber string) (*dom
 	if err != nil {
 		return nil, err
 	}
+
 	deviceInstanceIDResponse := domain.DeviceInstanceResponse{
-		DeviceInstanceID: deviceInstanceID,
+		ID: deviceInstanceID,
 	}
 
 	return &deviceInstanceIDResponse, nil
@@ -67,7 +73,9 @@ func (d deviceInstanceQueryService) GetDeviceInstanceByDeviceID(deviceID int) ([
 	if err != nil {
 		return nil, err
 	}
+
 	devicesInstance := ToResponse(devicesInstanceFromDB)
+
 	return devicesInstance, nil
 }
 
@@ -76,6 +84,8 @@ func (d deviceInstanceQueryService) GetHistoryRepairDeviceInstanceByDeviceInstan
 	if err != nil {
 		return nil, err
 	}
+
 	deviceInstanceRes := ToHistoryRepairDeviceInstanceResponse(deviceInstanceRows)
+
 	return deviceInstanceRes, nil
 }

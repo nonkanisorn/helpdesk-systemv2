@@ -76,7 +76,7 @@ func main() {
 		return c.Next()
 	})
 	// app.Use(logger.New())
-	db, err := sqlx.Open("mysql", "root:@tcp(localhost:3306)/helpdesk_system?parseTime=true&loc=Local")
+	db, err := sqlx.Open("mysql", "root:@tcp(localhost:3306)/helpdesk_system_v2?parseTime=true&loc=Local")
 	if err != nil {
 		panic(err)
 	}
@@ -89,8 +89,8 @@ func main() {
 	registerRepo := registerRepo.NewRegisterRepository(db)
 	registerServ := registerServ.NewRegisterService(registerRepo, gomailService)
 	registerHandler := registerHand.NewRegisterHandler(registerServ)
+	// app.Post("/register", registerHandler.CreateUser)
 	app.Post("/register", registerHandler.CreateUser)
-	app.Post("/register-test", registerHandler.CreateTest)
 	app.Post("/set-password", registerHandler.SetPassword)
 	// login
 	loginRepo := loginRepo.NewLoginRepository(db)

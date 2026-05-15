@@ -27,7 +27,7 @@ func (d deviceHandler) GetAllDevice(c *fiber.Ctx) error {
 }
 
 func (d deviceHandler) CreateDevices(c *fiber.Ctx) error {
-	var deviceRequest domain.DeviceRequset
+	var deviceRequest domain.DeviceRequest
 
 	err := c.BodyParser(&deviceRequest)
 	if err != nil {
@@ -35,7 +35,13 @@ func (d deviceHandler) CreateDevices(c *fiber.Ctx) error {
 			"error": err.Error(),
 		})
 	}
-	err = d.deviceSrv.CreateDevices(deviceRequest.DeviceName, deviceRequest.DeviceDescription, deviceRequest.DeviceType)
+
+	description := ""
+	if deviceRequest.Description != nil {
+		description = *deviceRequest.Description
+	}
+
+	err = d.deviceSrv.CreateDevices(deviceRequest.Name, description, deviceRequest.DeviceTypeID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),

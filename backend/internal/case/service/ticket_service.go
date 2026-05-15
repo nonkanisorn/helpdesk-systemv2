@@ -13,14 +13,25 @@ func NewTicketService(ticketRepo repository.TicketRepository) TicketService {
 	return &ticketService{ticketRepo: ticketRepo}
 }
 
+//	func ToDB(req *domain.CreateTicketRequest) (*repository.CreateTicketRow, error) {
+//		caseToDB := repository.CreateTicketRow{
+//			UserID:            req.UserID,
+//			StatusID:          req.StatusID,
+//			IssueCategoriesID: req.IssueCategoriesID,
+//			Title:             req.Title,
+//			Description:       req.Description,
+//		}
+//		return &caseToDB, nil
+//	}
 func ToDB(req *domain.CreateTicketRequest) (*repository.CreateTicketRow, error) {
 	caseToDB := repository.CreateTicketRow{
-		UserID:            req.UserID,
-		StatusID:          req.StatusID,
-		IssueCategoriesID: req.IssueCategoriesID,
-		Title:             req.Title,
-		Description:       req.Description,
+		UserID:          req.UserID,
+		StatusID:        req.StatusID,
+		IssueCategoryID: req.IssueCategoriesID,
+		Title:           req.Title,
+		Description:     req.Description,
 	}
+
 	return &caseToDB, nil
 }
 
@@ -40,21 +51,21 @@ func rowToResponse(tickets []repository.TicketRow) ([]domain.TicketsResponse, er
 	ticketResponse := []domain.TicketsResponse{}
 	for _, v := range tickets {
 		ticket := domain.TicketsResponse{
-			TicketID:          v.TicketID,
-			Title:             v.Title,
-			Description:       v.Description,
-			ResolutionNote:    v.ResolutionNote,
-			IssueCategoriesID: v.IssueCategoriesID,
-			InstanceID:        v.InstanceID,
-			UserID:            v.UserID,
-			TechnicianID:      v.TechnicianID,
-			ManagerID:         v.ManagerID,
-			StatusID:          v.StatusID,
-			CreatedAt:         v.CreatedAt,
-			AssignedDate:      v.AssignedDate,
-			StartAt:           v.StartAt,
-			CompletedAt:       v.CompletedAt,
-			ClosedAt:          v.ClosedAt,
+			ID:               v.ID,
+			Title:            v.Title,
+			Description:      v.Description,
+			ResolutionNote:   v.ResolutionNote,
+			IssueCategoryID:  v.IssueCategoryID,
+			DeviceInstanceID: v.DeviceInstanceID,
+			UserID:           v.UserID,
+			TechnicianID:     v.TechnicianID,
+			ManagerID:        v.ManagerID,
+			StatusID:         v.StatusID,
+			CreatedAt:        v.CreatedAt,
+			AssignedAt:       v.AssignedAt,
+			StartedAt:        v.StartedAt,
+			CompletedAt:      v.CompletedAt,
+			ClosedAt:         v.ClosedAt,
 		}
 		ticketResponse = append(ticketResponse, ticket)
 	}
@@ -79,23 +90,23 @@ func (t ticketService) GetTicketByID(ticketID int) (*domain.TicketsResponse, err
 		return nil, err
 	}
 	ticketRes := domain.TicketsResponse{
-		TicketID:          ticketRow.TicketID,
-		Title:             ticketRow.Title,
-		Description:       ticketRow.Description,
-		ResolutionNote:    ticketRow.ResolutionNote,
-		IssueCategoriesID: ticketRow.IssueCategoriesID,
-		InstanceID:        ticketRow.InstanceID,
-		UserID:            ticketRow.UserID,
-		TechnicianID:      ticketRow.TechnicianID,
-		ManagerID:         ticketRow.ManagerID,
-		StatusID:          ticketRow.StatusID,
-		CreatedAt:         ticketRow.CreatedAt,
-		AssignedDate:      ticketRow.AssignedDate,
-		StartAt:           ticketRow.StartAt,
-		CompletedAt:       ticketRow.CompletedAt,
-		ClosedAt:          ticketRow.ClosedAt,
+		ID:               ticketRow.ID,
+		Title:            ticketRow.Title,
+		Description:      ticketRow.Description,
+		ResolutionNote:   ticketRow.ResolutionNote,
+		IssueCategoryID:  ticketRow.IssueCategoryID,
+		DeviceInstanceID: ticketRow.DeviceInstanceID,
+		UserID:           ticketRow.UserID,
+		TechnicianID:     ticketRow.TechnicianID,
+		ManagerID:        ticketRow.ManagerID,
+		StatusID:         ticketRow.StatusID,
+		CreatedAt:        ticketRow.CreatedAt,
+		AssignedAt:       ticketRow.AssignedAt,
+		StartedAt:        ticketRow.StartedAt,
+		CompletedAt:      ticketRow.CompletedAt,
+		ClosedAt:         ticketRow.ClosedAt,
 
-		// ✅ เพิ่มตรงนี้
+		// user join
 		UserIDJoin:       ticketRow.UserIDJoin,
 		UserUsername:     ticketRow.UserUsername,
 		UserFirstName:    ticketRow.UserFirstName,

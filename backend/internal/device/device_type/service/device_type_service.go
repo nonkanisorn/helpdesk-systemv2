@@ -15,13 +15,17 @@ func (d deviceTypeService) GetAllDeviceType() ([]DeviceTypeResponse, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	deviceTypesRes := []DeviceTypeResponse{}
+
 	for _, deviceType := range deviceTypes {
-		devicetpye := DeviceTypeResponse{
-			DeviceTypeID:   deviceType.DeviceTypeID,
-			DeviceTypeName: deviceType.DeviceTypeName,
+		deviceTypeRes := DeviceTypeResponse{
+			ID:   deviceType.ID,
+			Name: deviceType.Name,
 		}
-		deviceTypesRes = append(deviceTypesRes, devicetpye)
+
+		deviceTypesRes = append(deviceTypesRes, deviceTypeRes)
 	}
+
 	return deviceTypesRes, nil
 }

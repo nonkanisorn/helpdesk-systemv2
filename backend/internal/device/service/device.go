@@ -1,10 +1,10 @@
 package service
 
 type DeviceResponse struct {
-	DeviceID          int64   `db:"dev_id" json:"dev_id"`
-	DeviceName        string  `db:"dev_name" json:"dev_name"`
-	DeviceType        int     `db:"dev_type" json:"dev_type"`
-	DeviceDescription *string `json:"dev_description"`
+	ID           int64   `db:"id" json:"dev_id"`
+	Name         string  `db:"name" json:"dev_name"`
+	DeviceTypeID int     `db:"device_type_id" json:"dev_type"`
+	Description  *string `db:"description" json:"dev_description"`
 }
 type DeviceService interface {
 	GetAllDevices() ([]DeviceResponse, error)

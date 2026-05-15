@@ -36,21 +36,21 @@ func toRes(ticketRow []repository.TicketRow) ([]domain.TicketsResponse, error) {
 	ticketRes := []domain.TicketsResponse{}
 	for _, v := range ticketRow {
 		ticket := domain.TicketsResponse{
-			TicketID:          v.TicketID,
-			Title:             v.Title,
-			Description:       v.Description,
-			ResolutionNote:    v.ResolutionNote,
-			IssueCategoriesID: v.IssueCategoriesID,
-			InstanceID:        v.InstanceID,
-			UserID:            v.UserID,
-			TechnicianID:      v.TechnicianID,
-			ManagerID:         v.ManagerID,
-			StatusID:          v.StatusID,
-			CreatedAt:         v.CreatedAt,
-			AssignedDate:      v.AssignedDate,
-			StartAt:           v.StartAt,
-			CompletedAt:       v.CompletedAt,
-			ClosedAt:          v.ClosedAt,
+			ID:               v.ID,
+			Title:            v.Title,
+			Description:      v.Description,
+			ResolutionNote:   v.ResolutionNote,
+			IssueCategoryID:  v.IssueCategoryID,
+			DeviceInstanceID: v.DeviceInstanceID,
+			UserID:           v.UserID,
+			TechnicianID:     v.TechnicianID,
+			ManagerID:        v.ManagerID,
+			StatusID:         v.StatusID,
+			CreatedAt:        v.CreatedAt,
+			AssignedAt:       v.AssignedAt,
+			StartedAt:        v.StartedAt,
+			CompletedAt:      v.CompletedAt,
+			ClosedAt:         v.ClosedAt,
 		}
 		ticketRes = append(ticketRes, ticket)
 	}

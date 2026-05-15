@@ -49,6 +49,19 @@ const ManageDevice = () => {
     page * rowsPerPage + rowsPerPage,
   );
 
+  const normalizeDeviceTypes = (payload) => {
+    const list = Array.isArray(payload)
+      ? payload
+      : (payload?.data ?? payload?.result ?? []);
+
+    return list.map((item) => ({
+      ...item,
+      devicetype_id: item.devicetype_id ?? item.id ?? item.device_type_id,
+      devicetype_name:
+        item.devicetype_name ?? item.name ?? item.device_type_name,
+    }));
+  };
+
   const getDeviceTypeName = (typeId) => {
     const found = typeDevice.find(
       (t) => Number(t.devicetype_id) === Number(typeId),
@@ -67,7 +80,7 @@ const ManageDevice = () => {
     const res = await axios.get(`${apiUrl}/device-types`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    setTypeDevice(res.data.data ?? []);
+    setTypeDevice(normalizeDeviceTypes(res.data));
   };
 
   useEffect(() => {
@@ -84,7 +97,7 @@ const ManageDevice = () => {
       `${apiUrl}/devices`,
       {
         dev_name: newDeviceName.trim(),
-        dev_type: newDeviceType,
+        dev_type: Number(newDeviceType),
         dev_description: newDeviceDescription.trim(),
       },
       { headers: { Authorization: `Bearer ${token}` } },
@@ -116,7 +129,7 @@ const ManageDevice = () => {
       `${apiUrl}/devices/${selectedDevice.dev_id}`,
       {
         newdevicename: editDeviceName.trim(),
-        dev_type: editDeviceType,
+        dev_type: Number(editDeviceType),
       },
       { headers: { Authorization: `Bearer ${token}` } },
     );

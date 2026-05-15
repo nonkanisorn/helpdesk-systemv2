@@ -1,24 +1,54 @@
 package domain
 
+//	type DeviceRow struct {
+//		DeviceID   int64  `db:"id"`
+//		DeviceName string `db:"name"`
+//		DeviceType int    `db:"dev_type_id"`
+//	}
+//
+//	type Device struct {
+//		DeviceID   int64
+//		DeviceName string
+//		DeviceType int
+//	}
+//
+//	type DeviceResponse struct {
+//		DeviceID          int64  `json:"dev_id"`
+//		DeviceName        string `json:"dev_name"`
+//		DeviceType        int    `json:"dev_type"`
+//		DeviceDescription string `json:"dev_description"`
+//	}
+//
+//	type DeviceRequset struct {
+//		DeviceID          int64  `json:"dev_id"`
+//		DeviceName        string `json:"dev_name"`
+//		DeviceDescription string `json:"dev_description"`
+//		DeviceType        int    `json:"dev_type"`
+//	}
 type DeviceRow struct {
-	DeviceID   int64  `db:"dev_id"`
-	DeviceName string `db:"dev_name"`
-	DeviceType int    `db:"dev_type"`
+	ID           int64   `db:"id"`
+	Name         string  `db:"name"`
+	DeviceTypeID int     `db:"device_type_id"`
+	Description  *string `db:"description"`
 }
+
 type Device struct {
-	DeviceID   int64
-	DeviceName string
-	DeviceType int
+	ID           int64
+	Name         string
+	DeviceTypeID int
+	Description  *string
 }
+
 type DeviceResponse struct {
-	DeviceID          int64  `json:"dev_id"`
-	DeviceName        string `json:"dev_name"`
-	DeviceType        int    `json:"dev_type"`
-	DeviceDescription string `json:"dev_description"`
+	ID           int64   `json:"dev_id"`
+	Name         string  `json:"dev_name"`
+	DeviceTypeID int     `json:"dev_type"`
+	Description  *string `json:"dev_description"`
 }
-type DeviceRequset struct {
-	DeviceID          int64  `json:"dev_id"`
-	DeviceName        string `json:"dev_name"`
-	DeviceDescription string `json:"dev_description"`
-	DeviceType        int    `json:"dev_type"`
+
+type DeviceRequest struct {
+	ID           int64   `json:"dev_id"`
+	Name         string  `json:"dev_name"`
+	Description  *string `json:"dev_description"`
+	DeviceTypeID int     `json:"dev_type"`
 }

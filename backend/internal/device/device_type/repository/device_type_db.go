@@ -11,12 +11,19 @@ func NewDeviceTypeRepository(db *sqlx.DB) DeviceTypeRepository {
 }
 
 func (d deviceTypeRepositoryDB) GetAll() ([]DeviceType, error) {
-	var deviceType []DeviceType
-	query := "select devicetype_id, devicetype_name from device_types"
-	err := d.db.Select(&deviceType, query)
+	var deviceTypes []DeviceType
+
+	query := `
+		SELECT 
+			id,
+			name
+		FROM device_types
+	`
+
+	err := d.db.Select(&deviceTypes, query)
 	if err != nil {
 		return nil, err
 	}
 
-	return deviceType, nil
+	return deviceTypes, nil
 }

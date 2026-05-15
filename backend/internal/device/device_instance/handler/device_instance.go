@@ -36,7 +36,9 @@ func (d deviceInstanceHandler) Create(c *fiber.Ctx) error {
 			"error": err,
 		})
 	}
-	err = d.deviceInstanceServ.Create(req.DeviceID, req.DepID, req.SerialNumber)
+	err = d.deviceInstanceServ.Create(req.DeviceID,
+		req.DepartmentID,
+		req.SerialNumber)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err,

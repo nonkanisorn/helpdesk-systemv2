@@ -1,10 +1,10 @@
 package repository
 
 type Device struct {
-	DeviceID          int64   `db:"dev_id"`
-	DeviceName        string  `db:"dev_name"`
-	DeviceType        int     `db:"dev_type"`
-	DeviceDescription *string `db:"dev_description"`
+	ID           int64   `db:"id"`
+	Name         string  `db:"name"`
+	DeviceTypeID int     `db:"device_type_id"`
+	Description  *string `db:"description"`
 }
 type DeviceRepository interface {
 	GetAll() ([]Device, error)

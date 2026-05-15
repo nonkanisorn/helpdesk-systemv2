@@ -27,6 +27,13 @@ function EditDeviceDialog({
   setEditDeviceDescription,
 }) {
   const [loading, setLoading] = useState(false);
+  const deviceTypes = Array.isArray(typeDevice) ? typeDevice : [];
+
+  const getTypeId = (item) =>
+    item.devicetype_id ?? item.id ?? item.device_type_id;
+
+  const getTypeName = (item) =>
+    item.devicetype_name ?? item.name ?? item.device_type_name ?? "-";
 
   useEffect(() => {
     if (open && device) {
@@ -140,7 +147,7 @@ function EditDeviceDialog({
             <TextField
               select
               label="ประเภทอุปกรณ์"
-              value={editDeviceType}
+              value={String(editDeviceType ?? "")}
               onChange={(e) => setEditDeviceType(e.target.value)}
               fullWidth
               required
@@ -148,11 +155,21 @@ function EditDeviceDialog({
               error={!editDeviceType}
               helperText={!editDeviceType ? "กรุณาเลือกประเภทอุปกรณ์" : " "}
             >
-              {typeDevice.map((item) => (
-                <MenuItem key={item.devicetype_id} value={item.devicetype_id}>
-                  {item.devicetype_name}
+              {deviceTypes.map((item) => {
+                const typeId = getTypeId(item);
+
+                return (
+                  <MenuItem key={typeId} value={String(typeId)}>
+                    {getTypeName(item)}
+                  </MenuItem>
+                );
+              })}
+
+              {deviceTypes.length === 0 && (
+                <MenuItem disabled value="">
+                  ไม่พบประเภทอุปกรณ์
                 </MenuItem>
-              ))}
+              )}
             </TextField>
 
             <TextField

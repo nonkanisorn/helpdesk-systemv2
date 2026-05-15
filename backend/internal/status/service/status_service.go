@@ -12,36 +12,48 @@ func NewStatusService(statusRepo repository.StatusRepository) statusService {
 	return statusService{statusRepo: statusRepo}
 }
 
-func (s statusService) CreateStatus(StatusName string) (*StatusResponse, error) {
-	status, err := s.statusRepo.Create(StatusName)
+func (s statusService) CreateStatus(statusName string) (*StatusResponse, error) {
+	status, err := s.statusRepo.Create(statusName)
 	if err != nil {
 		return nil, err
 	}
+
 	return &StatusResponse{
-		status.StatusID,
-		status.StatusName,
+		ID:   status.ID,
+		Name: status.Name,
 	}, nil
 }
 
 func (s statusService) GetStatusAll() ([]StatusResponse, error) {
-	status, err := s.statusRepo.GetAll()
+	statuses, err := s.statusRepo.GetAll()
 	if err != nil {
 		return nil, err
 	}
+
 	var statusResponses []StatusResponse
-	for _, status := range status {
-		statusRespose := StatusResponse{
-			StatusID:   status.StatusID,
-			StatusName: status.StatusName,
+
+	for _, status := range statuses {
+		statusResponse := StatusResponse{
+			ID:   status.ID,
+			Name: status.Name,
 		}
-		statusResponses = append(statusResponses, statusRespose)
+
+		statusResponses = append(statusResponses, statusResponse)
 	}
 
 	return statusResponses, nil
 }
 
 func (s statusService) GetStatusByID(id int) (*StatusResponse, error) {
-	return nil, nil
+	status, err := s.statusRepo.GetByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &StatusResponse{
+		ID:   status.ID,
+		Name: status.Name,
+	}, nil
 }
 
 func (s statusService) DeleteStatusByID(id int) error {
@@ -49,5 +61,6 @@ func (s statusService) DeleteStatusByID(id int) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }

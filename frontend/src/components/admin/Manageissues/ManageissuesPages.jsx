@@ -37,7 +37,7 @@ function ManageissuesPages() {
 
   const fetchIssuesCategories = async () => {
     try {
-      const response = await axios.get(`${apiUrl}/issues-categories`, {
+      const response = await axios.get(`${apiUrl}/issue-categories`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

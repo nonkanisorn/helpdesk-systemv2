@@ -1,8 +1,8 @@
 package service
 
 type StatusResponse struct {
-	StatusID   int64  `db:"status_id" json:"status_id"`
-	StatusName string `db:"status_name" json:"status_name"`
+	ID   int64  `db:"id" json:"status_id"`
+	Name string `db:"name" json:"status_name"`
 }
 type StatusService interface {
 	CreateStatus(string) (*StatusResponse, error)

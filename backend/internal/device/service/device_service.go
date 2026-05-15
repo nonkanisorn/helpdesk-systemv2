@@ -15,24 +15,37 @@ func (d deviceService) GetAllDevices() ([]DeviceResponse, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	deviceResponse := []DeviceResponse{}
+
 	for _, device := range devices {
 		deviceRes := DeviceResponse{
-			DeviceID:          device.DeviceID,
-			DeviceName:        device.DeviceName,
-			DeviceType:        device.DeviceType,
-			DeviceDescription: device.DeviceDescription,
+			ID:           device.ID,
+			Name:         device.Name,
+			DeviceTypeID: device.DeviceTypeID,
+			Description:  device.Description,
 		}
+
 		deviceResponse = append(deviceResponse, deviceRes)
 	}
+
 	return deviceResponse, nil
 }
 
-func (d deviceService) CreateDevices(deviceName string, deviceDescription string, deviceType int) error {
-	err := d.deviceRepo.Create(deviceName, deviceDescription, deviceType)
+func (d deviceService) CreateDevices(
+	deviceName string,
+	deviceDescription string,
+	deviceTypeID int,
+) error {
+	err := d.deviceRepo.Create(
+		deviceName,
+		deviceDescription,
+		deviceTypeID,
+	)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -41,5 +54,6 @@ func (d deviceService) DeleteDevices(deviceID int) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }

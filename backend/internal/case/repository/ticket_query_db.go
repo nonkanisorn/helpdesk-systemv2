@@ -78,33 +78,90 @@ func (t ticketQueryRepository) GetTicketForTechnicianByTicketID(ticketID int) (*
 	return &ticket, nil
 }
 
+//	func (t ticketQueryRepository) UpdateStatusTicketByTechnician(ticket *TicketRow) error {
+//		if ticket.ResolutionNote != nil {
+//			query := "UPDATE  tickets SET resolution_note = ? ,instance_id = ?,status_id = ? ,completed_at = ?  WHERE ticket_id = ? "
+//			completedAt := time.Now()
+//			statusID := 4
+//			_, err := t.db.Exec(query, ticket.ResolutionNote, ticket.InstanceID, statusID, completedAt, ticket.TicketID)
+//			if err != nil {
+//				return err
+//			}
+//			return nil
+//		}
+//		query := "UPDATE  tickets SET status_id = ? ,started_at = ?  WHERE ticket_id = ? "
+//		statusID := 3
+//		startedAt := time.Now()
+//		_, err := t.db.Exec(query, statusID, startedAt, ticket.TicketID)
+//		if err != nil {
+//			return err
+//		}
+//		return nil
+//	}
 func (t ticketQueryRepository) UpdateStatusTicketByTechnician(ticket *TicketRow) error {
 	if ticket.ResolutionNote != nil {
-		query := "UPDATE  tickets SET resolution_note = ? ,instance_id = ?,status_id = ? ,completed_at = ?  WHERE ticket_id = ? "
+		query := `
+			UPDATE tickets 
+			SET 
+				resolution_note = ?, 
+				device_instance_id = ?, 
+				status_id = ?, 
+				completed_at = ?
+			WHERE id = ?
+		`
+
 		completedAt := time.Now()
 		statusID := 4
-		_, err := t.db.Exec(query, ticket.ResolutionNote, ticket.InstanceID, statusID, completedAt, ticket.TicketID)
+
+		_, err := t.db.Exec(
+			query,
+			ticket.ResolutionNote,
+			ticket.DeviceInstanceID,
+			statusID,
+			completedAt,
+			ticket.ID,
+		)
 		if err != nil {
 			return err
 		}
+
 		return nil
 	}
-	query := "UPDATE  tickets SET status_id = ? ,started_at = ?  WHERE ticket_id = ? "
-	statusID := 3
-	startedAt := time.Now()
-	_, err := t.db.Exec(query, statusID, startedAt, ticket.TicketID)
-	if err != nil {
-		return err
-	}
+
 	return nil
 }
 
+//	func (t ticketQueryRepository) UpdateStatusCompleteByTechnician(ticket *TicketRow) error {
+//		query := "UPDATE  tickets SET resolution_note = ? ,instance_id = ?,status_id = ? ,completed_at = ?  WHERE ticket_id = ? "
+//		_, err := t.db.Exec(query, ticket.ResolutionNote, ticket.InstanceID, ticket.StatusID, ticket.CompletedAt, ticket.TicketID)
+//		if err != nil {
+//			return err
+//		}
+//		return nil
+//	}
 func (t ticketQueryRepository) UpdateStatusCompleteByTechnician(ticket *TicketRow) error {
-	query := "UPDATE  tickets SET resolution_note = ? ,instance_id = ?,status_id = ? ,completed_at = ?  WHERE ticket_id = ? "
-	_, err := t.db.Exec(query, ticket.ResolutionNote, ticket.InstanceID, ticket.StatusID, ticket.CompletedAt, ticket.TicketID)
+	query := `
+		UPDATE tickets 
+		SET 
+			resolution_note = ?, 
+			device_instance_id = ?, 
+			status_id = ?, 
+			completed_at = ?
+		WHERE id = ?
+	`
+
+	_, err := t.db.Exec(
+		query,
+		ticket.ResolutionNote,
+		ticket.DeviceInstanceID,
+		ticket.StatusID,
+		ticket.CompletedAt,
+		ticket.ID,
+	)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -131,7 +188,7 @@ func (t ticketQueryRepository) GetTicketsByStatusID(statusID int) ([]TicketRow, 
 func (t ticketQueryRepository) StartJobByTechnicianID(ticketID int) error {
 	statusID := 3
 	startedAt := time.Now()
-	query := "UPDATE  tickets SET status_id = ? ,started_at = ?  WHERE ticket_id = ? "
+	query := "UPDATE  tickets SET status_id = ? ,started_at = ?  WHERE id = ? "
 	_, err := t.db.Exec(query, statusID, startedAt, ticketID)
 	if err != nil {
 		return err
@@ -140,21 +197,49 @@ func (t ticketQueryRepository) StartJobByTechnicianID(ticketID int) error {
 	return nil
 }
 
-func (t ticketQueryRepository) CompletedJobByTechnician(ticketID int, instanceDeviceID *int, resolutionNote string) error {
+//	func (t ticketQueryRepository) CompletedJobByTechnician(ticketID int, instanceDeviceID *int, resolutionNote string) error {
+//		statusID := 4
+//		completedAt := time.Now()
+//		query := "UPDATE  tickets SET resolution_note = ?, instance_id = ?  ,status_id = ? ,completed_at = ?  WHERE ticket_id = ? "
+//		_, err := t.db.Exec(query, resolutionNote, instanceDeviceID, statusID, completedAt, ticketID)
+//		if err != nil {
+//			return err
+//		}
+//		return nil
+//	}
+func (t ticketQueryRepository) CompletedJobByTechnician(ticketID int, deviceInstanceID *int, resolutionNote string) error {
 	statusID := 4
 	completedAt := time.Now()
-	query := "UPDATE  tickets SET resolution_note = ?, instance_id = ?  ,status_id = ? ,completed_at = ?  WHERE ticket_id = ? "
-	_, err := t.db.Exec(query, resolutionNote, instanceDeviceID, statusID, completedAt, ticketID)
+
+	query := `
+		UPDATE tickets 
+		SET 
+			resolution_note = ?, 
+			device_instance_id = ?, 
+			status_id = ?, 
+			completed_at = ?
+		WHERE id = ?
+	`
+
+	_, err := t.db.Exec(
+		query,
+		resolutionNote,
+		deviceInstanceID,
+		statusID,
+		completedAt,
+		ticketID,
+	)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
 func (t ticketQueryRepository) ConfirmAndCloseTicketByUser(ticketID int) error {
 	statusID := 5
 	closedAt := time.Now()
-	query := "UPDATE  tickets SET status_id = ? , closed_at = ?  WHERE ticket_id = ? "
+	query := "UPDATE  tickets SET status_id = ? , closed_at = ?  WHERE id = ? "
 	_, err := t.db.Exec(query, statusID, closedAt, ticketID)
 	if err != nil {
 		return err
@@ -164,7 +249,7 @@ func (t ticketQueryRepository) ConfirmAndCloseTicketByUser(ticketID int) error {
 
 func (t ticketQueryRepository) GetTicketForAutoClose() ([]int, error) {
 	var ticketID []int
-	query := "select ticket_id from tickets where completed_at is NOT NULL AND status_id = 4 AND completed_at + INTERVAL + 3 DAY <= NOW()"
+	query := "select id from tickets where completed_at is NOT NULL AND status_id = 4 AND completed_at + INTERVAL + 3 DAY <= NOW()"
 	err := t.db.Select(&ticketID, query)
 	if err != nil {
 		return nil, err
@@ -174,7 +259,7 @@ func (t ticketQueryRepository) GetTicketForAutoClose() ([]int, error) {
 
 func (t ticketQueryRepository) AutoCloseTickets(ticketID int) error {
 	status := 5
-	query := "update tickets set status_id = ? , closed_at = NOW() where  ticket_id = ?"
+	query := "update tickets set status_id = ? , closed_at = NOW() where  id = ?"
 	_, err := t.db.Exec(query, status, ticketID)
 	if err != nil {
 		return err
@@ -184,7 +269,7 @@ func (t ticketQueryRepository) AutoCloseTickets(ticketID int) error {
 
 func (t ticketQueryRepository) WaitingForPartByTechnicianID(ticketID int) error {
 	statusID := 5
-	query := "UPDATE  tickets SET status_id = ?  WHERE ticket_id = ? "
+	query := "UPDATE  tickets SET status_id = ?  WHERE id = ? "
 	_, err := t.db.Exec(query, statusID, ticketID)
 	if err != nil {
 		return err
@@ -192,15 +277,136 @@ func (t ticketQueryRepository) WaitingForPartByTechnicianID(ticketID int) error 
 	return nil
 }
 
+//	func (t ticketQueryRepository) GetTicketDetailByID(ticketID int) (*domain.TicketDetail, error) {
+//		var ticketDetail domain.TicketDetail
+//		query := `SELECT
+//	    t.ticket_id,
+//	    t.title,
+//	    t.description,
+//	    t.resolution_note,
+//	    t.issue_categories_id,
+//	    t.instance_id,
+//	    t.user_id,
+//	    t.technician_id,
+//	    t.manager_id,
+//	    t.status_id,
+//	    t.created_at,
+//	    t.assigned_at,
+//	    t.started_at,
+//	    t.completed_at,
+//	    t.closed_at,
+//
+//	    ic.issue_name AS issues_categories_name,
+//
+//	    s.status_name,
+//
+//	    u.id AS user_id_join,
+//	    u.first_name AS user_first_name,
+//	    u.last_name AS user_last_name,
+//	    u.email AS user_email,
+//	    u.phone AS user_phone,
+//	    u.department_id AS user_department_id,
+//	    ud.dep_name AS user_department_name,
+//
+//	    m.id AS manager_id_join,
+//	    m.first_name AS manager_first_name,
+//	    m.last_name AS manager_last_name,
+//	    m.email AS manager_email,
+//	    m.phone AS manager_phone,
+//	    m.department_id AS manager_department_id,
+//	    md.dep_name AS manager_department_name,
+//
+//	    tech.id AS technician_id_join,
+//	    tech.first_name AS technician_first_name,
+//	    tech.last_name AS technician_last_name,
+//	    tech.email AS technician_email,
+//	    tech.phone AS technician_phone,
+//	    tech.department_id AS technician_department_id,
+//	    td.dep_name AS technician_department_name,
+//
+//	    di.instance_id AS device_instance_id,
+//	    di.serial_number,
+//	    di.device_number,
+//	    di.dep_id AS device_department_id,
+//	    dd.dep_name AS device_department_name,
+//
+//	    d.dev_id AS device_id,
+//	    d.dev_name AS device_name,
+//	    d.dev_description AS device_description,
+//
+//	    dt.devicetype_id AS device_type_id,
+//	    dt.devicetype_name AS device_type_name
+//
+// # FROM tickets t
+//
+// LEFT JOIN issue_categories ic
+//
+//	ON t.issue_categories_id = ic.id
+//
+// LEFT JOIN status s
+//
+//	ON t.status_id = s.status_id
+//
+// LEFT JOIN users u
+//
+//	ON t.user_id = u.id
+//
+// LEFT JOIN departments ud
+//
+//	ON u.department_id = ud.dep_id
+//
+// LEFT JOIN users m
+//
+//	ON t.manager_id = m.id
+//
+// LEFT JOIN departments md
+//
+//	ON m.department_id = md.dep_id
+//
+// LEFT JOIN users tech
+//
+//	ON t.technician_id = tech.id
+//
+// LEFT JOIN departments td
+//
+//	ON tech.department_id = td.dep_id
+//
+// LEFT JOIN device_instances di
+//
+//	ON t.instance_id = di.instance_id
+//
+// LEFT JOIN departments dd
+//
+//	ON di.dep_id = dd.dep_id
+//
+// LEFT JOIN devices d
+//
+//	ON di.device_id = d.dev_id
+//
+// LEFT JOIN device_types dt
+//
+//	ON d.dev_type = dt.devicetype_id
+//
+// WHERE t.ticket_id = ?
+//
+//		`
+//		err := t.db.Get(&ticketDetail, query, ticketID)
+//		if err != nil {
+//			return nil, err
+//		}
+//		return &ticketDetail, nil
+//	}
 func (t ticketQueryRepository) GetTicketDetailByID(ticketID int) (*domain.TicketDetail, error) {
 	var ticketDetail domain.TicketDetail
-	query := `SELECT
-    t.ticket_id,
+
+	query := `
+SELECT
+    t.id,
     t.title,
     t.description,
     t.resolution_note,
-    t.issue_categories_id,
-    t.instance_id,
+    t.issue_category_id,
+    t.device_instance_id,
     t.user_id,
     t.technician_id,
     t.manager_id,
@@ -211,9 +417,9 @@ func (t ticketQueryRepository) GetTicketDetailByID(ticketID int) (*domain.Ticket
     t.completed_at,
     t.closed_at,
 
-    ic.issue_name AS issues_categories_name,
+    ic.name AS issue_category_name,
 
-    s.status_name,
+    s.name AS status_name,
 
     u.id AS user_id_join,
     u.first_name AS user_first_name,
@@ -221,7 +427,7 @@ func (t ticketQueryRepository) GetTicketDetailByID(ticketID int) (*domain.Ticket
     u.email AS user_email,
     u.phone AS user_phone,
     u.department_id AS user_department_id,
-    ud.dep_name AS user_department_name,
+    ud.name AS user_department_name,
 
     m.id AS manager_id_join,
     m.first_name AS manager_first_name,
@@ -229,7 +435,7 @@ func (t ticketQueryRepository) GetTicketDetailByID(ticketID int) (*domain.Ticket
     m.email AS manager_email,
     m.phone AS manager_phone,
     m.department_id AS manager_department_id,
-    md.dep_name AS manager_department_name,
+    md.name AS manager_department_name,
 
     tech.id AS technician_id_join,
     tech.first_name AS technician_first_name,
@@ -237,64 +443,66 @@ func (t ticketQueryRepository) GetTicketDetailByID(ticketID int) (*domain.Ticket
     tech.email AS technician_email,
     tech.phone AS technician_phone,
     tech.department_id AS technician_department_id,
-    td.dep_name AS technician_department_name,
+    td.name AS technician_department_name,
 
-    di.instance_id AS device_instance_id,
+    di.id AS device_instance_id_join,
     di.serial_number,
     di.device_number,
-    di.dep_id AS device_department_id,
-    dd.dep_name AS device_department_name,
+    di.department_id AS device_department_id,
+    dd.name AS device_department_name,
 
-    d.dev_id AS device_id,
-    d.dev_name AS device_name,
-    d.dev_description AS device_description,
+    d.id AS device_id,
+    d.name AS device_name,
+    d.description AS device_description,
 
-    dt.devicetype_id AS device_type_id,
-    dt.devicetype_name AS device_type_name
+    dt.id AS device_type_id,
+    dt.name AS device_type_name
 
 FROM tickets t
 
 LEFT JOIN issue_categories ic
-    ON t.issue_categories_id = ic.id
+    ON t.issue_category_id = ic.id
 
-LEFT JOIN status s
-    ON t.status_id = s.status_id
+LEFT JOIN ticket_statuses s
+    ON t.status_id = s.id
 
 LEFT JOIN users u
     ON t.user_id = u.id
 
 LEFT JOIN departments ud
-    ON u.department_id = ud.dep_id
+    ON u.department_id = ud.id
 
 LEFT JOIN users m
     ON t.manager_id = m.id
 
 LEFT JOIN departments md
-    ON m.department_id = md.dep_id
+    ON m.department_id = md.id
 
 LEFT JOIN users tech
     ON t.technician_id = tech.id
 
 LEFT JOIN departments td
-    ON tech.department_id = td.dep_id
+    ON tech.department_id = td.id
 
 LEFT JOIN device_instances di
-    ON t.instance_id = di.instance_id
+    ON t.device_instance_id = di.id
 
 LEFT JOIN departments dd
-    ON di.dep_id = dd.dep_id
+    ON di.department_id = dd.id
 
 LEFT JOIN devices d
-    ON di.device_id = d.dev_id
+    ON di.device_id = d.id
 
 LEFT JOIN device_types dt
-    ON d.dev_type = dt.devicetype_id
+    ON d.device_type_id = dt.id
 
-WHERE t.ticket_id = ? 
-	`
+WHERE t.id = ?
+`
+
 	err := t.db.Get(&ticketDetail, query, ticketID)
 	if err != nil {
 		return nil, err
 	}
+
 	return &ticketDetail, nil
 }

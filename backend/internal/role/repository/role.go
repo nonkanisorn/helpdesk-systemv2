@@ -1,8 +1,8 @@
 package repository
 
 type Role struct {
-	RoleID   int    `db:"role_id"`
-	RoleName string `db:"role_name"`
+	RoleID   int    `db:"id"`
+	RoleName string `db:"name"`
 }
 type RoleRepository interface {
 	GetAll() ([]Role, error)

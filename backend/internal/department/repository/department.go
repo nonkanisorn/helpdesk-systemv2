@@ -1,8 +1,8 @@
 package repository
 
 type Department struct {
-	DepartmentID   int64  `db:"dep_id"`
-	DepartmentName string `db:"dep_name"`
+	ID   int64  `db:"id"`
+	Name string `db:"name"`
 }
 type DepartmentRepository interface {
 	GetAll() ([]Department, error)

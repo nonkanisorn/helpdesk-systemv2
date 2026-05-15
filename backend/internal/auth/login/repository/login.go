@@ -7,5 +7,5 @@ type User struct {
 	Password string
 }
 type LoginRepository interface {
-	GetByUsername(string) (*domain.User, error)
+	GetByEmail(string) (*domain.User, error)
 }

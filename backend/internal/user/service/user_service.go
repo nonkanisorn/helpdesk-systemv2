@@ -21,18 +21,17 @@ func (u userService) GetAllUsers() ([]domain.UserResponse, error) {
 	var usersResponse []domain.UserResponse
 	for _, v := range users {
 		user := domain.UserResponse{
-			UserID:       v.UserID,
-			UserName:     v.UserName,
-			Password:     v.Password,
+			ID:           v.ID,
+			PasswordHash: v.PasswordHash,
 			FirstName:    v.FirstName,
 			LastName:     v.LastName,
 			Email:        v.Email,
 			Phone:        v.Phone,
 			RoleID:       v.RoleID,
 			DepartmentID: v.DepartmentID,
-			AvatarPath:   v.AvatarPath,
-			IsActive:     v.IsActive,
+			Status:       v.Status,
 		}
+
 		usersResponse = append(usersResponse, user)
 	}
 	return usersResponse, nil
@@ -44,17 +43,15 @@ func (u userService) GetUserByID(id int) (*domain.UserResponse, error) {
 		return nil, err
 	}
 	userResponse := domain.UserResponse{
-		UserID:       user.UserID,
-		UserName:     user.UserName,
-		Password:     user.Password,
+		ID:           user.ID,
+		PasswordHash: user.PasswordHash,
 		FirstName:    user.FirstName,
 		LastName:     user.LastName,
 		Email:        user.Email,
 		Phone:        user.Phone,
 		RoleID:       user.RoleID,
 		DepartmentID: user.DepartmentID,
-		AvatarPath:   user.AvatarPath,
-		IsActive:     user.IsActive,
+		Status:       user.Status,
 	}
 	return &userResponse, nil
 }

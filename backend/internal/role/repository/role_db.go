@@ -16,7 +16,7 @@ func NewRoleRepositoryDB(db *sqlx.DB) RoleRepository {
 
 func (r roleRepositoryDB) GetAll() ([]Role, error) {
 	roles := []Role{}
-	query := "select role_id, role_name from roles"
+	query := "select id, name from roles"
 	err := r.db.Select(&roles, query)
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func (r roleRepositoryDB) GetByID(id int) (*Role, error) {
 
 func (r roleRepositoryDB) Create(roleName string) error {
 	fmt.Println(roleName)
-	query := "insert into roles (role_name) values (?)"
+	query := "insert into roles (name) values (?)"
 	_, err := r.db.Exec(query, roleName)
 	if err != nil {
 		return err
@@ -39,7 +39,7 @@ func (r roleRepositoryDB) Create(roleName string) error {
 }
 
 func (r roleRepositoryDB) DeleteByID(id int) error {
-	query := "delete from roles where role_id = ?"
+	query := "delete from roles where id = ?"
 	_, err := r.db.Exec(query, id)
 	if err != nil {
 		return err

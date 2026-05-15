@@ -17,14 +17,18 @@ func (d departmentService) GetAllDepartments() ([]DepartmentResponse, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	departmentResponses := []DepartmentResponse{}
+
 	for _, department := range departments {
 		departmentRes := DepartmentResponse{
-			DepartmentID:   department.DepartmentID,
-			DepartmentName: department.DepartmentName,
+			ID:   department.ID,
+			Name: department.Name,
 		}
+
 		departmentResponses = append(departmentResponses, departmentRes)
 	}
+
 	return departmentResponses, nil
 }
 
@@ -33,9 +37,10 @@ func (d departmentService) GetDepartmentByID(id int) (*DepartmentResponse, error
 	if err != nil {
 		return nil, err
 	}
+
 	return &DepartmentResponse{
-		DepartmentID:   department.DepartmentID,
-		DepartmentName: department.DepartmentName,
+		ID:   department.ID,
+		Name: department.Name,
 	}, nil
 }
 
@@ -44,6 +49,7 @@ func (d departmentService) CreateDepartments(departmentName string) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -52,5 +58,6 @@ func (d departmentService) DeleteDepartmentsByID(id int) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
