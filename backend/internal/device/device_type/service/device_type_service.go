@@ -29,3 +29,15 @@ func (d deviceTypeService) GetAllDeviceType() ([]DeviceTypeResponse, error) {
 
 	return deviceTypesRes, nil
 }
+
+func (d deviceTypeService) CreateDeviceType(deviceTypeName string) error {
+	return d.DeviceTypeRepo.Create(deviceTypeName)
+}
+
+func (d deviceTypeService) UpdateDeviceTypeByID(id int, deviceTypeName string) error {
+	return d.DeviceTypeRepo.UpdateByID(id, deviceTypeName)
+}
+
+func (d deviceTypeService) DeleteDeviceTypeByID(id int) error {
+	return d.DeviceTypeRepo.DeleteByID(id)
+}

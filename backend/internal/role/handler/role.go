@@ -60,6 +60,32 @@ func (r roleHandler) CreateRoles(c *fiber.Ctx) error {
 	})
 }
 
+func (r roleHandler) UpdateRoleByID(c *fiber.Ctx) error {
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	var roleRequest domain.CreateRolesRequest
+	err = c.BodyParser(&roleRequest)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	err = r.roleSrv.UpdateRoleByID(id, roleRequest.RoleName)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.JSON(fiber.Map{"success": true})
+}
+
 func (r roleHandler) DeleteRolesByID(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {

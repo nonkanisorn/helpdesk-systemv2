@@ -53,7 +53,35 @@ func (t ticketRepositoryDB) CreateTicket(ticket *CreateTicketRow) error {
 
 func (t ticketRepositoryDB) GetAllTickets() ([]TicketRow, error) {
 	var ticket []TicketRow
-	query := "SELECT * from tickets"
+	query := `
+		SELECT
+			t.id,
+			t.title,
+			t.description,
+			t.resolution_note,
+			t.issue_category_id,
+			t.device_instance_id,
+			t.user_id,
+			t.technician_id,
+			t.manager_id,
+			t.status_id,
+			t.created_at,
+			t.assigned_at,
+			t.started_at,
+			t.completed_at,
+			t.closed_at,
+			u.id AS user_id_join,
+			u.email AS user_username,
+			u.first_name AS user_first_name,
+			u.last_name AS user_last_name,
+			u.email AS user_email,
+			u.phone AS user_phone,
+			u.role_id AS user_role_id,
+			u.department_id AS user_department_id
+		FROM tickets t
+		JOIN users u
+			ON t.user_id = u.id
+	`
 	err := t.db.Select(&ticket, query)
 	if err != nil {
 		return nil, err
@@ -93,7 +121,7 @@ func (t ticketRepositoryDB) GetTicketByID(id int) (*TicketRow, error) {
 			t.closed_at,
 
 			u.id AS user_id_join,
-			u.username AS user_username,
+			u.email AS user_username,
 			u.first_name AS user_first_name,
 			u.last_name AS user_last_name,
 			u.email AS user_email,

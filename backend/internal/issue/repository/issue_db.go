@@ -29,3 +29,46 @@ func (i issueRepositoryDB) GetAll() ([]Issue, error) {
 
 	return issues, nil
 }
+
+func (i issueRepositoryDB) Create(issueName string) error {
+	query := `
+		INSERT INTO issue_categories (name)
+		VALUES (?)
+	`
+
+	_, err := i.db.Exec(query, issueName)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (i issueRepositoryDB) UpdateByID(id int, issueName string) error {
+	query := `
+		UPDATE issue_categories
+		SET name = ?
+		WHERE id = ?
+	`
+
+	_, err := i.db.Exec(query, issueName, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (i issueRepositoryDB) DeleteByID(id int) error {
+	query := `
+		DELETE FROM issue_categories
+		WHERE id = ?
+	`
+
+	_, err := i.db.Exec(query, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

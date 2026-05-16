@@ -69,15 +69,29 @@ type UserTechnicianRolesResponse struct {
 //		IsActive     *int    `db:"is_active" json:"is_active"`
 //	}
 type UserResponse struct {
-	ID           int     `db:"id" json:"user_id"`
-	PasswordHash string  `db:"password_hash" json:"password"`
-	FirstName    *string `db:"first_name" json:"first_name"`
-	LastName     *string `db:"last_name" json:"last_name"`
-	Email        *string `db:"email" json:"email"`
-	Phone        *string `db:"phone" json:"phone"`
-	RoleID       int     `db:"role_id" json:"role_id"`
-	DepartmentID int     `db:"department_id" json:"dep_id"`
-	Status       *string `db:"status" json:"status"`
+	ID                int     `db:"id" json:"user_id"`
+	PasswordHash      string  `db:"password_hash" json:"password"`
+	FirstName         *string `db:"first_name" json:"first_name"`
+	LastName          *string `db:"last_name" json:"last_name"`
+	Email             *string `db:"email" json:"email"`
+	Phone             *string `db:"phone" json:"phone"`
+	RoleID            int     `db:"role_id" json:"role_id"`
+	DepartmentID      int     `db:"department_id" json:"dep_id"`
+	DepartmentIDAlias int     `db:"department_id" json:"department_id"`
+	Status            *string `db:"status" json:"status"`
+}
+
+type UserUpdateRequest struct {
+	Password     string `json:"password"`
+	FirstName    string `json:"first_name"`
+	LastName     string `json:"last_name"`
+	Email        string `json:"email"`
+	Phone        string `json:"phone"`
+	RoleID       int    `json:"role_id"`
+	DepartmentID int    `json:"department_id"`
+	DepID        int    `json:"dep_id"`
+	Status       string `json:"status"`
+	IsActive     *int   `json:"is_active"`
 }
 type Usertestold struct {
 	ID       *int    `db:"id" json:"id"`

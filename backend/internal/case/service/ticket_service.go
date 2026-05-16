@@ -66,6 +66,14 @@ func rowToResponse(tickets []repository.TicketRow) ([]domain.TicketsResponse, er
 			StartedAt:        v.StartedAt,
 			CompletedAt:      v.CompletedAt,
 			ClosedAt:         v.ClosedAt,
+			UserIDJoin:       v.UserIDJoin,
+			UserUsername:     v.UserUsername,
+			UserFirstName:    v.UserFirstName,
+			UserLastName:     v.UserLastName,
+			UserEmail:        v.UserEmail,
+			UserPhone:        v.UserPhone,
+			UserRoleID:       v.UserRoleID,
+			UserDepartmentID: v.UserDepartmentID,
 		}
 		ticketResponse = append(ticketResponse, ticket)
 	}

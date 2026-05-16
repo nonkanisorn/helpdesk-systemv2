@@ -1,10 +1,6 @@
 package repository
 
-import (
-	"fmt"
-
-	"github.com/jmoiron/sqlx"
-)
+import "github.com/jmoiron/sqlx"
 
 type userQueryRepository struct {
 	db *sqlx.DB
@@ -33,13 +29,18 @@ func (u userQueryRepository) GetUserWithRolesName() ([]UserWithRolesName, error)
 			u.last_name,
 			u.email,
 			u.phone,
-			u.role_id,
-			r.name AS role_name,
-			u.department_id,
+			COALESCE(u.role_id, 0) AS role_id,
+			COALESCE(r.name, '-') AS role_name,
+			COALESCE(u.department_id, 0) AS department_id,
+			d.name AS department_name,
 			u.status
 		FROM users u
-		JOIN roles r 
+		LEFT JOIN roles r
 			ON u.role_id = r.id
+		LEFT JOIN departments d
+			ON u.department_id = d.id
+		WHERE u.status IS NULL OR u.status <> 'deleted'
+		ORDER BY u.id
 	`
 
 	err := u.db.Select(&users, query)
@@ -65,21 +66,28 @@ func (u userQueryRepository) GetCurrentUser(id int) (*UserWithRolesName, error) 
 
 	query := `
 		SELECT 
-			id,
-			role_id,
-			first_name,
-			last_name,
-			status
-		FROM users
-		WHERE id = ?
+			u.id,
+			u.first_name,
+			u.last_name,
+			u.email,
+			u.phone,
+			COALESCE(u.role_id, 0) AS role_id,
+			COALESCE(r.name, '-') AS role_name,
+			COALESCE(u.department_id, 0) AS department_id,
+			d.name AS department_name,
+			u.status
+		FROM users u
+		LEFT JOIN roles r
+			ON u.role_id = r.id
+		LEFT JOIN departments d
+			ON u.department_id = d.id
+		WHERE u.id = ?
 	`
 
 	err := u.db.Get(&user, query, id)
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println("user", user)
 
 	return &user, nil
 }

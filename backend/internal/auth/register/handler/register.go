@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"fmt"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/nonkanisorn/helpdesk-system/internal/auth/register/service"
@@ -33,7 +33,6 @@ func (r registerHandler) CreateUser(c *fiber.Ctx) error {
 	var user domain.Usertest
 	err := c.BodyParser(&user)
 	if err != nil {
-		fmt.Println(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
 	}
 	if err = r.registerServ.CreateTest(&user); err != nil {
@@ -48,11 +47,36 @@ func (r registerHandler) SetPassword(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
-	fmt.Println("req", req)
 
 	err = r.registerServ.SetPassword(&req, *req.TokenHash)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
-	return nil
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"success": true})
+}
+
+func (r registerHandler) RequestPasswordReset(c *fiber.Ctx) error {
+	var req struct {
+		Email string `json:"email"`
+	}
+
+	err := c.BodyParser(&req)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	email := strings.TrimSpace(req.Email)
+	if email == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "กรุณากรอกอีเมล"})
+	}
+
+	err = r.registerServ.RequestPasswordReset(email)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"success": true,
+		"message": "หากพบอีเมลในระบบ จะส่งลิงก์รีเซ็ตรหัสผ่านให้",
+	})
 }

@@ -48,15 +48,17 @@ func (u userQueryService) GetUserWithRolesName() ([]UserResponseWithRoleName, er
 
 	for _, v := range users {
 		userAppend := UserResponseWithRoleName{
-			ID:           v.ID,
-			FirstName:    v.FirstName,
-			LastName:     v.LastName,
-			Email:        v.Email,
-			Phone:        v.Phone,
-			RoleID:       v.RoleID,
-			RoleName:     v.RoleName,
-			DepartmentID: v.DepartmentID,
-			Status:       v.Status,
+			ID:                v.ID,
+			FirstName:         v.FirstName,
+			LastName:          v.LastName,
+			Email:             v.Email,
+			Phone:             v.Phone,
+			RoleID:            v.RoleID,
+			RoleName:          v.RoleName,
+			DepartmentID:      v.DepartmentID,
+			DepartmentIDAlias: v.DepartmentID,
+			DepartmentName:    v.DepartmentName,
+			Status:            v.Status,
 		}
 
 		userDTO = append(userDTO, userAppend)
@@ -91,15 +93,17 @@ func (u userQueryService) GetCurrentUser(userID int) (*UserResponseWithRoleName,
 	}
 
 	userRes := UserResponseWithRoleName{
-		ID:           user.ID,
-		FirstName:    user.FirstName,
-		LastName:     user.LastName,
-		Email:        user.Email,
-		Phone:        user.Phone,
-		RoleID:       user.RoleID,
-		RoleName:     user.RoleName,
-		DepartmentID: user.DepartmentID,
-		Status:       user.Status,
+		ID:                user.ID,
+		FirstName:         user.FirstName,
+		LastName:          user.LastName,
+		Email:             user.Email,
+		Phone:             user.Phone,
+		RoleID:            user.RoleID,
+		RoleName:          user.RoleName,
+		DepartmentID:      user.DepartmentID,
+		DepartmentIDAlias: user.DepartmentID,
+		DepartmentName:    user.DepartmentName,
+		Status:            user.Status,
 	}
 
 	return &userRes, nil

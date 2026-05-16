@@ -8,5 +8,6 @@ type RoleService interface {
 	GetRole() ([]Role, error)
 	GetRoleByID(int) (*Role, error)
 	CreateRoles(string) error
+	UpdateRoleByID(int, string) error
 	DeleteRolesByID(int) error
 }

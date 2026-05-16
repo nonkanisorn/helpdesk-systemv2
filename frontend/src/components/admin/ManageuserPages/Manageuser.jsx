@@ -23,7 +23,12 @@ import {
   TextField,
   MenuItem,
   CircularProgress,
+  InputAdornment,
+  FormControl,
+  InputLabel,
+  Select,
 } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 import { useForm, Controller } from "react-hook-form";
 import { useSelector } from "react-redux";
 import EditUserDialog from "../dialog/EditDialog/EditUserDialog";
@@ -58,9 +63,51 @@ function Manageuser() {
   const [selectedUserID, setSelectedUserID] = useState(null);
 
   const [loadingAddUser, setLoadingAddUser] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  const normalizeUsers = (payload) => {
+    const list = Array.isArray(payload)
+      ? payload
+      : (payload?.result ?? payload?.data ?? []);
+
+    return list.map((item) => ({
+      ...item,
+      user_id: item.user_id ?? item.id,
+      department_id: item.department_id ?? item.dep_id,
+      role_name: item.role_name ?? "-",
+      department_name: item.department_name ?? item.dep_name ?? "-",
+      status: item.status ?? "pending",
+    }));
+  };
+
+  const normalizeRoles = (payload) => {
+    const list = Array.isArray(payload)
+      ? payload
+      : (payload?.result ?? payload?.data ?? []);
+
+    return list.map((item) => ({
+      ...item,
+      role_id: item.role_id ?? item.id,
+      role_name: item.role_name ?? item.name,
+    }));
+  };
+
+  const normalizeDepartments = (payload) => {
+    const list = Array.isArray(payload)
+      ? payload
+      : (payload?.result ?? payload?.data ?? []);
+
+    return list.map((item) => ({
+      ...item,
+      dep_id: item.dep_id ?? item.department_id ?? item.id,
+      dep_name: item.dep_name ?? item.department_name ?? item.name,
+    }));
+  };
 
   const fetchUsers = async () => {
     try {
@@ -68,7 +115,7 @@ function Manageuser() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      setUserData(response.data.result ?? response.data ?? []);
+      setUserData(normalizeUsers(response.data));
     } catch (error) {
       console.error("Error fetching users:", error);
     }
@@ -85,8 +132,8 @@ function Manageuser() {
         }),
       ]);
 
-      setRoleData(roleRes.data.data ?? roleRes.data ?? []);
-      setDepData(depRes.data.result ?? depRes.data ?? []);
+      setRoleData(normalizeRoles(roleRes.data));
+      setDepData(normalizeDepartments(depRes.data));
     } catch (error) {
       console.error("Error fetching options:", error);
     }
@@ -111,18 +158,18 @@ function Manageuser() {
   };
 
   const handleStatusActiveUsers = async (userId, checked) => {
-    const newStatus = checked ? 1 : 0;
+    const newStatus = checked ? "active" : "suspended";
 
     setUserData((prev) =>
       prev.map((user) =>
-        user.user_id === userId ? { ...user, is_active: newStatus } : user,
+        user.user_id === userId ? { ...user, status: newStatus } : user,
       ),
     );
 
     try {
       await axios.patch(
         `${apiUrl}/users/isactive/${userId}`,
-        { is_active: newStatus },
+        { status: newStatus },
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -133,10 +180,30 @@ function Manageuser() {
       setUserData((prev) =>
         prev.map((user) =>
           user.user_id === userId
-            ? { ...user, is_active: newStatus === 1 ? 0 : 1 }
+            ? {
+                ...user,
+                status: newStatus === "active" ? "suspended" : "active",
+              }
             : user,
         ),
       );
+    }
+  };
+
+  const handleSendResetPassword = async (email) => {
+    if (!email) return alert("ผู้ใช้นี้ไม่มีอีเมล");
+
+    try {
+      await axios.post(
+        `${apiUrl}/forgot-password`,
+        { email },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+
+      alert("ส่งลิงก์รีเซ็ตรหัสผ่านแล้ว");
+    } catch (error) {
+      console.error("Error sending reset password:", error);
+      alert(error.response?.data?.error || "ส่งลิงก์รีเซ็ตรหัสผ่านไม่สำเร็จ");
     }
   };
 
@@ -197,17 +264,33 @@ function Manageuser() {
 
   const getStatusLabel = (item) => {
     if (item.status === "pending") return "รอตั้งรหัสผ่าน";
-    if (item.status === "inactive" || item.is_active === 0) return "ปิดใช้งาน";
+    if (item.status === "suspended") return "ปิดใช้งาน";
     return "พร้อมใช้งาน";
   };
 
   const getStatusColor = (item) => {
     if (item.status === "pending") return "warning";
-    if (item.status === "inactive" || item.is_active === 0) return "default";
+    if (item.status === "suspended") return "default";
     return "success";
   };
 
-  const paginatedUsers = userData.slice(
+  const filteredUsers = userData.filter((item) => {
+    const keyword = searchText.trim().toLowerCase();
+    const fullName = `${item.first_name ?? ""} ${item.last_name ?? ""}`;
+    const matchSearch =
+      !keyword ||
+      fullName.toLowerCase().includes(keyword) ||
+      String(item.email ?? "").toLowerCase().includes(keyword) ||
+      String(item.user_id ?? "").includes(keyword);
+    const matchRole =
+      roleFilter === "all" || Number(item.role_id) === Number(roleFilter);
+    const matchStatus =
+      statusFilter === "all" || String(item.status) === String(statusFilter);
+
+    return matchSearch && matchRole && matchStatus;
+  });
+
+  const paginatedUsers = filteredUsers.slice(
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage,
   );
@@ -428,6 +511,66 @@ function Manageuser() {
             </Button>
           </Stack>
 
+          <Stack
+            direction={{ xs: "column", md: "row" }}
+            spacing={2}
+            sx={{ mb: 3 }}
+          >
+            <TextField
+              value={searchText}
+              onChange={(e) => {
+                setSearchText(e.target.value);
+                setPage(0);
+              }}
+              label="ค้นหาผู้ใช้"
+              placeholder="ค้นหาด้วยชื่อ อีเมล หรือ ID"
+              fullWidth
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon sx={{ color: "text.secondary" }} />
+                  </InputAdornment>
+                ),
+              }}
+            />
+
+            <FormControl sx={{ minWidth: { xs: "100%", md: 220 } }}>
+              <InputLabel>บทบาท</InputLabel>
+              <Select
+                value={roleFilter}
+                label="บทบาท"
+                onChange={(e) => {
+                  setRoleFilter(e.target.value);
+                  setPage(0);
+                }}
+              >
+                <MenuItem value="all">ทุกบทบาท</MenuItem>
+                {roleData.map((item) => (
+                  <MenuItem key={item.role_id} value={String(item.role_id)}>
+                    {item.role_name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl sx={{ minWidth: { xs: "100%", md: 220 } }}>
+              <InputLabel>สถานะ</InputLabel>
+              <Select
+                value={statusFilter}
+                label="สถานะ"
+                onChange={(e) => {
+                  setStatusFilter(e.target.value);
+                  setPage(0);
+                }}
+              >
+                <MenuItem value="all">ทุกสถานะ</MenuItem>
+                <MenuItem value="active">พร้อมใช้งาน</MenuItem>
+                <MenuItem value="pending">รอตั้งรหัสผ่าน</MenuItem>
+                <MenuItem value="suspended">ปิดใช้งาน</MenuItem>
+              </Select>
+            </FormControl>
+          </Stack>
+
           <TableContainer
             sx={{ display: { xs: "none", md: "block" }, overflowX: "auto" }}
           >
@@ -437,6 +580,7 @@ function Manageuser() {
                   <TableCell>ID</TableCell>
                   <TableCell>ชื่อผู้ใช้</TableCell>
                   <TableCell>บทบาท</TableCell>
+                  <TableCell>แผนก</TableCell>
                   <TableCell>สถานะ</TableCell>
                   <TableCell align="right">จัดการ</TableCell>
                 </TableRow>
@@ -458,11 +602,13 @@ function Manageuser() {
 
                     <TableCell>{item.role_name || "-"}</TableCell>
 
+                    <TableCell>{item.department_name || "-"}</TableCell>
+
                     <TableCell>
                       <Stack direction="row" spacing={1} alignItems="center">
                         {item.status !== "pending" && (
                           <Switch
-                            checked={item.is_active === 1}
+                            checked={item.status === "active"}
                             onChange={(e) =>
                               handleStatusActiveUsers(
                                 item.user_id,
@@ -494,6 +640,14 @@ function Manageuser() {
                         <Button
                           variant="outlined"
                           size="small"
+                          onClick={() => handleSendResetPassword(item.email)}
+                        >
+                          รีเซ็ตรหัสผ่าน
+                        </Button>
+
+                        <Button
+                          variant="outlined"
+                          size="small"
                           onClick={() => {
                             setSelectedUserID(item.user_id);
                             setOpenEditUserDialog(true);
@@ -517,7 +671,7 @@ function Manageuser() {
 
                 {userData.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={5} align="center">
+                    <TableCell colSpan={6} align="center">
                       ไม่พบข้อมูลผู้ใช้
                     </TableCell>
                   </TableRow>
@@ -577,6 +731,15 @@ function Manageuser() {
                     </Typography>
                   </Stack>
 
+                  <Stack spacing={0.5}>
+                    <Typography variant="caption" color="text.secondary">
+                      แผนก
+                    </Typography>
+                    <Typography fontWeight={500}>
+                      {item.department_name || "-"}
+                    </Typography>
+                  </Stack>
+
                   <Stack
                     direction="row"
                     justifyContent="space-between"
@@ -593,7 +756,7 @@ function Manageuser() {
 
                     {item.status !== "pending" && (
                       <Switch
-                        checked={item.is_active === 1}
+                        checked={item.status === "active"}
                         onChange={(e) =>
                           handleStatusActiveUsers(
                             item.user_id,
@@ -607,6 +770,14 @@ function Manageuser() {
                   <Divider />
 
                   <Stack direction="row" spacing={1}>
+                    <Button
+                      variant="outlined"
+                      fullWidth
+                      onClick={() => handleSendResetPassword(item.email)}
+                    >
+                      รีเซ็ต
+                    </Button>
+
                     <Button
                       variant="outlined"
                       fullWidth
@@ -645,7 +816,7 @@ function Manageuser() {
 
           <TablePagination
             component="div"
-            count={userData.length}
+            count={filteredUsers.length}
             page={page}
             onPageChange={handleChangePage}
             rowsPerPage={rowsPerPage}

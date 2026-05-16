@@ -52,21 +52,11 @@ function User() {
       color: "info",
     },
     4: {
-      label: "ช่างซ่อมเสร็จแล้ว",
-      icon: (
-        <CheckCircleOutlineRoundedIcon
-          sx={{ color: green[600] }}
-          fontSize="small"
-        />
-      ),
-      color: "success",
-    },
-    5: {
       label: "รอผู้ใช้ยืนยัน",
       icon: <HourglassEmptyIcon sx={{ color: amber[700] }} fontSize="small" />,
       color: "warning",
     },
-    6: {
+    5: {
       label: "ปิดงานแล้ว",
       icon: (
         <CheckCircleOutlineRoundedIcon
@@ -76,7 +66,7 @@ function User() {
       ),
       color: "success",
     },
-    7: {
+    6: {
       label: "รออะไหล่",
       icon: (
         <PrecisionManufacturingIcon

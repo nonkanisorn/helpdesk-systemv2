@@ -62,6 +62,35 @@ func (d departmentHandler) CreateDepartments(c *fiber.Ctx) error {
 	})
 }
 
+func (d departmentHandler) UpdateDepartmentByID(c *fiber.Ctx) error {
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"error":   err.Error(),
+		})
+	}
+
+	var departmentrequest domain.DepartmentsRequest
+	err = c.BodyParser(&departmentrequest)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"error":   err.Error(),
+		})
+	}
+
+	err = d.depServ.UpdateDepartmentByID(id, departmentrequest.DepName)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"error":   err.Error(),
+		})
+	}
+
+	return c.JSON(fiber.Map{"success": true})
+}
+
 func (d departmentHandler) DeleteDepartmentsByID(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {

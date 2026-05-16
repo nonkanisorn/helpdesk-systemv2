@@ -33,10 +33,9 @@ const InstanceDeviceHistoryPage = () => {
     1: { label: "เปิดงาน", color: "default" },
     2: { label: "ได้รับมอบหมาย", color: "warning" },
     3: { label: "กำลังดำเนินการ", color: "info" },
-    4: { label: "ช่างซ่อมเสร็จแล้ว", color: "success" },
-    5: { label: "ปิดงานแล้ว", color: "success" },
-    6: { label: "ปิดงานแล้ว", color: "success" },
-    7: { label: "รออะไหล่", color: "warning" },
+    4: { label: "รอผู้ใช้ยืนยัน", color: "info" },
+    5: { label: "เสร็จสิ้น", color: "success" },
+    6: { label: "รออะไหล่", color: "warning" },
   };
 
   const fetchHistory = async () => {

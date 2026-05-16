@@ -8,5 +8,6 @@ type StatusService interface {
 	CreateStatus(string) (*StatusResponse, error)
 	GetStatusAll() ([]StatusResponse, error)
 	GetStatusByID(int) (*StatusResponse, error)
+	UpdateStatusByID(int, string) (*StatusResponse, error)
 	DeleteStatusByID(int) error
 }

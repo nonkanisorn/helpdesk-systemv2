@@ -39,14 +39,74 @@ func (d deviceHandler) CreateDevices(c *fiber.Ctx) error {
 	description := ""
 	if deviceRequest.Description != nil {
 		description = *deviceRequest.Description
+	} else if deviceRequest.DescriptionAlias != nil {
+		description = *deviceRequest.DescriptionAlias
 	}
 
-	err = d.deviceSrv.CreateDevices(deviceRequest.Name, description, deviceRequest.DeviceTypeID)
+	deviceName := deviceRequest.Name
+	if deviceName == "" {
+		deviceName = deviceRequest.NameAlias
+	}
+
+	deviceTypeID := deviceRequest.DeviceTypeID
+	if deviceTypeID == 0 {
+		deviceTypeID = deviceRequest.DeviceTypeIDAlias
+	}
+
+	err = d.deviceSrv.CreateDevices(deviceName, description, deviceTypeID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"success": true,
+	})
+}
+
+func (d deviceHandler) UpdateDevices(c *fiber.Ctx) error {
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	var deviceRequest domain.DeviceRequest
+	err = c.BodyParser(&deviceRequest)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	description := ""
+	if deviceRequest.Description != nil {
+		description = *deviceRequest.Description
+	} else if deviceRequest.DescriptionAlias != nil {
+		description = *deviceRequest.DescriptionAlias
+	}
+
+	deviceName := deviceRequest.Name
+	if deviceName == "" {
+		deviceName = deviceRequest.NameAlias
+	}
+	if deviceName == "" {
+		deviceName = deviceRequest.NewDeviceName
+	}
+
+	deviceTypeID := deviceRequest.DeviceTypeID
+	if deviceTypeID == 0 {
+		deviceTypeID = deviceRequest.DeviceTypeIDAlias
+	}
+
+	err = d.deviceSrv.UpdateDevices(id, deviceName, description, deviceTypeID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"success": true,
 	})

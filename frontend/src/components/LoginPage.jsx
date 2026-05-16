@@ -1,6 +1,6 @@
 import React from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { login } from "../store/userSlice";
 import { useForm } from "react-hook-form";
@@ -182,6 +182,17 @@ function LoginPage() {
                   ),
                 }}
               />
+
+              <Box sx={{ textAlign: "right", mt: -1 }}>
+                <Button
+                  component={Link}
+                  to="/forgot-password"
+                  size="small"
+                  sx={{ textTransform: "none", fontWeight: 600 }}
+                >
+                  ลืมรหัสผ่าน?
+                </Button>
+              </Box>
 
               <Button
                 type="submit"

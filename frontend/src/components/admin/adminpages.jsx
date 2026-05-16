@@ -388,7 +388,7 @@ function Adminpages() {
     phone: "",
     role_id: "",
     dep_id: "",
-    is_active: 1,
+    status: "pending",
   };
 
   const { register, handleSubmit, reset, control } = useForm({
@@ -439,14 +439,13 @@ function Adminpages() {
         `${apiUrl}/register`,
         {
           username: data.username,
-          password: data.password,
-          role_id: data.role_id,
+          role_id: Number(data.role_id),
           first_name: data.first_name,
           last_name: data.last_name,
-          department_id: data.dep_id,
+          department_id: Number(data.dep_id),
           email: data.email,
           phone: data.phone,
-          is_active: data.is_active,
+          status: data.status,
         },
         {
           headers: {
@@ -506,23 +505,6 @@ function Adminpages() {
             onSubmit={handleSubmit(onSubmit)}
           >
             <Stack spacing={2}>
-              <TextField
-                label="ชื่อผู้ใช้"
-                fullWidth
-                required
-                disabled={loadingUser}
-                {...register("username")}
-              />
-
-              <TextField
-                label="รหัสผ่าน"
-                type="password"
-                fullWidth
-                required
-                disabled={loadingUser}
-                {...register("password")}
-              />
-
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                 <TextField
                   label="ชื่อจริง"
@@ -600,18 +582,19 @@ function Adminpages() {
 
               <Controller
                 control={control}
-                name="is_active"
+                name="status"
                 render={({ field }) => (
                   <TextField
                     select
                     label="สถานะผู้ใช้งาน"
                     fullWidth
                     disabled={loadingUser}
-                    value={field.value ?? 1}
-                    onChange={(e) => field.onChange(Number(e.target.value))}
+                    value={field.value ?? "pending"}
+                    onChange={(e) => field.onChange(e.target.value)}
                   >
-                    <MenuItem value={1}>พร้อมใช้งาน</MenuItem>
-                    <MenuItem value={0}>ไม่พร้อมใช้งาน</MenuItem>
+                    <MenuItem value="pending">รอตั้งรหัสผ่าน</MenuItem>
+                    <MenuItem value="active">พร้อมใช้งาน</MenuItem>
+                    <MenuItem value="inactive">ไม่พร้อมใช้งาน</MenuItem>
                   </TextField>
                 )}
               />
@@ -701,6 +684,8 @@ function Adminpages() {
                   title="สมาชิก"
                   data={userCount}
                   icon={<PersonIcon />}
+                  color="#2563eb"
+                  background="#dbeafe"
                 />
               </Grid>
 
@@ -709,6 +694,8 @@ function Adminpages() {
                   title="บทบาท"
                   data={role.length}
                   icon={<AdminPanelSettingsIcon />}
+                  color="#7c3aed"
+                  background="#ede9fe"
                 />
               </Grid>
 
@@ -717,6 +704,8 @@ function Adminpages() {
                   title="สถานะ"
                   data={statusCount}
                   icon={<FlagIcon />}
+                  color="#ca8a04"
+                  background="#fef3c7"
                 />
               </Grid>
 
@@ -725,6 +714,8 @@ function Adminpages() {
                   title="แผนก"
                   data={department.length}
                   icon={<ApartmentIcon />}
+                  color="#059669"
+                  background="#d1fae5"
                 />
               </Grid>
             </Grid>
@@ -750,43 +741,45 @@ function Adminpages() {
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6} md={3}>
                 <AdminQuickActionCard
-                  icon={<PersonAddIcon sx={{ color: "green", fontSize: 50 }} />}
+                  icon={<PersonAddIcon />}
                   title="ผู้ใช้งาน"
                   subtitle="เพิ่มผู้ใช้งาน"
                   func={() => setOpenAddUserDialog(true)}
+                  color="#2563eb"
+                  background="#dbeafe"
                 />
               </Grid>
 
               <Grid item xs={12} sm={6} md={3}>
                 <AdminQuickActionCard
-                  icon={
-                    <AddModeratorIcon sx={{ color: blue[400], fontSize: 50 }} />
-                  }
+                  icon={<AddModeratorIcon />}
                   title="บทบาท"
                   subtitle="เพิ่มบทบาท"
                   func={() => setOpenRoleDialog(true)}
+                  color="#7c3aed"
+                  background="#ede9fe"
                 />
               </Grid>
 
               <Grid item xs={12} sm={6} md={3}>
                 <AdminQuickActionCard
-                  icon={<FlagIcon sx={{ color: yellow[700], fontSize: 50 }} />}
+                  icon={<FlagIcon />}
                   title="สถานะ"
                   subtitle="เพิ่มสถานะ"
                   func={() => setOpenStatusDialog(true)}
+                  color="#ca8a04"
+                  background="#fef3c7"
                 />
               </Grid>
 
               <Grid item xs={12} sm={6} md={3}>
                 <AdminQuickActionCard
-                  icon={
-                    <ApartmentIcon
-                      sx={{ color: deepOrange[400], fontSize: 50 }}
-                    />
-                  }
+                  icon={<ApartmentIcon />}
                   title="แผนก"
                   subtitle="เพิ่มแผนก"
                   func={() => setOpenDepartmentDialog(true)}
+                  color="#059669"
+                  background="#d1fae5"
                 />
               </Grid>
             </Grid>

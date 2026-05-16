@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"database/sql"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/nonkanisorn/helpdesk-system/internal/domain"
 )
@@ -94,7 +96,13 @@ func (r registerRepositoryDB) SetPassword(users *domain.Usertest) error {
 
 func (r registerRepositoryDB) CheckToken(token string) (*domain.Usertest, error) {
 	var user domain.Usertest
-	query := "select user_id from user_invitation_tokens where token_hash = ? "
+	query := `
+		SELECT user_id
+		FROM user_invitation_tokens
+		WHERE token_hash = ?
+			AND used_at IS NULL
+			AND (expires_at IS NULL OR expires_at > NOW())
+	`
 	err := r.db.Get(&user, query, token)
 	if err != nil {
 		return nil, err
@@ -103,10 +111,43 @@ func (r registerRepositoryDB) CheckToken(token string) (*domain.Usertest, error)
 }
 
 func (r registerRepositoryDB) SaveToken(userID *int, token string) error {
-	query := "insert into user_invitation_tokens (user_id,token_hash) values(?,?)"
+	query := `
+		INSERT INTO user_invitation_tokens (
+			user_id,
+			token_hash,
+			expires_at,
+			created_at
+		)
+		VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 1 DAY), NOW())
+	`
 	_, err := r.db.Exec(query, userID, token)
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (r registerRepositoryDB) FindUserIDByEmail(email string) (*int, error) {
+	var userID int
+	query := "SELECT id FROM users WHERE email = ? LIMIT 1"
+
+	err := r.db.Get(&userID, query, email)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &userID, nil
+}
+
+func (r registerRepositoryDB) MarkTokenUsed(token string) error {
+	query := "UPDATE user_invitation_tokens SET used_at = NOW() WHERE token_hash = ?"
+	_, err := r.db.Exec(query, token)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

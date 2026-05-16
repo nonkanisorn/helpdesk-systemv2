@@ -6,4 +6,7 @@ type IssueResponse struct {
 }
 type IssueService interface {
 	GetAllIssues() ([]IssueResponse, error)
+	CreateIssue(string) error
+	UpdateIssueByID(int, string) error
+	DeleteIssueByID(int) error
 }

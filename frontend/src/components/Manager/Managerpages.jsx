@@ -178,9 +178,8 @@ import {
 import SignalCellularAltRoundedIcon from "@mui/icons-material/SignalCellularAltRounded";
 import ConstructionRoundedIcon from "@mui/icons-material/ConstructionRounded";
 import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
-import ErrorOutlineRoundedIcon from "@mui/icons-material/ErrorOutlineRounded";
+import AssignmentIndRoundedIcon from "@mui/icons-material/AssignmentIndRounded";
 import AccessTimeRoundedIcon from "@mui/icons-material/AccessTimeRounded";
-import { amber, blue, green, red } from "@mui/material/colors";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import PaperuiV2 from "../ui/PaperuiV2";
@@ -195,11 +194,14 @@ function Managerpages() {
   const summary = useMemo(() => {
     return {
       total: ticketData.length,
-      completed: ticketData.filter((item) => item.status_id === 6).length,
+      completed: ticketData.filter((item) => Number(item.status_id) === 5)
+        .length,
       inProgress: ticketData.filter((item) =>
-        [2, 3, 4, 5, 7].includes(item.status_id),
+        [2, 3, 4, 6].includes(Number(item.status_id)),
       ).length,
-      overdue: ticketData.filter((item) => item.is_overdue === 1).length,
+      pendingAssignment: ticketData.filter(
+        (item) => Number(item.status_id) === 1,
+      ).length,
     };
   }, [ticketData]);
 
@@ -268,11 +270,9 @@ function Managerpages() {
               <PaperuiV2
                 title="งานทั้งหมด"
                 number={summary.total}
-                icon={
-                  <ConstructionRoundedIcon
-                    sx={{ fontSize: 50, color: blue[600] }}
-                  />
-                }
+                icon={<ConstructionRoundedIcon />}
+                color="#2563eb"
+                background="#dbeafe"
               />
             </Grid>
 
@@ -280,11 +280,9 @@ function Managerpages() {
               <PaperuiV2
                 title="เสร็จสิ้น"
                 number={summary.completed}
-                icon={
-                  <CheckCircleOutlineRoundedIcon
-                    sx={{ fontSize: 50, color: green[500] }}
-                  />
-                }
+                icon={<CheckCircleOutlineRoundedIcon />}
+                color="#059669"
+                background="#d1fae5"
               />
             </Grid>
 
@@ -292,23 +290,19 @@ function Managerpages() {
               <PaperuiV2
                 title="กำลังดำเนินการ"
                 number={summary.inProgress}
-                icon={
-                  <AccessTimeRoundedIcon
-                    sx={{ fontSize: 50, color: amber[500] }}
-                  />
-                }
+                icon={<AccessTimeRoundedIcon />}
+                color="#ca8a04"
+                background="#fef3c7"
               />
             </Grid>
 
             <Grid item xs={12} sm={6} md={3}>
               <PaperuiV2
-                title="เกินกำหนด"
-                number={summary.overdue}
-                icon={
-                  <ErrorOutlineRoundedIcon
-                    sx={{ fontSize: 50, color: red[500] }}
-                  />
-                }
+                title="รอมอบหมาย"
+                number={summary.pendingAssignment}
+                icon={<AssignmentIndRoundedIcon />}
+                color="#ea580c"
+                background="#ffedd5"
               />
             </Grid>
           </Grid>
@@ -334,7 +328,7 @@ function Managerpages() {
               </Typography>
 
               <Typography variant="body2" color="text.secondary">
-                จำนวนงานที่ได้รับมอบหมาย งานที่เสร็จสิ้น และงานเกินกำหนด
+                จำนวนงานที่ได้รับมอบหมายและงานที่เสร็จสิ้น
               </Typography>
             </Box>
 
@@ -369,7 +363,7 @@ function Managerpages() {
                   <Divider />
 
                   <Grid container spacing={2}>
-                    <Grid item xs={12} sm={4}>
+                    <Grid item xs={12} sm={6}>
                       <Paper
                         variant="outlined"
                         sx={{
@@ -387,7 +381,7 @@ function Managerpages() {
                       </Paper>
                     </Grid>
 
-                    <Grid item xs={12} sm={4}>
+                    <Grid item xs={12} sm={6}>
                       <Paper
                         variant="outlined"
                         sx={{
@@ -409,27 +403,6 @@ function Managerpages() {
                       </Paper>
                     </Grid>
 
-                    <Grid item xs={12} sm={4}>
-                      <Paper
-                        variant="outlined"
-                        sx={{
-                          p: 2,
-                          borderRadius: 2,
-                          textAlign: "center",
-                        }}
-                      >
-                        <Typography
-                          variant="h6"
-                          fontWeight={600}
-                          color="error.main"
-                        >
-                          {item.overdue_count ?? 0}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          เกินกำหนด
-                        </Typography>
-                      </Paper>
-                    </Grid>
                   </Grid>
                 </Stack>
               </Paper>

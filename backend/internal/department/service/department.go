@@ -8,5 +8,6 @@ type DepartmentService interface {
 	GetAllDepartments() ([]DepartmentResponse, error)
 	GetDepartmentByID(int) (*DepartmentResponse, error)
 	CreateDepartments(string) error
+	UpdateDepartmentByID(int, string) error
 	DeleteDepartmentsByID(int) error
 }

@@ -17,6 +17,7 @@ import {
   CircularProgress,
   FormControl,
   InputLabel,
+  Alert,
 } from "@mui/material";
 
 const EditUserDialog = ({
@@ -46,11 +47,12 @@ const EditUserDialog = ({
       phone: "",
       role_id: null,
       department_id: null,
-      is_active: 1,
+      status: "active",
     },
   });
 
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   useEffect(() => {
     if (!open || !id) return;
@@ -59,6 +61,7 @@ const EditUserDialog = ({
       setLoading(true);
 
       try {
+        setSubmitError("");
         const res = await axios.get(`${apiUrl}/users/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -74,7 +77,7 @@ const EditUserDialog = ({
           phone: u.phone ?? "",
           role_id: u.role_id ?? null,
           department_id: u.department_id ?? u.dep_id ?? null,
-          is_active: typeof u.is_active === "number" ? u.is_active : 1,
+          status: u.status ?? "active",
         });
       } catch (err) {
         console.log(err);
@@ -88,15 +91,15 @@ const EditUserDialog = ({
 
   const onSubmit = async (data) => {
     try {
+      setSubmitError("");
       const payload = {
-        username: data.username,
         first_name: data.first_name,
         last_name: data.last_name,
         email: data.email,
         phone: data.phone,
         role_id: Number(data.role_id),
         department_id: Number(data.department_id),
-        is_active: Number(data.is_active),
+        status: data.status,
       };
 
       if (data.password?.trim()) {
@@ -114,6 +117,7 @@ const EditUserDialog = ({
       onSuccess?.();
     } catch (err) {
       console.log(err);
+      setSubmitError(err.response?.data?.error || "บันทึกข้อมูลผู้ใช้ไม่สำเร็จ");
     }
   };
 
@@ -150,6 +154,12 @@ const EditUserDialog = ({
           </Stack>
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} id="edit-user-form">
+            {submitError && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {submitError}
+              </Alert>
+            )}
+
             <Box
               sx={{
                 display: "grid",
@@ -161,12 +171,6 @@ const EditUserDialog = ({
                 pt: 1,
               }}
             >
-              <TextField
-                label="ชื่อผู้ใช้"
-                fullWidth
-                {...register("username")}
-              />
-
               <TextField label="อีเมล์" fullWidth {...register("email")} />
 
               <TextField
@@ -233,18 +237,18 @@ const EditUserDialog = ({
 
               <Controller
                 control={control}
-                name="is_active"
+                name="status"
                 render={({ field }) => (
                   <FormControl fullWidth>
                     <InputLabel>สถานะผู้ใช้งาน</InputLabel>
                     <Select
                       {...field}
                       label="สถานะผู้ใช้งาน"
-                      value={field.value ?? 1}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      value={field.value ?? "active"}
                     >
-                      <MenuItem value={1}>พร้อมใช้งาน</MenuItem>
-                      <MenuItem value={0}>ไม่พร้อมใช้งาน</MenuItem>
+                      <MenuItem value="active">พร้อมใช้งาน</MenuItem>
+                      <MenuItem value="suspended">ไม่พร้อมใช้งาน</MenuItem>
+                      <MenuItem value="pending">รอตั้งรหัสผ่าน</MenuItem>
                     </Select>
                   </FormControl>
                 )}

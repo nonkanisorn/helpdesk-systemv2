@@ -41,6 +41,7 @@ import Headerbartech from "./layout/tech/Headerbartech";
 import Sidebartech from "./layout/tech/Sidebartech";
 import Testapi from "./components/Testapi";
 import SetPasswordPage from "./components/SetPasswordPage";
+import ForgotPasswordPage from "./components/ForgotPasswordPage";
 function App() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -105,6 +106,7 @@ function App() {
       <Routes>
         <Route path="*" element={<Notfound404 text="ไม่มีpath" />} />
         <Route path="/" element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/set-password/:token" element={<SetPasswordPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/testapi" element={<Testapi />} />

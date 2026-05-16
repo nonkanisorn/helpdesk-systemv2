@@ -51,6 +51,14 @@ func toRes(ticketRow []repository.TicketRow) ([]domain.TicketsResponse, error) {
 			StartedAt:        v.StartedAt,
 			CompletedAt:      v.CompletedAt,
 			ClosedAt:         v.ClosedAt,
+			UserIDJoin:       v.UserIDJoin,
+			UserUsername:     v.UserUsername,
+			UserFirstName:    v.UserFirstName,
+			UserLastName:     v.UserLastName,
+			UserEmail:        v.UserEmail,
+			UserPhone:        v.UserPhone,
+			UserRoleID:       v.UserRoleID,
+			UserDepartmentID: v.UserDepartmentID,
 		}
 		ticketRes = append(ticketRes, ticket)
 	}
@@ -111,7 +119,7 @@ func (t ticketQueryService) GetTicketForTechnicianByTicketID(ticketID int) (*dom
 		Phone:       ticketRow.Phone,
 		Description: ticketRow.Description,
 		Title:       ticketRow.Title,
-		CreatedAt:   ticketRow.ClosedAt,
+		CreatedAt:   ticketRow.CreatedAt,
 		AssignedAt:  ticketRow.AssignedAt,
 		StartAt:     ticketRow.StartAt,
 		CompletedAt: ticketRow.CompletedAt,

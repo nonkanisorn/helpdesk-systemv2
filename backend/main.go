@@ -9,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/jmoiron/sqlx"
+	"github.com/nonkanisorn/helpdesk-system/internal/config"
 	departmentHand "github.com/nonkanisorn/helpdesk-system/internal/department/handler"
 	departmentRepo "github.com/nonkanisorn/helpdesk-system/internal/department/repository"
 	departmentServ "github.com/nonkanisorn/helpdesk-system/internal/department/service"
@@ -69,6 +70,8 @@ type Role struct {
 }
 
 func main() {
+	config.LoadDotEnv(".env", "backend/.env", "../.env")
+
 	app := fiber.New()
 	app.Use(cors.New(cors.Config{AllowOrigins: "http://localhost:5173"}))
 	app.Use(func(c *fiber.Ctx) error {
@@ -91,6 +94,7 @@ func main() {
 	registerHandler := registerHand.NewRegisterHandler(registerServ)
 	// app.Post("/register", registerHandler.CreateUser)
 	app.Post("/register", registerHandler.CreateUser)
+	app.Post("/forgot-password", registerHandler.RequestPasswordReset)
 	app.Post("/set-password", registerHandler.SetPassword)
 	// login
 	loginRepo := loginRepo.NewLoginRepository(db)
@@ -145,6 +149,8 @@ func main() {
 	userHand := userHand.NewUserHandler(userServ)
 	app.Get("/users", userHand.GetAllUsers)
 	app.Get("/users/:id<int>", userHand.GetUserByID)
+	app.Patch("/users/:id<int>", userHand.UpdateUserByID)
+	app.Patch("/users/isactive/:id<int>", userHand.UpdateUserStatusByID)
 	app.Delete("/users/:id<int>", userHand.DeleteUsersByID)
 	// CheckRoleAdmin
 	app.Get("/admin/ping", middleware.CheckRoleAdmin, func(c *fiber.Ctx) error {
@@ -167,6 +173,7 @@ func main() {
 	statusHandlers := statusHand.NewStatusHandler(statusService)
 	app.Get("/status", statusHandlers.GetStatusAll)
 	app.Post("/status", statusHandlers.CreateStatus)
+	app.Patch("/status/:id", statusHandlers.UpdateStatusByID)
 	app.Delete("/status/:id", statusHandlers.DeleteStatusByID)
 	// roles
 	roleReposityDB := roleRepo.NewRoleRepositoryDB(db)
@@ -175,6 +182,7 @@ func main() {
 	app.Get("/roles", roleHandler.GetRole)
 	app.Post("/roles", roleHandler.CreateRoles)
 	app.Get("/roles/:id<int>", roleHandler.GetRoleByID())
+	app.Patch("/roles/:id<int>", roleHandler.UpdateRoleByID)
 	app.Delete("/roles/:id<int>", roleHandler.DeleteRolesByID)
 
 	// department
@@ -185,6 +193,7 @@ func main() {
 	app.Get("/departments", departmentHandler.GetAllDepartments)
 	app.Get("/departments/:id<int>", departmentHandler.GetDepartmentByID)
 	app.Post("/departments", departmentHandler.CreateDepartments)
+	app.Patch("/departments/:id<int>", departmentHandler.UpdateDepartmentByID)
 	app.Delete("/departments/:id<int>", departmentHandler.DeleteDepartmentsByID)
 	// Device
 	deviceRepo := deviceRepo.NewDeviceRepository(db)
@@ -192,18 +201,25 @@ func main() {
 	deviceHandler := deviceHand.NewDeviceHandler(deviceService)
 	app.Get("/devices", deviceHandler.GetAllDevice)
 	app.Post("/devices", deviceHandler.CreateDevices)
+	app.Put("/devices/:id<int>", deviceHandler.UpdateDevices)
+	app.Patch("/devices/:id<int>", deviceHandler.UpdateDevices)
 	app.Delete("/devices/:id", deviceHandler.DeleteDevices)
 	// Device-Type
 	deviceTypeRepo := deviceTypeRepo.NewDeviceTypeRepository(db)
 	deviceTypeServ := deviceTypeServ.NewDeviceTypeService(deviceTypeRepo)
 	deviceTypeHandler := deviceTypeHand.NewDeviceTypeHandler(deviceTypeServ)
 	app.Get("/device-types", deviceTypeHandler.GetAllDeviceTypes)
+	app.Post("/device-types", deviceTypeHandler.CreateDeviceType)
+	app.Patch("/device-types/:id<int>", deviceTypeHandler.UpdateDeviceTypeByID)
+	app.Delete("/device-types/:id<int>", deviceTypeHandler.DeleteDeviceTypeByID)
 	// Device-Instance
 	deviceInstanceRepo := deviceInstanceRepo.NewDeviceInstanceRepository(db)
 	deviceInstanceServ := deviceInstanceServ.NewDeviceInstanceService(deviceInstanceRepo)
 	deviceInstanceHandler := deviceInstanceHand.NewDeviceInstanceHandler(deviceInstanceServ)
 	app.Get("/device-instances", deviceInstanceHandler.GetAllDeviceInstance)
 	app.Post("/device-instances", deviceInstanceHandler.Create)
+	app.Patch("/device-instances/:instanceID<int>", deviceInstanceHandler.UpdateDeviceInstanceByID)
+	app.Put("/device-instances/:instanceID<int>", deviceInstanceHandler.UpdateDeviceInstanceByID)
 	app.Delete("/device-instances/:instanceID<int>", deviceInstanceHandler.DeleteDeviceInstanceByID)
 	deviceInstanceQueryServ := deviceInstanceQueryServ.NewDeviceInstanceQueryService(deviceInstanceQueryRepo)
 	deviceInstanceQueryHand := deviceInstanceQueryHand.NewDeviceInstanceQueryHandler(deviceInstanceQueryServ)
@@ -214,6 +230,45 @@ func main() {
 	issueServ := issueServ.NewIssueService(issueRepo)
 	issueHandler := issueHand.NewIssueHandler(issueServ)
 	app.Get("/issue-categories", issueHandler.GetAllIssues)
+	app.Post("/issue-categories", issueHandler.CreateIssue)
+	app.Post("/issues-categories", issueHandler.CreateIssue)
+	app.Patch("/issue-categories/:id<int>", issueHandler.UpdateIssueByID)
+	app.Patch("/issues-categories/:id<int>", issueHandler.UpdateIssueByID)
+	app.Delete("/issue-categories/:id<int>", issueHandler.DeleteIssueByID)
+	app.Delete("/issues-categories/:id<int>", issueHandler.DeleteIssueByID)
+
+	app.Get("/technician/summary", func(c *fiber.Ctx) error {
+		type technicianSummary struct {
+			TechnicianID   int    `db:"technician_id" json:"technician_id"`
+			TechnicianName string `db:"technician_name" json:"technician_name"`
+			AssignedCount  int    `db:"assigned_count" json:"assigned_count"`
+			CompletedCount int    `db:"completed_count" json:"completed_count"`
+			OverdueCount   int    `db:"overdue_count" json:"overdue_count"`
+		}
+
+		summary := []technicianSummary{}
+		query := `
+			SELECT
+				u.id AS technician_id,
+				TRIM(CONCAT(COALESCE(u.first_name, ''), ' ', COALESCE(u.last_name, ''))) AS technician_name,
+				COUNT(t.id) AS assigned_count,
+				SUM(CASE WHEN t.status_id = 5 THEN 1 ELSE 0 END) AS completed_count,
+				SUM(CASE WHEN t.completed_at IS NOT NULL AND t.status_id = 4 AND t.completed_at + INTERVAL 3 DAY <= NOW() THEN 1 ELSE 0 END) AS overdue_count
+			FROM users u
+			LEFT JOIN tickets t
+				ON t.technician_id = u.id
+			WHERE u.role_id = 3
+			GROUP BY u.id, u.first_name, u.last_name
+			ORDER BY u.id
+		`
+
+		err := db.Select(&summary, query)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		}
+
+		return c.JSON(fiber.Map{"result": summary})
+	})
 
 	if err := app.Listen(":5011"); err != nil {
 		panic(err)

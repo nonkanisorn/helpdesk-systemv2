@@ -47,8 +47,12 @@ type DeviceResponse struct {
 }
 
 type DeviceRequest struct {
-	ID           int64   `json:"dev_id"`
-	Name         string  `json:"dev_name"`
-	Description  *string `json:"dev_description"`
-	DeviceTypeID int     `json:"dev_type"`
+	ID                int64   `json:"dev_id"`
+	Name              string  `json:"dev_name"`
+	NameAlias         string  `json:"name"`
+	NewDeviceName     string  `json:"newdevicename"`
+	Description       *string `json:"dev_description"`
+	DescriptionAlias  *string `json:"description"`
+	DeviceTypeID      int     `json:"dev_type"`
+	DeviceTypeIDAlias int     `json:"device_type_id"`
 }

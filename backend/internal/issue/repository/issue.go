@@ -6,4 +6,7 @@ type Issue struct {
 }
 type IssueRepository interface {
 	GetAll() ([]Issue, error)
+	Create(string) error
+	UpdateByID(int, string) error
+	DeleteByID(int) error
 }

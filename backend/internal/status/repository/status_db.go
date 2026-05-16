@@ -1,10 +1,6 @@
 package repository
 
-import (
-	"log"
-
-	"github.com/jmoiron/sqlx"
-)
+import "github.com/jmoiron/sqlx"
 
 type statusRepositoryDB struct {
 	db *sqlx.DB
@@ -43,11 +39,11 @@ func (s statusRepositoryDB) GetAll() ([]Status, error) {
 			id,
 			name
 		FROM ticket_statuses
+		ORDER BY id
 	`
 
 	err := s.db.Select(&status, query)
 	if err != nil {
-		log.Fatal(err)
 		return nil, err
 	}
 
@@ -71,6 +67,21 @@ func (s statusRepositoryDB) GetByID(id int) (*Status, error) {
 	}
 
 	return &status, nil
+}
+
+func (s statusRepositoryDB) UpdateByID(id int, statusName string) (*Status, error) {
+	query := `
+		UPDATE ticket_statuses
+		SET name = ?
+		WHERE id = ?
+	`
+
+	_, err := s.db.Exec(query, statusName, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.GetByID(id)
 }
 
 func (s statusRepositoryDB) DeleteByID(id int) error {

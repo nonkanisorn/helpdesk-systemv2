@@ -8,4 +8,6 @@ type RegisterRepository interface {
 	SetPassword(user *domain.Usertest) error
 	CheckToken(token string) (*domain.Usertest, error)
 	SaveToken(userID *int, token string) error
+	FindUserIDByEmail(email string) (*int, error)
+	MarkTokenUsed(token string) error
 }

@@ -33,8 +33,17 @@ func (d deviceInstanceService) GetAllDeviceInstance() ([]DeviceInstanceResponse,
 	return deviceInstanceResponse, nil
 }
 
-func (d deviceInstanceService) Create(deviceID int, departmentID int, serialNumber string) error {
+func (d deviceInstanceService) Create(deviceID int, departmentID *int, serialNumber string) error {
 	err := d.deviceInstanceRepo.Create(deviceID, departmentID, serialNumber)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (d deviceInstanceService) UpdateDeviceInstanceByID(id int, departmentID *int, serialNumber string) error {
+	err := d.deviceInstanceRepo.UpdateDeviceInstanceByID(id, departmentID, serialNumber)
 	if err != nil {
 		return err
 	}

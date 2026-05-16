@@ -6,4 +6,7 @@ type DeviceTypeResponse struct {
 }
 type DeviceTypeService interface {
 	GetAllDeviceType() ([]DeviceTypeResponse, error)
+	CreateDeviceType(string) error
+	UpdateDeviceTypeByID(int, string) error
+	DeleteDeviceTypeByID(int) error
 }

@@ -26,11 +26,15 @@ func (d deviceRepositoryDB) GetAll() ([]Device, error) {
 
 	query := `
 		SELECT 
-			id,
-			name,
-			description,
-			device_type_id
-		FROM devices
+			d.id,
+			d.name,
+			d.description,
+			COALESCE(d.device_type_id, 0) AS device_type_id,
+			COUNT(di.id) AS number_of_instance_device
+		FROM devices d
+		LEFT JOIN device_instances di ON di.device_id = d.id
+		GROUP BY d.id, d.name, d.description, d.device_type_id
+		ORDER BY d.id
 	`
 
 	err := d.db.Select(&devices, query)
@@ -67,8 +71,26 @@ func (d deviceRepositoryDB) Create(deviceName string, deviceDescription string, 
 	return nil
 }
 
+func (d deviceRepositoryDB) Update(deviceID int, deviceName string, deviceDescription string, deviceTypeID int) error {
+	query := `
+		UPDATE devices
+		SET
+			name = ?,
+			description = ?,
+			device_type_id = ?
+		WHERE id = ?
+	`
+
+	_, err := d.db.Exec(query, deviceName, deviceDescription, deviceTypeID, deviceID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (d deviceRepositoryDB) Delete(deviceID int) error {
-	query := "delete from devices where dev_id = ? "
+	query := "DELETE FROM devices WHERE id = ?"
 	_, err := d.db.Exec(query, deviceID)
 	if err != nil {
 		return err

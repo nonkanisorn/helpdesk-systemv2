@@ -48,7 +48,7 @@ function Detailcasetech() {
 
   const fetchTicket = async () => {
     try {
-      const response = await axios.get(`${apiUrl}/ticket/${ticket_id}`, {
+      const response = await axios.get(`${apiUrl}/tickets/${ticket_id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

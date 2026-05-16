@@ -42,8 +42,8 @@ function Statuscase() {
     2: "มอบหมายแล้ว",
     3: "อยู่ระหว่างดำเนินการ",
     4: "รอการยืนยันจากผู้ใช้",
-    5: "ปิดเคสแล้ว",
-    6: "ชะลอ – รออะไหล่",
+    5: "เสร็จสิ้น",
+    6: "รออะไหล่",
   };
 
   const statusColorMap = {
@@ -51,7 +51,15 @@ function Statuscase() {
     3: "warning",
     4: "primary",
     5: "success",
-    6: "secondary",
+    6: "warning",
+  };
+
+  const getRequesterName = (item) => {
+    const fullName = `${item.user_first_name ?? ""} ${
+      item.user_last_name ?? ""
+    }`.trim();
+
+    return item.name || fullName || item.user_email || "-";
   };
 
   const fetchTickets = async () => {
@@ -144,7 +152,7 @@ function Statuscase() {
             </Typography>
 
             <Typography variant="body2" color="text.secondary">
-              ติดตามงานที่มอบหมายแล้ว กำลังดำเนินการ รอการยืนยัน ปิดเคส
+              ติดตามงานที่มอบหมายแล้ว กำลังดำเนินการ รอการยืนยัน เสร็จสิ้น
               และรออะไหล่
             </Typography>
           </Box>
@@ -226,7 +234,7 @@ function Statuscase() {
                     </Typography>
                   </TableCell>
 
-                  <TableCell>{item.name || "-"}</TableCell>
+                  <TableCell>{getRequesterName(item)}</TableCell>
 
                   <TableCell>
                     <Chip
@@ -301,7 +309,7 @@ function Statuscase() {
                     ผู้แจ้ง
                   </Typography>
                   <Typography variant="body2" fontWeight={500}>
-                    {item.name || "-"}
+                    {getRequesterName(item)}
                   </Typography>
                 </Stack>
 

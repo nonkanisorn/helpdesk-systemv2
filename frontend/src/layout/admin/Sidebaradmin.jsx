@@ -175,13 +175,13 @@
 //   );
 // };
 // export default Sidebaradmin;
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useState } from "react";
 
 import { Sidebar, Menu, MenuItem } from "react-pro-sidebar";
-import { Box, IconButton, Typography, Avatar } from "@mui/material";
+import { Box, IconButton, Typography } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
+import ProfileInitialsAvatar from "../ProfileInitialsAvatar";
 
 /* ICONS */
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
@@ -198,42 +198,12 @@ const Sidebaradmin = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [toggled, setToggled] = useState(false);
   const [broken, setBroken] = useState(false);
-  const [url, setUrl] = useState("/assets/user.png");
 
   const location = useLocation();
 
-  const full_name = useSelector((state) => state.user.full_name);
-  const user_id = useSelector((state) => state.user.user_id);
-
-  useEffect(() => {
-    if (!user_id) return;
-
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(
-          `http://localhost:5011/users/${user_id}`,
-        );
-
-        const user = response.data[0];
-
-        if (!user.user_img || user.user_img.data.length === 0) {
-          setUrl("/assets/user.png");
-          return;
-        }
-
-        const array = new Uint8Array(user.user_img.data);
-        const blob = new Blob([array], { type: "image/jpeg" });
-        const imageUrl = URL.createObjectURL(blob);
-
-        setUrl(imageUrl);
-      } catch (error) {
-        console.log(error);
-        setUrl("/assets/user.png");
-      }
-    };
-
-    fetchData();
-  }, [user_id]);
+  const firstName = useSelector((state) => state.user.first_name);
+  const lastName = useSelector((state) => state.user.last_name);
+  const full_name = `${firstName ?? ""} ${lastName ?? ""}`.trim() || "-";
 
   const menuItems = [
     {
@@ -385,14 +355,7 @@ const Sidebaradmin = () => {
                   gap: 1.5,
                 }}
               >
-                <Avatar
-                  src={url}
-                  alt="profile-user"
-                  sx={{
-                    width: 48,
-                    height: 48,
-                  }}
-                />
+                <ProfileInitialsAvatar size={48} />
 
                 <Box>
                   <Typography

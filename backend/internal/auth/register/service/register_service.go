@@ -1,12 +1,8 @@
 package service
 
 import (
-
-	// "github.com/golang-jwt/jwt/v5"
-
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 
 	"github.com/nonkanisorn/helpdesk-system/internal/auth/register/repository"
 	"github.com/nonkanisorn/helpdesk-system/internal/domain"
@@ -72,8 +68,6 @@ func (r registerService) SetPassword(users *domain.Usertest, rawToken string) er
 		return err
 	}
 
-	fmt.Printf("%+v", *users.PasswordHash)
-
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(*users.PasswordHash), 10)
 	if err != nil {
 		return err
@@ -81,12 +75,41 @@ func (r registerService) SetPassword(users *domain.Usertest, rawToken string) er
 	// fmt.Println(passwordHash)
 	users.UserID = user.UserID
 	*users.PasswordHash = string(passwordHash)
-	// fmt.Println(*users.Password)
-	fmt.Println(*users.UserID)
-	fmt.Println("usesrs", users)
+
 	err = r.registerRepo.SetPassword(users)
 	if err != nil {
 		return err
 	}
+
+	err = r.registerRepo.MarkTokenUsed(hashedToken)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r registerService) RequestPasswordReset(email string) error {
+	userID, err := r.registerRepo.FindUserIDByEmail(email)
+	if err != nil {
+		return err
+	}
+
+	if userID == nil {
+		return nil
+	}
+
+	rawToken, err := r.gomailService.SendEmailResetPassword(email)
+	if err != nil {
+		return err
+	}
+
+	hashToken := sha256.Sum256([]byte(*rawToken))
+	hashedToken := hex.EncodeToString(hashToken[:])
+	err = r.registerRepo.SaveToken(userID, hashedToken)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

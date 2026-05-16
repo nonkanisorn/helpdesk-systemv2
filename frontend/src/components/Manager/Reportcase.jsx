@@ -35,10 +35,9 @@ function Reportcase() {
     1: "รอมอบหมาย",
     2: "มอบหมายแล้ว",
     3: "อยู่ระหว่างดำเนินการ",
-    4: "ช่างดำเนินการเสร็จแล้ว",
-    5: "รอการยืนยันจากผู้ใช้",
-    6: "ปิดเคสแล้ว",
-    7: "ชะลอ – รออะไหล่",
+    4: "รอการยืนยันจากผู้ใช้",
+    5: "เสร็จสิ้น",
+    6: "รออะไหล่",
   };
 
   const fetchTickets = async () => {
@@ -58,7 +57,7 @@ function Reportcase() {
   }, [token]);
 
   const handleOpenAssign = (ticketId) => {
-    navigate(`/manager/detail/${ticketId}`);
+    navigate(`/manager/ticket/assign/${ticketId}`);
   };
 
   const formatDate = (date) => {

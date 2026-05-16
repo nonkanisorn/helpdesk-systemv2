@@ -56,6 +56,18 @@ func (s statusService) GetStatusByID(id int) (*StatusResponse, error) {
 	}, nil
 }
 
+func (s statusService) UpdateStatusByID(id int, statusName string) (*StatusResponse, error) {
+	status, err := s.statusRepo.UpdateByID(id, statusName)
+	if err != nil {
+		return nil, err
+	}
+
+	return &StatusResponse{
+		ID:   status.ID,
+		Name: status.Name,
+	}, nil
+}
+
 func (s statusService) DeleteStatusByID(id int) error {
 	err := s.statusRepo.DeleteByID(id)
 	if err != nil {

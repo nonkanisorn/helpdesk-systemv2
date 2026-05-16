@@ -66,6 +66,26 @@ const ManageDevice = () => {
     }));
   };
 
+  const normalizeDevices = (payload) => {
+    const list = Array.isArray(payload)
+      ? payload
+      : (payload?.data ?? payload?.result ?? []);
+
+    return list.map((item) => ({
+      ...item,
+      dev_id: item.dev_id ?? item.id,
+      dev_name: item.dev_name ?? item.name,
+      dev_type: item.dev_type ?? item.device_type_id,
+      dev_description: item.dev_description ?? item.description ?? "",
+      numberofinstancedevice:
+        item.numberofinstancedevice ??
+        item.number_of_instance_device ??
+        item.instance_count ??
+        item.device_count ??
+        0,
+    }));
+  };
+
   const getDeviceTypeName = (typeId) => {
     const found = typeDevice.find(
       (item) => Number(item.devicetype_id) === Number(typeId),
@@ -105,7 +125,7 @@ const ManageDevice = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      setDevice(res.data.result ?? res.data.data ?? res.data ?? []);
+      setDevice(normalizeDevices(res.data));
     } catch (error) {
       console.error("Error fetching devices:", error);
     }
@@ -138,8 +158,11 @@ const ManageDevice = () => {
         `${apiUrl}/devices`,
         {
           dev_name: newDeviceName.trim(),
+          name: newDeviceName.trim(),
           dev_type: Number(newDeviceType),
+          device_type_id: Number(newDeviceType),
           dev_description: newDeviceDescription.trim(),
+          description: newDeviceDescription.trim(),
         },
         { headers: { Authorization: `Bearer ${token}` } },
       );
@@ -156,7 +179,10 @@ const ManageDevice = () => {
   };
 
   const handleOpenEditDialog = (item) => {
-    setSelectedDevice(item);
+    setSelectedDevice({
+      ...item,
+      devicetype_name: item.devicetype_name ?? getDeviceTypeName(item.dev_type),
+    });
     setEditDeviceName(item.dev_name ?? "");
     setEditDeviceType(item.dev_type ?? "");
     setEditDeviceDescription(item.dev_description ?? "");
@@ -178,9 +204,12 @@ const ManageDevice = () => {
       await axios.put(
         `${apiUrl}/devices/${selectedDevice.dev_id}`,
         {
-          newdevicename: editDeviceName.trim(),
+          dev_name: editDeviceName.trim(),
+          name: editDeviceName.trim(),
           dev_type: Number(editDeviceType),
+          device_type_id: Number(editDeviceType),
           dev_description: editDeviceDescription.trim(),
+          description: editDeviceDescription.trim(),
         },
         { headers: { Authorization: `Bearer ${token}` } },
       );

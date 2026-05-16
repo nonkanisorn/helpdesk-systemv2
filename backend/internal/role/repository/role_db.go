@@ -25,13 +25,28 @@ func (r roleRepositoryDB) GetAll() ([]Role, error) {
 }
 
 func (r roleRepositoryDB) GetByID(id int) (*Role, error) {
-	return nil, nil
+	role := Role{}
+	query := "select id, name from roles where id = ?"
+	err := r.db.Get(&role, query, id)
+	if err != nil {
+		return nil, err
+	}
+	return &role, nil
 }
 
 func (r roleRepositoryDB) Create(roleName string) error {
 	fmt.Println(roleName)
 	query := "insert into roles (name) values (?)"
 	_, err := r.db.Exec(query, roleName)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r roleRepositoryDB) UpdateByID(id int, roleName string) error {
+	query := "update roles set name = ? where id = ?"
+	_, err := r.db.Exec(query, roleName, id)
 	if err != nil {
 		return err
 	}

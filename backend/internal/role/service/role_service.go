@@ -30,11 +30,26 @@ func (r roleService) GetRole() ([]Role, error) {
 }
 
 func (r roleService) GetRoleByID(id int) (*Role, error) {
-	return nil, nil
+	role, err := r.roleRepo.GetByID(id)
+	if err != nil {
+		return nil, err
+	}
+	return &Role{
+		RoleID:   role.RoleID,
+		RoleName: role.RoleName,
+	}, nil
 }
 
 func (r roleService) CreateRoles(roleName string) error {
 	err := r.roleRepo.Create(roleName)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r roleService) UpdateRoleByID(id int, roleName string) error {
+	err := r.roleRepo.UpdateByID(id, roleName)
 	if err != nil {
 		return err
 	}

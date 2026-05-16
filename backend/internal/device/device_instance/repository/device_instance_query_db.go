@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -72,14 +71,13 @@ func (d deviceInstanceQueryRepositoryDB) GetDeviceInstanceByDeviceID(deviceID in
 			department_id
 		FROM device_instances
 		WHERE device_id = ?
+		ORDER BY device_number, id
 	`
 
 	err := d.db.Select(&deviceInstanceRows, query, deviceID)
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println("db", deviceInstanceRows)
 
 	for _, v := range deviceInstanceRows {
 		deviceInstances = append(deviceInstances, domain.DeviceInstance{

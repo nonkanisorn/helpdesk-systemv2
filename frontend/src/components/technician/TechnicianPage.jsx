@@ -14,9 +14,9 @@ import {
 import ConstructionRoundedIcon from "@mui/icons-material/ConstructionRounded";
 import PendingActionsRoundedIcon from "@mui/icons-material/PendingActionsRounded";
 import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
-import ErrorOutlineRoundedIcon from "@mui/icons-material/ErrorOutlineRounded";
+import AutorenewRoundedIcon from "@mui/icons-material/AutorenewRounded";
 
-import { blue, orange, green, red } from "@mui/material/colors";
+import { blue, orange, green, teal } from "@mui/material/colors";
 
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -33,9 +33,12 @@ function Technicianpage() {
   const summary = useMemo(() => {
     return {
       total: ticketData.length,
-      waitingConfirm: ticketData.filter((item) => item.status_id === 5).length,
-      completed: ticketData.filter((item) => item.status_id === 6).length,
-      overdue: ticketData.filter((item) => item.is_overdue === 1).length,
+      inProgress: ticketData.filter((item) => Number(item.status_id) === 3)
+        .length,
+      waitingConfirm: ticketData.filter((item) => Number(item.status_id) === 4)
+        .length,
+      completed: ticketData.filter((item) => Number(item.status_id) === 5)
+        .length,
     };
   }, [ticketData]);
 
@@ -128,11 +131,11 @@ function Technicianpage() {
 
             <Grid item xs={12} sm={6} md={3}>
               <PaperuiV2
-                title="เกินกำหนด"
-                number={summary.overdue}
+                title="กำลังดำเนินการ"
+                number={summary.inProgress}
                 icon={
-                  <ErrorOutlineRoundedIcon
-                    sx={{ fontSize: 50, color: red[500] }}
+                  <AutorenewRoundedIcon
+                    sx={{ fontSize: 50, color: teal[500] }}
                   />
                 }
               />
@@ -213,8 +216,12 @@ function Technicianpage() {
                         variant="outlined"
                       />
 
-                      {item.is_overdue === 1 && (
-                        <Chip label="เกินกำหนด" size="small" color="error" />
+                      {Number(item.status_id) === 3 && (
+                        <Chip
+                          label="กำลังดำเนินการ"
+                          size="small"
+                          color="info"
+                        />
                       )}
                     </Stack>
                   </Stack>

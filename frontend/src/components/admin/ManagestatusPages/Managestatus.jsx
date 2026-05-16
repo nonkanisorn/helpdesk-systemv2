@@ -66,7 +66,7 @@ function Managestatus() {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`${apiUrl}/Status/${statusId}`, {
+      await axios.delete(`${apiUrl}/status/${statusId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -177,7 +177,7 @@ function Managestatus() {
                         <Button
                           variant="outlined"
                           size="small"
-                          onClick={() => handleOpenEdit(item.status_id)}
+                          onClick={() => handleOpenEdit(item)}
                         >
                           แก้ไข
                         </Button>

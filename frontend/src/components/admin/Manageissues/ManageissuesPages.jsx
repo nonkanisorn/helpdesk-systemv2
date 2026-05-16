@@ -180,7 +180,7 @@ function ManageissuesPages() {
                           variant="outlined"
                           size="small"
                           onClick={() =>
-                            handleOpenEditIssuesCategoriesDialog(item.issues_id)
+                            handleOpenEditIssuesCategoriesDialog(item)
                           }
                         >
                           แก้ไข

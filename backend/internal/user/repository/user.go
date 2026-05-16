@@ -54,17 +54,29 @@ type User struct {
 	Status       *string `db:"status"`
 }
 
+type UserUpdate struct {
+	PasswordHash *string
+	FirstName    string
+	LastName     string
+	Email        string
+	Phone        string
+	RoleID       int
+	DepartmentID int
+	Status       string
+}
+
 type UserWithRolesName struct {
-	ID           int     `db:"id"`
-	PasswordHash string  `db:"password_hash"`
-	FirstName    *string `db:"first_name"`
-	LastName     *string `db:"last_name"`
-	Email        *string `db:"email"`
-	Phone        *string `db:"phone"`
-	RoleID       int     `db:"role_id"`
-	RoleName     string  `db:"role_name"`
-	DepartmentID int     `db:"department_id"`
-	Status       *string `db:"status"`
+	ID             int     `db:"id"`
+	PasswordHash   string  `db:"password_hash"`
+	FirstName      *string `db:"first_name"`
+	LastName       *string `db:"last_name"`
+	Email          *string `db:"email"`
+	Phone          *string `db:"phone"`
+	RoleID         int     `db:"role_id"`
+	RoleName       string  `db:"role_name"`
+	DepartmentID   int     `db:"department_id"`
+	DepartmentName *string `db:"department_name"`
+	Status         *string `db:"status"`
 }
 
 type UserTechinicianRolesRow struct {
@@ -81,6 +93,8 @@ type UserTechinicianRolesRow struct {
 type UserRepository interface {
 	GetAll() ([]User, error)
 	GetByID(int) (*User, error)
+	UpdateByID(int, UserUpdate) error
+	UpdateStatusByID(int, string) error
 	DeleteByID(int) error
 }
 

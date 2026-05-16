@@ -49,7 +49,7 @@ func (t ticketQueryRepository) UpdateStatusTicket(updateTicketRow *UpdateTicketR
 		setClauses = append(setClauses, "technician_id = ? ")
 		args = append(args, *updateTicketRow.TechnicianID)
 	}
-	query := fmt.Sprintf("UPDATE tickets SET %v where ticket_id = ? ", strings.Join(setClauses, ", "))
+	query := fmt.Sprintf("UPDATE tickets SET %v where id = ? ", strings.Join(setClauses, ", "))
 	args = append(args, updateTicketRow.TicketID)
 	_, err := t.db.Exec(query, args...)
 	if err != nil {
@@ -60,7 +60,7 @@ func (t ticketQueryRepository) UpdateStatusTicket(updateTicketRow *UpdateTicketR
 
 func (t ticketQueryRepository) AssignTechToTickets(techID int, managerID int, tikcetID int) error {
 	statusID := 2
-	query := "update tickets t set technician_id = ?, manager_id = ?, status_id = ? , assigned_at = NOW() where ticket_id = ?"
+	query := "update tickets t set technician_id = ?, manager_id = ?, status_id = ? , assigned_at = NOW() where id = ?"
 	_, err := t.db.Exec(query, techID, managerID, statusID, tikcetID)
 	if err != nil {
 		return err
@@ -70,7 +70,30 @@ func (t ticketQueryRepository) AssignTechToTickets(techID int, managerID int, ti
 
 func (t ticketQueryRepository) GetTicketForTechnicianByTicketID(ticketID int) (*TicketsForTechnicianRow, error) {
 	var ticket TicketsForTechnicianRow
-	query := "select t.ticket_id,u.first_name ,u.last_name  ,u.phone, t.description ,t.title ,t.created_at,t.assigned_at,t.completed_at ,t.closed_at  ,d.dep_name, ic.issue_name  from tickets t  join users u on t.user_id = u.id join departments d on u.department_id = d.dep_id join issue_categories ic    on t.issue_categories_id  = ic.id     where t.ticket_id  = ?"
+	query := `
+		SELECT 
+			t.id AS ticket_id,
+			u.first_name,
+			u.last_name,
+			u.phone,
+			t.description,
+			t.title,
+			t.created_at,
+			t.assigned_at,
+			t.started_at,
+			t.completed_at,
+			t.closed_at,
+			d.name AS dep_name,
+			ic.name AS issue_name
+		FROM tickets t
+		JOIN users u
+			ON t.user_id = u.id
+		JOIN departments d
+			ON u.department_id = d.id
+		JOIN issue_categories ic
+			ON t.issue_category_id = ic.id
+		WHERE t.id = ?
+	`
 	err := t.db.Get(&ticket, query, ticketID)
 	if err != nil {
 		return nil, err
@@ -177,7 +200,36 @@ func (t ticketQueryRepository) GetLatestTickets(userID int, limit int) ([]Ticket
 
 func (t ticketQueryRepository) GetTicketsByStatusID(statusID int) ([]TicketRow, error) {
 	var tickets []TicketRow
-	query := "SELECT * FROM tickets WHERE status_id = ? "
+	query := `
+		SELECT
+			t.id,
+			t.title,
+			t.description,
+			t.resolution_note,
+			t.issue_category_id,
+			t.device_instance_id,
+			t.user_id,
+			t.technician_id,
+			t.manager_id,
+			t.status_id,
+			t.created_at,
+			t.assigned_at,
+			t.started_at,
+			t.completed_at,
+			t.closed_at,
+			u.id AS user_id_join,
+			u.email AS user_username,
+			u.first_name AS user_first_name,
+			u.last_name AS user_last_name,
+			u.email AS user_email,
+			u.phone AS user_phone,
+			u.role_id AS user_role_id,
+			u.department_id AS user_department_id
+		FROM tickets t
+		JOIN users u
+			ON t.user_id = u.id
+		WHERE t.status_id = ?
+	`
 	err := t.db.Select(&tickets, query, statusID)
 	if err != nil {
 		return nil, err
@@ -268,7 +320,7 @@ func (t ticketQueryRepository) AutoCloseTickets(ticketID int) error {
 }
 
 func (t ticketQueryRepository) WaitingForPartByTechnicianID(ticketID int) error {
-	statusID := 5
+	statusID := 6
 	query := "UPDATE  tickets SET status_id = ?  WHERE id = ? "
 	_, err := t.db.Exec(query, statusID, ticketID)
 	if err != nil {

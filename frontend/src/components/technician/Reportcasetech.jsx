@@ -34,17 +34,16 @@ function Reportcasetech() {
     1: "งานใหม่",
     2: "ได้รับมอบหมาย",
     3: "กำลังดำเนินการ",
-    4: "บันทึกผลแล้ว",
-    5: "รอผู้ใช้ยืนยัน",
-    6: "ปิดงานแล้ว",
-    7: "รออะไหล่",
+    4: "รอผู้ใช้ยืนยัน",
+    5: "เสร็จสิ้น",
+    6: "รออะไหล่",
   };
 
   const statusChipProps = (statusId) => {
-    if (statusId === 6) return { color: "success", variant: "outlined" };
-    if (statusId === 3 || statusId === 7)
+    if (statusId === 5) return { color: "success", variant: "outlined" };
+    if (statusId === 3 || statusId === 6)
       return { color: "warning", variant: "outlined" };
-    if (statusId === 4 || statusId === 5)
+    if (statusId === 4)
       return { color: "info", variant: "outlined" };
 
     return { color: "default", variant: "outlined" };

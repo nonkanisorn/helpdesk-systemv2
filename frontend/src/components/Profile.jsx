@@ -2,241 +2,310 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import {
-  Box,
-  Typography,
-  Stack,
+  Alert,
   Avatar,
+  Box,
   Chip,
   Divider,
+  Paper,
   Skeleton,
-  Alert,
-  Grid,
+  Stack,
+  Typography,
 } from "@mui/material";
+import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
+import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
+import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
+import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
+import LocalPhoneOutlinedIcon from "@mui/icons-material/LocalPhoneOutlined";
+import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
+import {
+  getProfileGradient,
+  getProfileInitials,
+} from "../layout/ProfileInitialsAvatar";
 
 function Profile() {
-  const role_id = useSelector((state) => state.user.role);
-  const full_name = useSelector((state) => state.user.full_name);
-  const user_id = useSelector((state) => state.user.user_id);
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [url, setUrl] = useState("/assets/user.png");
-  const [dep, setDep] = useState("");
+  const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5011";
+  const token = useSelector((state) => state.user.token);
+  const userId = useSelector((state) => state.user.user_id);
+  const storedUser = useSelector((state) => state.user);
+
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const roleMeta = useMemo(() => {
+    const roleID = profile?.role_id ?? storedUser?.role_id;
+    const roleName = profile?.role_name;
     const map = {
-      1: { label: "Admin", chipColor: "error" },
-      2: { label: "Manager", chipColor: "warning" },
-      3: { label: "Technician", chipColor: "info" },
-      4: { label: "User", chipColor: "success" },
+      1: { label: roleName || "admin", color: "error" },
+      2: { label: roleName || "manager", color: "warning" },
+      3: { label: roleName || "technician", color: "info" },
+      4: { label: roleName || "user", color: "success" },
     };
-    return map[role_id] ?? { label: "Unknown", chipColor: "default" };
-  }, [role_id]);
+
+    return map[Number(roleID)] ?? { label: roleName || "-", color: "default" };
+  }, [profile, storedUser]);
+
+  const statusMeta = useMemo(() => {
+    const status = profile?.status || "pending";
+    const map = {
+      active: { label: "พร้อมใช้งาน", color: "success" },
+      pending: { label: "รอตั้งรหัสผ่าน", color: "warning" },
+      suspended: { label: "ปิดใช้งาน", color: "default" },
+      deleted: { label: "ถูกลบ", color: "error" },
+    };
+
+    return map[status] ?? { label: status, color: "default" };
+  }, [profile]);
+
+  const fullName = useMemo(() => {
+    const firstName = profile?.first_name ?? storedUser?.first_name ?? "";
+    const lastName = profile?.last_name ?? storedUser?.last_name ?? "";
+    const name = `${firstName} ${lastName}`.trim();
+
+    return name || "-";
+  }, [profile, storedUser]);
+
+  const initials = useMemo(() => {
+    const firstName = profile?.first_name ?? storedUser?.first_name ?? "";
+    const lastName = profile?.last_name ?? storedUser?.last_name ?? "";
+    return getProfileInitials(firstName, lastName, fullName);
+  }, [profile, storedUser, fullName]);
+
+  const avatarBackground = useMemo(() => {
+    const firstName = profile?.first_name ?? storedUser?.first_name ?? "";
+    const lastName = profile?.last_name ?? storedUser?.last_name ?? "";
+    const source = `${firstName}${lastName}${storedUser?.full_name ?? ""}${profile?.user_id ?? userId ?? ""}`;
+
+    return getProfileGradient(source);
+  }, [profile, storedUser]);
 
   useEffect(() => {
-    if (!user_id) return;
+    if (!token || !userId) {
+      setLoading(false);
+      return;
+    }
 
     let alive = true;
-    setLoading(true);
-    setError("");
 
-    const fetchdata = async () => {
+    const fetchProfile = async () => {
       try {
-        const res = await axios.get(`http://localhost:5011/users/${user_id}`);
-        const u = res.data?.[0];
-        if (!u) throw new Error("ไม่พบข้อมูลผู้ใช้");
+        setLoading(true);
+        setError("");
 
+        const response = await axios.get(`${apiUrl}/current-user/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const data = response.data?.result ?? response.data;
         if (!alive) return;
 
-        setDep(u.dep_name ?? "");
-        setEmail(u.email ?? "");
-        setPhone(u.phone ?? "");
-        const img = u.user_img;
-        if (!img || !img.data || img.data.length === 0) {
-          setUrl("/assets/user.png");
-        } else {
-          const array = new Uint8Array(img.data);
-          const blob = new Blob([array], { type: "image/jpeg" });
-          const objectUrl = URL.createObjectURL(blob);
-          setUrl(objectUrl);
-        }
-      } catch (e) {
-        console.log(e);
+        setProfile({
+          ...data,
+          department_id: data?.department_id ?? data?.dep_id,
+          department_name: data?.department_name ?? data?.dep_name,
+        });
+      } catch (err) {
+        console.error("Error fetching profile:", err);
         if (!alive) return;
-        setError("โหลดข้อมูลไม่สำเร็จ ลองรีเฟรชอีกครั้ง");
-        setUrl("/assets/user.png");
+        setError("โหลดข้อมูลโปรไฟล์ไม่สำเร็จ");
       } finally {
-        if (!alive) return;
-        setLoading(false);
+        if (alive) setLoading(false);
       }
     };
 
-    fetchdata();
+    fetchProfile();
 
     return () => {
       alive = false;
-      if (url?.startsWith("blob:")) URL.revokeObjectURL(url);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user_id]);
+  }, [apiUrl, token, userId]);
 
   return (
-    <Box sx={{ px: { xs: 2, md: 5 }, py: 4 }}>
-      {/* Header */}
+    <Box sx={{ p: { xs: 2, sm: 3 } }}>
       <Stack
         direction={{ xs: "column", sm: "row" }}
         justifyContent="space-between"
-        alignItems={{ xs: "flex-start", sm: "center" }}
-        spacing={1}
+        alignItems={{ xs: "stretch", sm: "center" }}
+        spacing={2}
         sx={{ mb: 3 }}
       >
         <Box>
-          <Typography variant="h4" fontWeight={900}>
+          <Typography variant="h5" fontWeight={700}>
             ข้อมูลส่วนตัว
           </Typography>
-          <Typography variant="body2" sx={{ opacity: 0.7 }}>
-            ข้อมูลบัญชีผู้ใช้งานของคุณ
+          <Typography color="text.secondary">
+            ข้อมูลบัญชีและสิทธิ์การใช้งานของคุณ
           </Typography>
         </Box>
 
-        <Chip
-          label={roleMeta.label}
-          color={roleMeta.chipColor}
-          variant="outlined"
-          sx={{ fontWeight: 800 }}
-        />
+        <Stack direction="row" spacing={1}>
+          <Chip
+            label={roleMeta.label}
+            color={roleMeta.color}
+            variant="outlined"
+            sx={{ fontWeight: 700 }}
+          />
+          <Chip
+            label={statusMeta.label}
+            color={statusMeta.color}
+            sx={{ fontWeight: 700 }}
+          />
+        </Stack>
       </Stack>
 
-      {error ? (
+      {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
-      ) : null}
+      )}
 
-      {/* Content (ไม่เป็น Card) */}
-      <Box
+      <Paper
+        elevation={2}
         sx={{
-          border: "1px solid rgba(0,0,0,0.08)",
-          borderRadius: 3,
           overflow: "hidden",
-          bgcolor: "background.paper",
+          borderRadius: 3,
+          border: "1px solid",
+          borderColor: "divider",
         }}
       >
-        {/* Top band */}
         <Box
           sx={{
-            px: 3,
+            px: { xs: 2, sm: 3 },
             py: 2,
-            bgcolor: "rgba(25,118,210,0.06)",
-            borderBottom: "1px solid rgba(0,0,0,0.06)",
+            bgcolor: "primary.main",
+            color: "primary.contrastText",
           }}
         >
-          <Typography fontWeight={800}>โปรไฟล์</Typography>
+          <Typography fontWeight={700}>โปรไฟล์ผู้ใช้งาน</Typography>
         </Box>
 
-        <Grid container>
-          {/* Left column */}
-          <Grid
-            item
-            xs={12}
-            md={4}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "320px 1fr" },
+          }}
+        >
+          <Box
             sx={{
-              p: 3,
-              borderRight: { md: "1px solid rgba(0,0,0,0.06)" },
-              borderBottom: { xs: "1px solid rgba(0,0,0,0.06)", md: "none" },
+              p: { xs: 2, sm: 3 },
+              borderRight: { md: "1px solid" },
+              borderBottom: { xs: "1px solid", md: "none" },
+              borderColor: "divider",
             }}
           >
-            <Stack spacing={2} alignItems={{ xs: "flex-start", md: "center" }}>
+            <Stack spacing={2} alignItems="center" textAlign="center">
               {loading ? (
-                <Skeleton variant="circular" width={110} height={110} />
+                <Skeleton variant="circular" width={112} height={112} />
               ) : (
                 <Avatar
-                  src={url}
                   sx={{
-                    width: 110,
-                    height: 110,
-                    border: "3px solid rgba(25,118,210,0.25)",
+                    width: 112,
+                    height: 112,
+                    fontSize: 36,
+                    fontWeight: 800,
+                    background: avatarBackground,
+                    boxShadow: "0 18px 38px rgba(15, 23, 42, 0.2)",
+                    border: "3px solid rgba(255, 255, 255, 0.9)",
                   }}
-                />
+                >
+                  {initials}
+                </Avatar>
               )}
 
               <Box sx={{ width: "100%" }}>
                 {loading ? (
                   <>
-                    <Skeleton width="70%" />
-                    <Skeleton width="50%" />
+                    <Skeleton width="70%" sx={{ mx: "auto" }} />
+                    <Skeleton width="45%" sx={{ mx: "auto" }} />
                   </>
                 ) : (
                   <>
-                    <Typography variant="h6" fontWeight={900}>
-                      {full_name || "-"}
+                    <Typography variant="h6" fontWeight={800}>
+                      {fullName}
                     </Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.7 }}>
-                      User ID: {user_id}
+                    <Typography color="text.secondary" fontSize={14}>
+                      User ID: {profile?.user_id ?? userId ?? "-"}
                     </Typography>
                   </>
                 )}
               </Box>
             </Stack>
-          </Grid>
+          </Box>
 
-          {/* Right column */}
-          <Grid item xs={12} md={8} sx={{ p: 3 }}>
+          <Box sx={{ p: { xs: 2, sm: 3 } }}>
             <Typography fontWeight={800} sx={{ mb: 1 }}>
               รายละเอียดบัญชี
             </Typography>
             <Divider sx={{ mb: 2 }} />
-            <Stack spacing={1.6}>
+
+            <Stack spacing={1}>
               <InfoRow
-                label="ชื่อผู้ใช้"
+                icon={<AccountCircleOutlinedIcon />}
+                label="ชื่อ-นามสกุล"
+                value={fullName}
                 loading={loading}
-                value={full_name || "-"}
               />
               <InfoRow
-                label="แผนก"
+                icon={<EmailOutlinedIcon />}
+                label="อีเมล"
+                value={profile?.email || "-"}
                 loading={loading}
-                value={dep ? dep : "ไม่มีแผนก"}
-              />
-              <InfoRow label="อีเมล" loading={loading} value={email || "-"} />
-              <InfoRow
-                label="เบอร์โทร"
-                loading={loading}
-                value={phone || "-"}
               />
               <InfoRow
-                label="ตำแหน่ง"
+                icon={<LocalPhoneOutlinedIcon />}
+                label="เบอร์โทรศัพท์"
+                value={profile?.phone || "-"}
                 loading={loading}
+              />
+              <InfoRow
+                icon={<BadgeOutlinedIcon />}
+                label="บทบาท"
                 value={roleMeta.label}
+                loading={loading}
+              />
+              <InfoRow
+                icon={<BusinessOutlinedIcon />}
+                label="แผนก"
+                value={profile?.department_name || "ไม่มีแผนก"}
+                loading={loading}
+              />
+              <InfoRow
+                icon={<VerifiedUserOutlinedIcon />}
+                label="สถานะบัญชี"
+                value={statusMeta.label}
+                loading={loading}
               />
             </Stack>
-          </Grid>
-        </Grid>
-      </Box>
+          </Box>
+        </Box>
+      </Paper>
     </Box>
   );
 }
 
-function InfoRow({ label, value, loading }) {
+function InfoRow({ icon, label, value, loading }) {
   return (
     <Box
       sx={{
         display: "grid",
-        gridTemplateColumns: { xs: "1fr", sm: "180px 1fr" },
-        gap: 1,
+        gridTemplateColumns: { xs: "1fr", sm: "220px 1fr" },
+        gap: { xs: 0.5, sm: 2 },
         alignItems: "center",
-        py: 1.1,
-        borderBottom: "1px dashed rgba(0,0,0,0.12)",
+        py: 1.25,
+        borderBottom: "1px dashed",
+        borderColor: "divider",
       }}
     >
-      <Typography variant="body2" sx={{ opacity: 0.7 }}>
-        {label}
-      </Typography>
+      <Stack direction="row" spacing={1} alignItems="center">
+        <Box sx={{ color: "text.secondary", display: "flex" }}>{icon}</Box>
+        <Typography color="text.secondary">{label}</Typography>
+      </Stack>
 
       {loading ? (
         <Skeleton width="60%" />
       ) : (
-        <Typography variant="body1" fontWeight={700}>
+        <Typography fontWeight={700} sx={{ wordBreak: "break-word" }}>
           {value}
         </Typography>
       )}

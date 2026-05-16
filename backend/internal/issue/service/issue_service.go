@@ -29,3 +29,15 @@ func (i issueService) GetAllIssues() ([]IssueResponse, error) {
 
 	return issuesResponse, nil
 }
+
+func (i issueService) CreateIssue(issueName string) error {
+	return i.IssueRepo.Create(issueName)
+}
+
+func (i issueService) UpdateIssueByID(id int, issueName string) error {
+	return i.IssueRepo.UpdateByID(id, issueName)
+}
+
+func (i issueService) DeleteIssueByID(id int) error {
+	return i.IssueRepo.DeleteByID(id)
+}

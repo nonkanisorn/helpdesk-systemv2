@@ -37,14 +37,15 @@ function Historycase() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const allowedStatus = [3, 4, 5];
+  const allowedStatus = [3, 4, 5, 6];
 
   const technicianStatusMap = {
     1: "เปิดงาน",
     2: "มอบหมายงาน",
     3: "กำลังดำเนินการ",
     4: "รอผู้ใช้ยืนยัน",
-    5: "ปิดงาน",
+    5: "เสร็จสิ้น",
+    6: "รออะไหล่",
   };
 
   const statusColorMap = {
@@ -53,6 +54,7 @@ function Historycase() {
     3: "warning",
     4: "secondary",
     5: "success",
+    6: "warning",
   };
 
   const fetchTickets = async () => {
@@ -183,7 +185,8 @@ function Historycase() {
               <MenuItem value="all">ทั้งหมด</MenuItem>
               <MenuItem value="3">กำลังดำเนินการ</MenuItem>
               <MenuItem value="4">รอผู้ใช้ยืนยัน</MenuItem>
-              <MenuItem value="5">ปิดงาน</MenuItem>
+              <MenuItem value="5">เสร็จสิ้น</MenuItem>
+              <MenuItem value="6">รออะไหล่</MenuItem>
             </Select>
           </FormControl>
         </Stack>

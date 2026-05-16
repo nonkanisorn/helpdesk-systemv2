@@ -36,14 +36,50 @@ func (d deviceInstanceHandler) Create(c *fiber.Ctx) error {
 			"error": err,
 		})
 	}
+	departmentID := req.DepartmentID
+	if departmentID == nil {
+		departmentID = req.DepartmentIDAlias
+	}
+
 	err = d.deviceInstanceServ.Create(req.DeviceID,
-		req.DepartmentID,
+		departmentID,
 		req.SerialNumber)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err,
 		})
 	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"success": true})
+}
+
+func (d deviceInstanceHandler) UpdateDeviceInstanceByID(c *fiber.Ctx) error {
+	instanceID, err := strconv.Atoi(c.Params("instanceID"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	var req domain.DeviceInstanceCreateRequest
+	err = c.BodyParser(&req)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	departmentID := req.DepartmentID
+	if departmentID == nil {
+		departmentID = req.DepartmentIDAlias
+	}
+
+	err = d.deviceInstanceServ.UpdateDeviceInstanceByID(instanceID, departmentID, req.SerialNumber)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"success": true})
 }
 

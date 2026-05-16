@@ -35,6 +35,7 @@ const DeviceDetailPages = () => {
   const token = useSelector((state) => state.user.token);
 
   const [deviceDetail, setDeviceDetail] = useState([]);
+  const [deviceInfo, setDeviceInfo] = useState(null);
   const [departments, setDepartments] = useState([]);
   const [error, setError] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -72,7 +73,25 @@ const DeviceDetailPages = () => {
     return [];
   };
 
-  const getInstanceId = (row) => row?.device_instance_id ?? row?.instance_id;
+  const normalizeInstances = (payload) =>
+    normalizeArray(payload).map((item) => ({
+      ...item,
+      device_instance_id: item.device_instance_id ?? item.instance_id ?? item.id,
+      instance_id: item.instance_id ?? item.device_instance_id ?? item.id,
+      dep_id: item.dep_id ?? item.department_id,
+      department_id: item.department_id ?? item.dep_id,
+    }));
+
+  const normalizeDevices = (payload) =>
+    normalizeArray(payload).map((item) => ({
+      ...item,
+      dev_id: item.dev_id ?? item.id,
+      dev_name: item.dev_name ?? item.name,
+      dev_description: item.dev_description ?? item.description,
+    }));
+
+  const getInstanceId = (row) =>
+    row?.device_instance_id ?? row?.instance_id ?? row?.id;
 
   const getDepartmentName = (depId) => {
     if (!depId) return "-";
@@ -93,7 +112,7 @@ const DeviceDetailPages = () => {
         },
       );
 
-      setDeviceDetail(normalizeArray(res.data));
+      setDeviceDetail(normalizeInstances(res.data));
       setError(null);
     } catch (err) {
       console.error("Error fetching device detail:", err);
@@ -105,6 +124,22 @@ const DeviceDetailPages = () => {
       }
 
       setError(err);
+    }
+  };
+
+  const fetchDeviceInfo = async () => {
+    try {
+      const res = await axios.get(`${apiUrl}/devices`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const devices = normalizeDevices(res.data);
+      setDeviceInfo(
+        devices.find((item) => Number(item.dev_id) === Number(deviceId)) ??
+          null,
+      );
+    } catch (err) {
+      console.error("Error fetching device info:", err);
     }
   };
 
@@ -122,7 +157,10 @@ const DeviceDetailPages = () => {
   };
 
   useEffect(() => {
-    if (token && deviceId) fetchDeviceDetail();
+    if (token && deviceId) {
+      fetchDeviceDetail();
+      fetchDeviceInfo();
+    }
   }, [token, deviceId, refreshKey]);
 
   useEffect(() => {
@@ -146,7 +184,7 @@ const DeviceDetailPages = () => {
     page * rowsPerPage + rowsPerPage,
   );
 
-  const deviceInfo = Array.isArray(deviceDetail) ? deviceDetail[0] : null;
+  const firstInstance = Array.isArray(deviceDetail) ? deviceDetail[0] : null;
 
   const openAdd = () => {
     resetAddForm({ serial_number: "", dep_id: "" });
@@ -183,6 +221,7 @@ const DeviceDetailPages = () => {
           device_id: deviceId,
           serial_number: data.serial_number.trim(),
           dep_id: data.dep_id ? Number(data.dep_id) : null,
+          department_id: data.dep_id ? Number(data.dep_id) : null,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -203,10 +242,11 @@ const DeviceDetailPages = () => {
 
     try {
       await axios.patch(
-        `${apiUrl}/device/instance/${getInstanceId(selectedInstance)}`,
+        `${apiUrl}/device-instances/${getInstanceId(selectedInstance)}`,
         {
           serial_number: data.serial_number.trim(),
           dep_id: data.dep_id ? Number(data.dep_id) : null,
+          department_id: data.dep_id ? Number(data.dep_id) : null,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -226,7 +266,7 @@ const DeviceDetailPages = () => {
     if (!shouldDelete) return;
 
     try {
-      await axios.delete(`${apiUrl}/device/instance/${getInstanceId(row)}`, {
+      await axios.delete(`${apiUrl}/device-instances/${getInstanceId(row)}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -510,7 +550,7 @@ const DeviceDetailPages = () => {
 
                   <Typography fontWeight={600}>
                     {deviceInfo?.dev_name ??
-                      deviceInfo?.device_name ??
+                      firstInstance?.device_name ??
                       `Device ID: ${deviceId}`}
                   </Typography>
                 </Box>
@@ -539,7 +579,7 @@ const DeviceDetailPages = () => {
                   }}
                 >
                   {deviceInfo?.dev_description ??
-                    deviceInfo?.device_description ??
+                    firstInstance?.device_description ??
                     "-"}
                 </Typography>
               </Box>
@@ -597,7 +637,7 @@ const DeviceDetailPages = () => {
                       >
                         <Button
                           component={Link}
-                          to={`/technician/instance/${getInstanceId(row)}/history`}
+                          to={`/manager/instance/${getInstanceId(row)}/history`}
                           variant="outlined"
                           size="small"
                           disabled={!getInstanceId(row)}
@@ -686,7 +726,7 @@ const DeviceDetailPages = () => {
 
                   <Button
                     component={Link}
-                    to={`/technician/instance/${getInstanceId(row)}/history`}
+                    to={`/manager/instance/${getInstanceId(row)}/history`}
                     variant="outlined"
                     fullWidth
                     disabled={!getInstanceId(row)}

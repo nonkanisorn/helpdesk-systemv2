@@ -66,6 +66,21 @@ func (d departmentRepositoryDB) Create(departmentName string) error {
 	return nil
 }
 
+func (d departmentRepositoryDB) UpdateByID(id int, departmentName string) error {
+	query := `
+		UPDATE departments
+		SET name = ?
+		WHERE id = ?
+	`
+
+	_, err := d.db.Exec(query, departmentName, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (d departmentRepositoryDB) DeleteByID(id int) error {
 	query := `
 		DELETE FROM departments

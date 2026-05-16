@@ -12,27 +12,35 @@ import { Button, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { Box } from "@mui/material";
 function Statuscase() {
-  const [ticketId, setticketId] = useState();
-  const [ticketDeviceId, setticketDeviceId] = useState();
   const user_id = useSelector((state) => state.user.user_id);
-  const status_id = 6;
+  const token = useSelector((state) => state.user.token);
+  const apiUrl = process.env.REACT_APP_API_URL;
   const [ticketData, setticketData] = useState([]);
   const [reFresh, setRefresh] = useState(true);
   const navigate = useNavigate();
-  console.log("deviceid", ticketDeviceId);
-  console.log("ticketData: ", ticketData);
-  console.log("id", ticketId);
-  const topagedetail = (ticket_id) => {
-    navigate(`/user/Detailticket/${ticket_id}`);
+
+  const statusMap = {
+    1: "แจ้งปัญหาใหม่",
+    2: "มอบหมายให้ช่าง",
+    3: "กำลังทำ",
+    4: "ทำเสร็จแล้วรอการยืนยัน",
+    5: "เสร็จสิ้น",
+    6: "รออะไหล่",
   };
-  const updatestatusticket = (ticket_id, ticket_device_id) => {
+
+  const topagedetail = (ticket_id) => {
+    navigate(`/user/repair-detail/${ticket_id}`);
+  };
+
+  const updatestatusticket = (ticket_id) => {
     axios
-      .patch(`http://localhost:5011/ticket/${user_id}/${ticket_id}`, {
-        ticket_id: ticketId,
-        ticket_device_id,
-        user_id,
-        status_id,
-      })
+      .patch(
+        `${apiUrl}/tickets/${ticket_id}/confirmation`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      )
       .then((result) => {
         console.log(result);
         setRefresh((prev) => !prev);
@@ -43,17 +51,21 @@ function Statuscase() {
   };
 
   useEffect(() => {
+    if (!token || !user_id) return;
+
     axios
-      .get(`http://localhost:5011/ticketuserstatus/${user_id}`)
+      .get(`${apiUrl}/tickets/users/${user_id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
       .then(function (response) {
-        setticketData(response.data);
+        setticketData(response.data.result ?? response.data ?? []);
         console.log(response.data);
       })
       .catch(function (error) {
         console.log(error);
       })
       .finally(function () {});
-  }, [reFresh]);
+  }, [apiUrl, reFresh, token, user_id]);
 
   return (
     <>
@@ -72,7 +84,7 @@ function Statuscase() {
           </TableHead>
           <TableBody>
             {ticketData.map((item, index) =>
-              item.status_id === 6 ? null : (
+              item.status_id === 5 ? null : (
                 <TableRow
                   key={index}
                   sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
@@ -83,7 +95,9 @@ function Statuscase() {
                   </TableCell>
 
                   <TableCell>{item.description}</TableCell>
-                  <TableCell>{item.status_name}</TableCell>
+                  <TableCell>
+                    {item.status_name ?? statusMap[item.status_id] ?? "-"}
+                  </TableCell>
                   <TableCell>
                     <Button
                       variant="contained"
@@ -93,15 +107,11 @@ function Statuscase() {
                     </Button>
                   </TableCell>
                   <TableCell>
-                    {item.status_id === 3 ? (
+                    {item.status_id === 4 ? (
                       <Button
                         onClick={() => {
                           if (window.confirm("ยืนยันการซ่อม")) {
-                            updatestatusticket(
-                              item.ticket_id,
-                              item.ticket_device_id,
-                            );
-                            setticketId(item.ticket_id);
+                            updatestatusticket(item.ticket_id);
                           }
                         }}
                         variant="contained"
@@ -109,7 +119,7 @@ function Statuscase() {
                       >
                         ยืนยันการซ่อม
                       </Button>
-                    ) : item.status_id !== 6 ? (
+                    ) : item.status_id !== 5 ? (
                       <Button variant="contained" color="error">
                         ยืนยันการซ่อม
                       </Button>

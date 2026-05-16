@@ -18,11 +18,13 @@ func ToResponse(d []domain.DeviceInstance) []domain.DeviceInstanceResponse {
 
 	for _, v := range d {
 		devicesInstance = append(devicesInstance, domain.DeviceInstanceResponse{
-			ID:           *v.ID,
-			DeviceID:     v.DeviceID,
-			SerialNumber: v.SerialNumber,
-			DeviceNumber: v.DeviceNumber,
-			DepartmentID: v.DepartmentID,
+			ID:                *v.ID,
+			InstanceID:        *v.ID,
+			DeviceID:          v.DeviceID,
+			SerialNumber:      v.SerialNumber,
+			DeviceNumber:      v.DeviceNumber,
+			DepartmentID:      v.DepartmentID,
+			DepartmentIDAlias: v.DepartmentID,
 		})
 	}
 

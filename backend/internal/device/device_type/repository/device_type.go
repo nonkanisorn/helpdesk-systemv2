@@ -6,4 +6,7 @@ type DeviceType struct {
 }
 type DeviceTypeRepository interface {
 	GetAll() ([]DeviceType, error)
+	Create(string) error
+	UpdateByID(int, string) error
+	DeleteByID(int) error
 }

@@ -149,7 +149,7 @@ function SetPasswordPage() {
                 fontWeight={700}
                 sx={{ fontSize: { xs: 24, sm: 28 } }}
               >
-                ตั้งรหัสผ่านครั้งแรก
+                ตั้งรหัสผ่านใหม่
               </Typography>
 
               <Typography
@@ -294,7 +294,7 @@ function SetPasswordPage() {
             >
               <MarkEmailReadOutlinedIcon fontSize="small" />
               <Typography fontSize={13.5}>
-                ลิงก์นี้ใช้สำหรับตั้งรหัสผ่านครั้งแรกเท่านั้น
+                ลิงก์นี้ใช้ได้ครั้งเดียวและมีเวลาจำกัด
               </Typography>
             </Stack>
           </Stack>

@@ -3,19 +3,22 @@ package domain
 import "time"
 
 type DeviceInstanceResponse struct {
-	ID           int     `json:"device_instance_id"`
-	DeviceID     *int    `json:"device_id"`
-	SerialNumber string  `json:"serial_number"`
-	DeviceNumber int     `json:"device_number"`
-	DeviceName   *string `json:"device_name"`
-	DepartmentID *int    `json:"dep_id"`
+	ID                int     `json:"device_instance_id"`
+	InstanceID        int     `json:"instance_id"`
+	DeviceID          *int    `json:"device_id"`
+	SerialNumber      string  `json:"serial_number"`
+	DeviceNumber      int     `json:"device_number"`
+	DeviceName        *string `json:"device_name"`
+	DepartmentID      *int    `json:"dep_id"`
+	DepartmentIDAlias *int    `json:"department_id"`
 }
 
 type DeviceInstanceCreateRequest struct {
-	DeviceID     int    `json:"device_id"`
-	DeviceNumber int    `json:"device_number"`
-	DepartmentID int    `json:"dep_id"`
-	SerialNumber string `json:"serial_number"`
+	DeviceID          int    `json:"device_id"`
+	DeviceNumber      int    `json:"device_number"`
+	DepartmentID      *int   `json:"dep_id"`
+	DepartmentIDAlias *int   `json:"department_id"`
+	SerialNumber      string `json:"serial_number"`
 }
 
 type DeviceInstance struct {

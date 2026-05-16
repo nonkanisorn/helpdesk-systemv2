@@ -53,6 +53,15 @@ func (d departmentService) CreateDepartments(departmentName string) error {
 	return nil
 }
 
+func (d departmentService) UpdateDepartmentByID(id int, departmentName string) error {
+	err := d.depRepo.UpdateByID(id, departmentName)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (d departmentService) DeleteDepartmentsByID(id int) error {
 	err := d.depRepo.DeleteByID(id)
 	if err != nil {

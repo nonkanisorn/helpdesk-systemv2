@@ -41,6 +41,26 @@ func (s statusHandler) GetStatusAll(c *fiber.Ctx) error {
 	return c.JSON(status)
 }
 
+func (s statusHandler) UpdateStatusByID(c *fiber.Ctx) error {
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return err
+	}
+
+	var statusRequest StatusRequest
+	err = c.BodyParser(&statusRequest)
+	if err != nil {
+		return err
+	}
+
+	status, err := s.statusServ.UpdateStatusByID(id, statusRequest.StatusName)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(status)
+}
+
 func (s statusHandler) DeleteStatusByID(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {

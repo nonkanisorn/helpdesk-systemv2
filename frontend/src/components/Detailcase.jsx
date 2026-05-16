@@ -37,6 +37,7 @@ function Detailcase() {
   const apiUrl = process.env.REACT_APP_API_URL;
 
   const [ticketData, setTicketData] = useState(null);
+  const [loadError, setLoadError] = useState("");
   const [loadingAction, setLoadingAction] = useState(false);
 
   const roleId = useSelector((state) => state.user.role_id);
@@ -69,11 +70,6 @@ function Detailcase() {
       icon: <CheckCircleOutlineRoundedIcon sx={{ color: green[700] }} />,
     },
     6: {
-      label: "ยกเลิก",
-      color: "error",
-      icon: <ErrorOutlineRoundedIcon sx={{ color: red[600] }} />,
-    },
-    7: {
       label: "รออะไหล่",
       color: "default",
       icon: <PrecisionManufacturingIcon sx={{ color: grey[700] }} />,
@@ -152,6 +148,7 @@ function Detailcase() {
 
   const fetchDetail = async () => {
     try {
+      setLoadError("");
       const res = await axios.get(`${apiUrl}/tickets-detail/${ticket_id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -159,6 +156,7 @@ function Detailcase() {
       setTicketData(res.data.result ?? res.data);
     } catch (error) {
       console.error("Error fetching ticket detail:", error);
+      setLoadError("ไม่สามารถโหลดรายละเอียดการซ่อมได้");
     }
   };
 
@@ -200,7 +198,7 @@ function Detailcase() {
 
       await axios.patch(
         `${apiUrl}/technician/${ticket_id}/waitingpart`,
-        { status_id: 7 },
+        { status_id: 6 },
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -240,10 +238,16 @@ function Detailcase() {
   if (!ticketData) {
     return (
       <Paper elevation={2} sx={{ p: 3, borderRadius: 3, textAlign: "center" }}>
-        <CircularProgress size={28} />
-        <Typography sx={{ mt: 2 }} color="text.secondary">
-          กำลังโหลดข้อมูล...
-        </Typography>
+        {loadError ? (
+          <Typography color="error">{loadError}</Typography>
+        ) : (
+          <>
+            <CircularProgress size={28} />
+            <Typography sx={{ mt: 2 }} color="text.secondary">
+              กำลังโหลดข้อมูล...
+            </Typography>
+          </>
+        )}
       </Paper>
     );
   }
@@ -606,7 +610,7 @@ function Detailcase() {
                     </Button>
                   )}
 
-                  {roleId === 3 && ticketData.status_id === 3 && (
+                  {roleId === 3 && [3, 6].includes(ticketData.status_id) && (
                     <>
                       <Button
                         component={Link}
@@ -618,19 +622,21 @@ function Detailcase() {
                         บันทึกการซ่อม
                       </Button>
 
-                      <Button
-                        variant="outlined"
-                        color="warning"
-                        fullWidth
-                        disabled={loadingAction}
-                        onClick={waitingForPartButton}
-                      >
-                        รออะไหล่
-                      </Button>
+                      {ticketData.status_id === 3 && (
+                        <Button
+                          variant="outlined"
+                          color="warning"
+                          fullWidth
+                          disabled={loadingAction}
+                          onClick={waitingForPartButton}
+                        >
+                          รออะไหล่
+                        </Button>
+                      )}
                     </>
                   )}
 
-                  {roleId === 3 && [4, 5, 6].includes(ticketData.status_id) && (
+                  {roleId === 3 && [4, 5].includes(ticketData.status_id) && (
                     <Button variant="contained" fullWidth disabled>
                       บันทึกการซ่อมแล้ว
                     </Button>

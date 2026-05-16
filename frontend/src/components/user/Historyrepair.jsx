@@ -27,9 +27,9 @@ function Historyrepair() {
   const userStatusGroups = {
     all: { label: "ทั้งหมด", ids: null },
     pending: { label: "รอดำเนินการ", ids: [1, 2] },
-    progress: { label: "อยู่ระหว่างซ่อม", ids: [3, 7] },
-    confirm: { label: "รอการยืนยัน", ids: [4, 5] },
-    done: { label: "เสร็จสิ้น", ids: [6] },
+    progress: { label: "อยู่ระหว่างซ่อม", ids: [3, 6] },
+    confirm: { label: "รอการยืนยัน", ids: [4] },
+    done: { label: "เสร็จสิ้น", ids: [5] },
   };
 
   const userStatusLabelMap = {
@@ -38,14 +38,14 @@ function Historyrepair() {
     3: "อยู่ระหว่างซ่อม",
     4: "รอการยืนยันจากคุณ",
     5: "เสร็จสิ้นแล้ว",
-    7: "รออะไหล่",
+    6: "รออะไหล่",
   };
 
   const chipPropsByStatus = (statusId) => {
-    if (statusId === 6) return { color: "success", variant: "outlined" };
-    if (statusId === 3 || statusId === 7)
+    if (statusId === 5) return { color: "success", variant: "outlined" };
+    if (statusId === 3 || statusId === 6)
       return { color: "warning", variant: "outlined" };
-    if (statusId === 4 || statusId === 5)
+    if (statusId === 4)
       return { color: "info", variant: "outlined" };
 
     return { color: "default", variant: "outlined" };
