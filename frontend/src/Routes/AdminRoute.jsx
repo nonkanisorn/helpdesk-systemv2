@@ -85,7 +85,6 @@ const AdminRoute = ({ children }) => {
   if (loading) {
     return null; // ไม่แสดงอะไรในขณะที่กำลังโหลด
   }
-  const text = "No permission";
   return ok ? (
     <Box
       className="app"
@@ -153,13 +152,13 @@ const AdminRoute = ({ children }) => {
             />
 
             <Route path="adduser" element={<Adduser />} />
-            <Route path="*" element={<Notfound404 text="ไม่มีpathนี้" />} />
+            <Route path="*" element={<Notfound404 />} />
           </Routes>
         </Box>
       </Box>
     </Box>
   ) : (
-    <Notfound404 text={text} />
+    <Notfound404 statusCode={403} />
   );
   // return ok ? (
   //   <div className="app">

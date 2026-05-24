@@ -10,11 +10,22 @@ import (
 )
 
 type roleHandler struct {
-	roleSrv service.RoleService
+	roleSrv       service.RoleService
+	permissionSrv interface {
+		SetRolePermissions(int, []int) error
+		SetRolePermissionsByNames(int, []string) error
+	}
 }
 
 func NewRoleHandler(roleSrv service.RoleService) roleHandler {
 	return roleHandler{roleSrv: roleSrv}
+}
+
+func NewRoleHandlerWithPermission(roleSrv service.RoleService, permissionSrv interface {
+	SetRolePermissions(int, []int) error
+	SetRolePermissionsByNames(int, []string) error
+}) roleHandler {
+	return roleHandler{roleSrv: roleSrv, permissionSrv: permissionSrv}
 }
 
 func (h roleHandler) GetRole(c *fiber.Ctx) error {
@@ -49,14 +60,27 @@ func (r roleHandler) CreateRoles(c *fiber.Ctx) error {
 		})
 	}
 	// fmt.Printf("%#v", roleName)
-	err = r.roleSrv.CreateRoles(roleRequest.RoleName)
+	roleID, err := r.roleSrv.CreateRoles(roleRequest.RoleName)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
+	if r.permissionSrv != nil {
+		if len(roleRequest.Permissions) > 0 {
+			err = r.permissionSrv.SetRolePermissionsByNames(roleID, roleRequest.Permissions)
+		} else {
+			err = r.permissionSrv.SetRolePermissions(roleID, roleRequest.PermissionIDs)
+		}
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"success": true,
+		"role_id": roleID,
 	})
 }
 
@@ -81,6 +105,18 @@ func (r roleHandler) UpdateRoleByID(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
 		})
+	}
+	if r.permissionSrv != nil {
+		if len(roleRequest.Permissions) > 0 {
+			err = r.permissionSrv.SetRolePermissionsByNames(id, roleRequest.Permissions)
+		} else if roleRequest.PermissionIDs != nil {
+			err = r.permissionSrv.SetRolePermissions(id, roleRequest.PermissionIDs)
+		}
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
 	}
 
 	return c.JSON(fiber.Map{"success": true})

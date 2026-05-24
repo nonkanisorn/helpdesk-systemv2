@@ -15,6 +15,7 @@ import Managedevice from "../components/technician/Managedevice.jsx";
 import DeviceDetailPages from "../components/technician/DeviceDetailPages";
 import Detailcase from "../components/Detailcase";
 import InstanceDeviceHistoryPage from "../components/technician/InstanceDeviceHistoryPage";
+import { hasAnyPermission } from "../auth/permissions";
 
 const TechnicianRoute = () => {
   const user = useSelector((state) => state.user);
@@ -23,8 +24,14 @@ const TechnicianRoute = () => {
     return <Navigate to="/login" replace />;
   }
 
-  if (user.role_id !== 3) {
-    return <Notfound404 text="No permission" />;
+  if (
+    !hasAnyPermission(user.permissions, [
+      "view_assigned_ticket",
+      "update_ticket_status",
+      "add_resolution_note",
+    ])
+  ) {
+    return <Notfound404 statusCode={403} />;
   }
 
   return (

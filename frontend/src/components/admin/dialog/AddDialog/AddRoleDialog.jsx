@@ -9,21 +9,67 @@ import {
   TextField,
   Typography,
   Stack,
+  Checkbox,
+  CircularProgress,
+  FormControlLabel,
+  FormGroup,
+  Paper,
 } from "@mui/material";
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  getPermissionDescription,
+  getPermissionLabel,
+} from "../../../../auth/permissionLabels";
 
 function AddRoleDialog({ token, open, onClose, onSuccess }) {
   const [roleName, setRoleName] = useState("");
+  const [permissions, setPermissions] = useState([]);
+  const [selectedPermissionIds, setSelectedPermissionIds] = useState([]);
+  const [loadingPermissions, setLoadingPermissions] = useState(false);
+  const [saving, setSaving] = useState(false);
   const apiUrl = process.env.REACT_APP_API_URL;
+
+  useEffect(() => {
+    if (!open || !token) return;
+
+    const fetchPermissions = async () => {
+      try {
+        setLoadingPermissions(true);
+        const response = await axios.get(`${apiUrl}/permissions`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setPermissions(response.data.result ?? response.data ?? []);
+      } catch (error) {
+        console.error("Error fetching permissions:", error);
+      } finally {
+        setLoadingPermissions(false);
+      }
+    };
+
+    fetchPermissions();
+  }, [apiUrl, open, token]);
+
+  const handlePermissionChange = (permissionId) => {
+    setSelectedPermissionIds((prev) =>
+      prev.includes(permissionId)
+        ? prev.filter((id) => id !== permissionId)
+        : [...prev, permissionId],
+    );
+  };
 
   const createRole = async (e) => {
     e.preventDefault();
+    if (!roleName.trim()) return;
 
     try {
+      setSaving(true);
       const response = await axios.post(
         `${apiUrl}/roles`,
-        { role_name: roleName },
+        {
+          role_name: roleName.trim(),
+          permission_ids: selectedPermissionIds,
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -33,17 +79,21 @@ function AddRoleDialog({ token, open, onClose, onSuccess }) {
       );
 
       setRoleName("");
+      setSelectedPermissionIds([]);
       onSuccess?.();
       onClose?.();
 
       console.log(response);
     } catch (error) {
       console.log(error);
+    } finally {
+      setSaving(false);
     }
   };
 
   const handleClose = () => {
     setRoleName("");
+    setSelectedPermissionIds([]);
     onClose?.();
   };
 
@@ -72,19 +122,64 @@ function AddRoleDialog({ token, open, onClose, onSuccess }) {
 
       <DialogContent dividers>
         <Box component="form" id="add-role-form" onSubmit={createRole}>
-          <TextField
-            label="ชื่อบทบาท"
-            id="role_name"
-            type="text"
-            value={roleName}
-            onChange={(e) => setRoleName(e.target.value)}
-            placeholder="เช่น Administrator"
-            fullWidth
-            autoFocus
-            required
-            helperText={!roleName.trim() ? "กรุณากรอกชื่อบทบาท" : " "}
-            error={!roleName.trim()}
-          />
+          <Stack spacing={2.5}>
+            <TextField
+              label="ชื่อบทบาท"
+              id="role_name"
+              type="text"
+              value={roleName}
+              onChange={(e) => setRoleName(e.target.value)}
+              placeholder="เช่น Administrator"
+              fullWidth
+              autoFocus
+              required
+              helperText={!roleName.trim() ? "กรุณากรอกชื่อบทบาท" : " "}
+              error={!roleName.trim()}
+              disabled={saving}
+            />
+
+            <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+              <Typography fontWeight={600} sx={{ mb: 1 }}>
+                สิทธิ์ของบทบาท
+              </Typography>
+
+              {loadingPermissions ? (
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <CircularProgress size={20} />
+                  <Typography variant="body2" color="text.secondary">
+                    กำลังโหลดสิทธิ์...
+                  </Typography>
+                </Stack>
+              ) : (
+                <FormGroup>
+                  {permissions.map((permission) => (
+                    <FormControlLabel
+                      key={permission.id}
+                      control={
+                        <Checkbox
+                          checked={selectedPermissionIds.includes(
+                            permission.id,
+                          )}
+                          onChange={() => handlePermissionChange(permission.id)}
+                          disabled={saving}
+                        />
+                      }
+                      label={
+                        <Box>
+                          <Typography variant="body2" fontWeight={500}>
+                            {getPermissionLabel(permission.name)}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {getPermissionDescription(permission)}
+                          </Typography>
+                        </Box>
+                      }
+                    />
+                  ))}
+                </FormGroup>
+              )}
+            </Paper>
+          </Stack>
         </Box>
       </DialogContent>
 
@@ -99,6 +194,7 @@ function AddRoleDialog({ token, open, onClose, onSuccess }) {
         <Button
           onClick={handleClose}
           color="inherit"
+          disabled={saving}
           sx={{ width: { xs: "100%", sm: "auto" } }}
         >
           ยกเลิก
@@ -108,10 +204,10 @@ function AddRoleDialog({ token, open, onClose, onSuccess }) {
           form="add-role-form"
           type="submit"
           variant="contained"
-          disabled={!roleName.trim()}
+          disabled={!roleName.trim() || saving}
           sx={{ width: { xs: "100%", sm: "auto" } }}
         >
-          เพิ่มบทบาท
+          {saving ? "กำลังเพิ่ม..." : "เพิ่มบทบาท"}
         </Button>
       </DialogActions>
     </Dialog>

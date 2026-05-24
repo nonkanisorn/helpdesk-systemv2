@@ -45,8 +45,7 @@ function Historyrepair() {
     if (statusId === 5) return { color: "success", variant: "outlined" };
     if (statusId === 3 || statusId === 6)
       return { color: "warning", variant: "outlined" };
-    if (statusId === 4)
-      return { color: "info", variant: "outlined" };
+    if (statusId === 4) return { color: "info", variant: "outlined" };
 
     return { color: "default", variant: "outlined" };
   };
@@ -102,7 +101,7 @@ function Historyrepair() {
         >
           <Stack spacing={0.5} sx={{ mb: 3 }}>
             <Typography variant="h5" fontWeight={600}>
-              ประวัติการซ่อมของฉัน
+              ประวัติการซ่อมแจ้งซ่อมของฉัน
             </Typography>
 
             <Typography variant="body2" color="text.secondary">

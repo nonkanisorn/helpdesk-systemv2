@@ -12,6 +12,8 @@ import {
   Chip,
   Divider,
   CircularProgress,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import DateRangeRoundedIcon from "@mui/icons-material/DateRangeRounded";
 import OutlinedFlagRoundedIcon from "@mui/icons-material/OutlinedFlagRounded";
@@ -29,6 +31,7 @@ import TimelineConnector from "@mui/lab/TimelineConnector";
 import TimelineContent from "@mui/lab/TimelineContent";
 import TimelineDot from "@mui/lab/TimelineDot";
 import { amber, blue, green, grey, orange, red } from "@mui/material/colors";
+import { hasPermission } from "../auth/permissions";
 
 function Detailcase() {
   const { ticket_id } = useParams();
@@ -39,9 +42,14 @@ function Detailcase() {
   const [ticketData, setTicketData] = useState(null);
   const [loadError, setLoadError] = useState("");
   const [loadingAction, setLoadingAction] = useState(false);
+  const [notification, setNotification] = useState({
+    open: false,
+    severity: "success",
+    message: "",
+  });
 
-  const roleId = useSelector((state) => state.user.role_id);
   const token = useSelector((state) => state.user.token);
+  const permissions = useSelector((state) => state.user.permissions);
 
   const statusMap = {
     1: {
@@ -227,9 +235,54 @@ function Detailcase() {
         },
       );
 
+      setNotification({
+        open: true,
+        severity: "success",
+        message: "ยืนยันการซ่อมสำเร็จ",
+      });
       await fetchDetail();
     } catch (error) {
       console.error("Error confirming repair:", error);
+      setNotification({
+        open: true,
+        severity: "error",
+        message: "ยืนยันการซ่อมไม่สำเร็จ",
+      });
+    } finally {
+      setLoadingAction(false);
+    }
+  };
+
+  const handleRejectRepairByUser = async () => {
+    const confirmReject = window.confirm(
+      "ต้องการส่งงานกลับไปให้เมเนเจอร์ตรวจสอบอีกครั้งใช่ไหม?",
+    );
+    if (!confirmReject) return;
+
+    try {
+      setLoadingAction(true);
+
+      await axios.patch(
+        `${apiUrl}/tickets/${ticket_id}/reject-repair`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      setNotification({
+        open: true,
+        severity: "success",
+        message: "ส่งคำขอตรวจสอบอีกครั้งให้เมเนเจอร์แล้ว",
+      });
+      await fetchDetail();
+    } catch (error) {
+      console.error("Error rejecting repair:", error);
+      setNotification({
+        open: true,
+        severity: "error",
+        message: "ส่งกลับให้เมเนเจอร์ไม่สำเร็จ",
+      });
     } finally {
       setLoadingAction(false);
     }
@@ -252,7 +305,20 @@ function Detailcase() {
     );
   }
 
-  const currentStatus = statusMap[ticketData.status_id] ?? {
+  const ticketStatusId = Number(ticketData.status_id);
+
+  const canAssignTicket = hasPermission(permissions, "assign_ticket");
+  const canUpdateTicketStatus = hasPermission(
+    permissions,
+    "update_ticket_status",
+  );
+  const canAddResolutionNote = hasPermission(
+    permissions,
+    "add_resolution_note",
+  );
+  const canConfirmRepair = hasPermission(permissions, "confirm_repair");
+
+  const currentStatus = statusMap[ticketStatusId] ?? {
     label: "ไม่ทราบสถานะ",
     color: "default",
     icon: null,
@@ -599,7 +665,7 @@ function Detailcase() {
                 </Typography>
 
                 <Stack spacing={1}>
-                  {roleId === 3 && ticketData.status_id === 2 && (
+                  {canUpdateTicketStatus && ticketStatusId === 2 && (
                     <Button
                       variant="contained"
                       fullWidth
@@ -610,7 +676,7 @@ function Detailcase() {
                     </Button>
                   )}
 
-                  {roleId === 3 && [3, 6].includes(ticketData.status_id) && (
+                  {canAddResolutionNote && [3, 6].includes(ticketStatusId) && (
                     <>
                       <Button
                         component={Link}
@@ -622,7 +688,7 @@ function Detailcase() {
                         บันทึกการซ่อม
                       </Button>
 
-                      {ticketData.status_id === 3 && (
+                      {canUpdateTicketStatus && ticketStatusId === 3 && (
                         <Button
                           variant="outlined"
                           color="warning"
@@ -636,25 +702,37 @@ function Detailcase() {
                     </>
                   )}
 
-                  {roleId === 3 && [4, 5].includes(ticketData.status_id) && (
+                  {canAddResolutionNote && [4, 5].includes(ticketStatusId) && (
                     <Button variant="contained" fullWidth disabled>
                       บันทึกการซ่อมแล้ว
                     </Button>
                   )}
 
-                  {roleId === 4 && ticketData.status_id === 4 && (
-                    <Button
-                      variant="contained"
-                      color="success"
-                      fullWidth
-                      disabled={loadingAction}
-                      onClick={handleUpdateStatusTicketByUser}
-                    >
-                      ยืนยันการซ่อม
-                    </Button>
+                  {canConfirmRepair && ticketStatusId === 4 && (
+                    <>
+                      <Button
+                        variant="contained"
+                        color="success"
+                        fullWidth
+                        disabled={loadingAction}
+                        onClick={handleUpdateStatusTicketByUser}
+                      >
+                        ยืนยันการซ่อม
+                      </Button>
+
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        fullWidth
+                        disabled={loadingAction}
+                        onClick={handleRejectRepairByUser}
+                      >
+                        ขอให้ตรวจสอบอีกครั้ง
+                      </Button>
+                    </>
                   )}
 
-                  {roleId === 2 && ticketData.status_id === 1 && (
+                  {canAssignTicket && ticketStatusId === 1 && (
                     <Button
                       variant="contained"
                       fullWidth
@@ -663,15 +741,16 @@ function Detailcase() {
                         navigate(`/manager/ticket/assign/${ticket_id}`)
                       }
                     >
-                      มอบหมายงาน
+                      มอบหมายช่าง
                     </Button>
                   )}
 
                   {!(
-                    (roleId === 3 &&
-                      [2, 3, 4, 5, 6].includes(ticketData.status_id)) ||
-                    (roleId === 4 && ticketData.status_id === 4) ||
-                    (roleId === 2 && ticketData.status_id === 1)
+                    (canUpdateTicketStatus && ticketStatusId === 2) ||
+                    (canAddResolutionNote &&
+                      [3, 4, 5, 6].includes(ticketStatusId)) ||
+                    (canConfirmRepair && ticketStatusId === 4) ||
+                    (canAssignTicket && ticketStatusId === 1)
                   ) && (
                     <Paper
                       variant="outlined"
@@ -692,6 +771,24 @@ function Detailcase() {
           </Grid>
         </Grid>
       </Stack>
+
+      <Snackbar
+        open={notification.open}
+        autoHideDuration={3500}
+        onClose={() => setNotification((prev) => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() =>
+            setNotification((prev) => ({ ...prev, open: false }))
+          }
+          severity={notification.severity}
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {notification.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

@@ -7,7 +7,7 @@ type Role struct {
 type RoleService interface {
 	GetRole() ([]Role, error)
 	GetRoleByID(int) (*Role, error)
-	CreateRoles(string) error
+	CreateRoles(string) (int, error)
 	UpdateRoleByID(int, string) error
 	DeleteRolesByID(int) error
 }

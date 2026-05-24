@@ -108,6 +108,7 @@ type TicketQueryRepository interface {
 
 	// ---- user part ----
 	ConfirmAndCloseTicketByUser(int) error
+	RejectRepairByUser(int) error
 	// ---- end user part ----
 	// ---- dashboard -----
 	GetTicketDetailByID(ticketID int) (*domain.TicketDetail, error)

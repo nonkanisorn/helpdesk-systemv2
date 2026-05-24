@@ -123,24 +123,25 @@ function SetPasswordPage() {
       >
         <Box component="form" onSubmit={handleSubmit}>
           <Stack spacing={3}>
-            <Box
-              sx={{
-                width: 56,
-                height: 56,
-                borderRadius: "50%",
-                bgcolor: success ? "#dcfce7" : "#e8f0fe",
-                color: success ? "#16a34a" : "#2563eb",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                mx: "auto",
-              }}
-            >
-              {success ? (
-                <CheckCircleOutlineIcon fontSize="medium" />
-              ) : (
-                <LockOutlinedIcon fontSize="medium" />
-              )}
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
+              <Box
+                sx={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: "50%",
+                  bgcolor: success ? "#dcfce7" : "#e8f0fe",
+                  color: success ? "#16a34a" : "#2563eb",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {success ? (
+                  <CheckCircleOutlineIcon fontSize="medium" />
+                ) : (
+                  <LockOutlinedIcon fontSize="medium" />
+                )}
+              </Box>
             </Box>
 
             <Box textAlign="center">

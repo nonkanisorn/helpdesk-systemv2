@@ -16,15 +16,17 @@ type Userold struct {
 	IsActive     int     `db:"is_active" json:"is_active"`
 }
 type User struct {
-	ID           int     `db:"id" json:"id"`
-	PasswordHash string  `db:"password_hash" json:"password"`
-	FirstName    *string `db:"first_name" json:"first_name"`
-	LastName     *string `db:"last_name" json:"last_name"`
-	Email        string  `db:"email" json:"email"`
-	Phone        string  `db:"phone" json:"phone"`
-	RoleID       int     `db:"role_id" json:"role_id"`
-	DepartmentID int     `db:"department_id" json:"department_id"`
-	Status       string  `db:"status" json:"status"`
+	ID           int      `db:"id" json:"id"`
+	PasswordHash string   `db:"password_hash" json:"password"`
+	FirstName    *string  `db:"first_name" json:"first_name"`
+	LastName     *string  `db:"last_name" json:"last_name"`
+	Email        string   `db:"email" json:"email"`
+	Phone        string   `db:"phone" json:"phone"`
+	RoleID       int      `db:"role_id" json:"role_id"`
+	RoleName     string   `db:"role_name" json:"role_name"`
+	DepartmentID int      `db:"department_id" json:"department_id"`
+	Status       string   `db:"status" json:"status"`
+	Permissions  []string `json:"permissions"`
 }
 type UserRequest struct {
 	Email    string `json:"email"`

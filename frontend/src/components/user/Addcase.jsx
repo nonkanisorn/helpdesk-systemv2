@@ -11,6 +11,8 @@ import {
   TextField,
   MenuItem,
   CircularProgress,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 
 function Addcase() {
@@ -21,6 +23,11 @@ function Addcase() {
   const [categories, setCategories] = useState([]);
   const [selectCategory, setSelectCategory] = useState("");
   const [loading, setLoading] = useState(false);
+  const [notification, setNotification] = useState({
+    open: false,
+    severity: "success",
+    message: "",
+  });
 
   const statusId = 1;
 
@@ -77,8 +84,18 @@ function Addcase() {
       setTitle("");
       setTicketDetail("");
       setSelectCategory("");
+      setNotification({
+        open: true,
+        severity: "success",
+        message: "แจ้งสำเร็จแล้ว",
+      });
     } catch (error) {
       console.error("Error creating ticket:", error);
+      setNotification({
+        open: true,
+        severity: "error",
+        message: "แจ้งไม่สำเร็จ",
+      });
     } finally {
       setLoading(false);
     }
@@ -197,6 +214,24 @@ function Addcase() {
           </Stack>
         </Box>
       </Paper>
+
+      <Snackbar
+        open={notification.open}
+        autoHideDuration={3500}
+        onClose={() => setNotification((prev) => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() =>
+            setNotification((prev) => ({ ...prev, open: false }))
+          }
+          severity={notification.severity}
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {notification.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

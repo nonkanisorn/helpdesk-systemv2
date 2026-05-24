@@ -56,8 +56,8 @@ function Reportcase() {
     if (token) fetchTickets();
   }, [token]);
 
-  const handleOpenAssign = (ticketId) => {
-    navigate(`/manager/ticket/assign/${ticketId}`);
+  const handleOpenDetail = (ticketId) => {
+    navigate(`/manager/detail/${ticketId}`);
   };
 
   const formatDate = (date) => {
@@ -157,9 +157,9 @@ function Reportcase() {
                     <Button
                       variant="contained"
                       size="small"
-                      onClick={() => handleOpenAssign(item.ticket_id)}
+                      onClick={() => handleOpenDetail(item.ticket_id)}
                     >
-                      มอบหมายช่าง
+                      ดูรายละเอียด
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -250,9 +250,9 @@ function Reportcase() {
                 <Button
                   variant="contained"
                   fullWidth
-                  onClick={() => handleOpenAssign(item.ticket_id)}
+                  onClick={() => handleOpenDetail(item.ticket_id)}
                 >
-                  มอบหมายช่าง
+                  ดูรายละเอียด
                 </Button>
               </Stack>
             </Paper>

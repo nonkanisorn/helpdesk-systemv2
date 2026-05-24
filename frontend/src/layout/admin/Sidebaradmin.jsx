@@ -182,6 +182,7 @@ import { Box, IconButton, Typography } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import ProfileInitialsAvatar from "../ProfileInitialsAvatar";
+import { hasPermission } from "../../auth/permissions";
 
 /* ICONS */
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
@@ -191,7 +192,6 @@ import ManageAccountsOutlinedIcon from "@mui/icons-material/ManageAccountsOutlin
 import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 import ApartmentOutlinedIcon from "@mui/icons-material/ApartmentOutlined";
 import DevicesOutlinedIcon from "@mui/icons-material/DevicesOutlined";
-import CategoryOutlinedIcon from "@mui/icons-material/CategoryOutlined";
 import ReportProblemOutlinedIcon from "@mui/icons-material/ReportProblemOutlined";
 
 const Sidebaradmin = () => {
@@ -203,6 +203,7 @@ const Sidebaradmin = () => {
 
   const firstName = useSelector((state) => state.user.first_name);
   const lastName = useSelector((state) => state.user.last_name);
+  const permissions = useSelector((state) => state.user.permissions);
   const full_name = `${firstName ?? ""} ${lastName ?? ""}`.trim() || "-";
 
   const menuItems = [
@@ -215,33 +216,42 @@ const Sidebaradmin = () => {
       title: "จัดการสมาชิก",
       path: "/admin/manageuser",
       icon: <ManageAccountsOutlinedIcon />,
+      permission: "manage_users",
     },
     {
       title: "จัดการบทบาท",
       path: "/admin/Managerole",
       icon: <AdminPanelSettingsOutlinedIcon />,
+      permission: "manage_roles",
     },
     {
       title: "จัดการสถานะ",
       path: "/admin/Managestatus",
       icon: <SettingsOutlinedIcon />,
+      permission: "manage_ticket_statuses",
     },
     {
       title: "จัดการแผนก",
       path: "/admin/Managedepartment",
       icon: <ApartmentOutlinedIcon />,
+      permission: "manage_departments",
     },
     {
       title: "จัดการประเภทอุปกรณ์",
       path: "/admin/Managetypedevice",
       icon: <DevicesOutlinedIcon />,
+      permission: "manage_devices",
     },
     {
       title: "จัดการประเภทปัญหา",
       path: "/admin/manage/issues-categories",
       icon: <ReportProblemOutlinedIcon />,
+      permission: "manage_issue_categories",
     },
   ];
+  const visibleMenuItems = menuItems.filter(
+    (item) => !item.permission || hasPermission(permissions, item.permission),
+  );
 
   return (
     <Box
@@ -301,7 +311,7 @@ const Sidebaradmin = () => {
                     justifyContent: "center",
                   }}
                 >
-                  <CategoryOutlinedIcon
+                  <SettingsOutlinedIcon
                     sx={{
                       color: "white",
                       fontSize: "18px",
@@ -408,7 +418,7 @@ const Sidebaradmin = () => {
                 }),
               }}
             >
-              {menuItems.map((item) => (
+              {visibleMenuItems.map((item) => (
                 <MenuItem
                   key={item.path}
                   active={location.pathname === item.path}

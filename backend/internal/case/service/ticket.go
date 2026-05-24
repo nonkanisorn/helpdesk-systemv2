@@ -18,6 +18,7 @@ type TicketQueryService interface {
 	// ---- end manager part ----
 	// ---- user part ----
 	ConfirmAndCloseTicketByUser(int) error
+	RejectRepairByUser(int) error
 	// ---- end user part ----
 	// ----dashboard----
 

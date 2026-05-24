@@ -253,6 +253,14 @@ func (t ticketQueryService) ConfirmAndCloseTicketByUser(ticketID int) error {
 	return nil
 }
 
+func (t ticketQueryService) RejectRepairByUser(ticketID int) error {
+	err := t.ticketRepo.RejectRepairByUser(ticketID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (t ticketQueryService) AutoCloseTickets() error {
 	ticketID, err := t.ticketRepo.GetTicketForAutoClose()
 	if err != nil {

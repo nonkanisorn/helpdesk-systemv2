@@ -19,6 +19,7 @@ import {
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import HeadsetMicOutlinedIcon from "@mui/icons-material/HeadsetMicOutlined";
+import { hasAnyPermission, hasPermission } from "../auth/permissions";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -45,30 +46,43 @@ function LoginPage() {
 
       const userData = {
         role_id: user.role_id,
+        role_name: user.role_name,
         token: response.data.token,
         first_name: user.first_name,
         last_name: user.last_name,
         user_id: user.id,
         department_id: user.department_id,
         status: user.status,
+        permissions: user.permissions ?? [],
       };
 
       dispatch(login(userData));
       localStorage.setItem("user", JSON.stringify(userData));
 
-      roleRedirects(user.role_id);
+      roleRedirects(userData);
     } catch (error) {
       console.error("There was an error logging in!", error);
       alert("เข้าสู่ระบบไม่สำเร็จ กรุณาตรวจสอบ Email และ Password");
     }
   };
 
-  const roleRedirects = (role) => {
-    if (role === 1) {
+  const roleRedirects = (userData) => {
+    const permissions = userData.permissions ?? [];
+
+    if (
+      hasAnyPermission(permissions, [
+        "manage_users",
+        "manage_roles",
+        "manage_departments",
+        "manage_ticket_statuses",
+      ])
+    ) {
       navigate("/admin/index");
-    } else if (role === 2) {
+    } else if (
+      hasAnyPermission(permissions, ["assign_ticket", "view_all_ticket"])
+    ) {
       navigate("/manager/index");
-    } else if (role === 3) {
+    } else if (hasPermission(permissions, "view_assigned_ticket")) {
       navigate("/technician/index");
     } else {
       navigate("/user");

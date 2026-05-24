@@ -31,6 +31,9 @@ import (
 	issueHand "github.com/nonkanisorn/helpdesk-system/internal/issue/handler"
 	issueRepo "github.com/nonkanisorn/helpdesk-system/internal/issue/repository"
 	issueServ "github.com/nonkanisorn/helpdesk-system/internal/issue/service"
+	permissionHand "github.com/nonkanisorn/helpdesk-system/internal/permission/handler"
+	permissionRepo "github.com/nonkanisorn/helpdesk-system/internal/permission/repository"
+	permissionServ "github.com/nonkanisorn/helpdesk-system/internal/permission/service"
 	roleHand "github.com/nonkanisorn/helpdesk-system/internal/role/handler"
 	roleRepo "github.com/nonkanisorn/helpdesk-system/internal/role/repository"
 	roleServ "github.com/nonkanisorn/helpdesk-system/internal/role/service"
@@ -87,6 +90,8 @@ func main() {
 	routes.RegisterLogin(app, h)
 	// gomail
 	gomailService := gomailServ.NewGomailService()
+	permissionRepo := permissionRepo.NewPermissionRepository(db)
+	permissionServ := permissionServ.NewPermissionService(permissionRepo)
 	// Auth
 
 	registerRepo := registerRepo.NewRegisterRepository(db)
@@ -98,12 +103,18 @@ func main() {
 	app.Post("/set-password", registerHandler.SetPassword)
 	// login
 	loginRepo := loginRepo.NewLoginRepository(db)
-	loginServ := loginServ.NewLoginService(loginRepo)
+	loginServ := loginServ.NewLoginService(loginRepo, permissionServ)
 	loginHandler := loginHand.NewLoginHandler(loginServ)
 	app.Post("/login", loginHandler.Login)
 	app.Use(jwtware.New(jwtware.Config{
 		SigningKey: jwtware.SigningKey{Key: []byte("secret")},
 	}))
+	require := func(permissionName string) fiber.Handler {
+		return middleware.RequirePermission(permissionServ, permissionName)
+	}
+	requireAny := func(permissionNames ...string) fiber.Handler {
+		return middleware.RequireAnyPermission(permissionServ, permissionNames...)
+	}
 	// case
 	// ticket
 	// note := "testeiei"
@@ -121,49 +132,50 @@ func main() {
 			time.Sleep(1 * time.Hour)
 		}
 	}()
-	app.Post("/tickets/status", ticketQueryHand.UpdateStatusTicket)
-	app.Patch("/tickets/:id<int>/assign-technician", ticketQueryHand.AssignTechToTicket)
-	app.Get("technician/:id<int>/tickets", ticketQueryHand.GetTicketsByTechnicianID)
-	app.Get("/tickets/:ticketID<int>/technician", ticketQueryHand.GetTicketForTechnicianByTicketID)
-	app.Get("/tickets/:userID<int>/latest/:limit<int>", ticketQueryHand.GetLatestTickets)
-	app.Get("/tickets/users/:userID<int>", ticketQueryHand.GetTicketsByUsersID)
-	app.Get("/tickets/status/:statusID<int>", ticketQueryHand.GetTicketsByStatusID)
-	app.Get("/tickets-detail/:ticketID<int>", ticketQueryHand.GetTicketDetailByID)
+	app.Post("/tickets/status", require("update_ticket_status"), ticketQueryHand.UpdateStatusTicket)
+	app.Patch("/tickets/:id<int>/assign-technician", require("assign_ticket"), ticketQueryHand.AssignTechToTicket)
+	app.Get("technician/:id<int>/tickets", require("view_assigned_ticket"), ticketQueryHand.GetTicketsByTechnicianID)
+	app.Get("/tickets/:ticketID<int>/technician", require("view_assigned_ticket"), ticketQueryHand.GetTicketForTechnicianByTicketID)
+	app.Get("/tickets/:userID<int>/latest/:limit<int>", require("view_own_ticket"), ticketQueryHand.GetLatestTickets)
+	app.Get("/tickets/users/:userID<int>", require("view_own_ticket"), ticketQueryHand.GetTicketsByUsersID)
+	app.Get("/tickets/status/:statusID<int>", require("view_all_ticket"), ticketQueryHand.GetTicketsByStatusID)
+	app.Get("/tickets-detail/:ticketID<int>", requireAny("view_own_ticket", "view_all_ticket", "view_assigned_ticket"), ticketQueryHand.GetTicketDetailByID)
 
-	app.Patch("technician/:ticketID<int>/start", ticketQueryHand.StartJobByTechnicianID)
-	app.Patch("technician/:ticketID<int>/complete", ticketQueryHand.CompletedJobByTechnician)
-	app.Patch("technician/:ticketID<int>/waitingpart", ticketQueryHand.WaitingForPartByTechnicianID)
-	app.Patch("/tickets/:ticketID<int>/confirmation", ticketQueryHand.ConfirmAndCloseTicketByUser)
+	app.Patch("technician/:ticketID<int>/start", require("update_ticket_status"), ticketQueryHand.StartJobByTechnicianID)
+	app.Patch("technician/:ticketID<int>/complete", require("add_resolution_note"), ticketQueryHand.CompletedJobByTechnician)
+	app.Patch("technician/:ticketID<int>/waitingpart", require("update_ticket_status"), ticketQueryHand.WaitingForPartByTechnicianID)
+	app.Patch("/tickets/:ticketID<int>/confirmation", require("confirm_repair"), ticketQueryHand.ConfirmAndCloseTicketByUser)
+	app.Patch("/tickets/:ticketID<int>/reject-repair", require("confirm_repair"), ticketQueryHand.RejectRepairByUser)
 
 	ticketRepo := ticketRepo.NewTicketRepository(db)
 	ticketServ := ticketServ.NewTicketService(ticketRepo)
 
 	ticketHand := ticketHand.NewTicketHandler(ticketServ)
 
-	app.Get("/tickets", ticketHand.GetAllTickets)
-	app.Post("/tickets", ticketHand.CreateTicket)
-	app.Get("/tickets/:ticketID<int>", ticketHand.GetTicketByID)
+	app.Get("/tickets", require("view_all_ticket"), ticketHand.GetAllTickets)
+	app.Post("/tickets", require("create_ticket"), ticketHand.CreateTicket)
+	app.Get("/tickets/:ticketID<int>", requireAny("view_own_ticket", "view_all_ticket", "view_assigned_ticket"), ticketHand.GetTicketByID)
 	// User
 	userRepo := userRepo.NewUserRepository(db)
 	userServ := userServ.NewUserService(userRepo)
 	userHand := userHand.NewUserHandler(userServ)
-	app.Get("/users", userHand.GetAllUsers)
-	app.Get("/users/:id<int>", userHand.GetUserByID)
-	app.Patch("/users/:id<int>", userHand.UpdateUserByID)
-	app.Patch("/users/isactive/:id<int>", userHand.UpdateUserStatusByID)
-	app.Delete("/users/:id<int>", userHand.DeleteUsersByID)
+	app.Get("/users", require("manage_users"), userHand.GetAllUsers)
+	app.Get("/users/:id<int>", require("manage_users"), userHand.GetUserByID)
+	app.Patch("/users/:id<int>", require("manage_users"), userHand.UpdateUserByID)
+	app.Patch("/users/isactive/:id<int>", require("manage_users"), userHand.UpdateUserStatusByID)
+	app.Delete("/users/:id<int>", require("manage_users"), userHand.DeleteUsersByID)
 	// CheckRoleAdmin
-	app.Get("/admin/ping", middleware.CheckRoleAdmin, func(c *fiber.Ctx) error {
+	app.Get("/admin/ping", require("manage_users"), func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
 			"sucess": true,
 		})
 	})
 	// User Query
 	userQueryRepo := userQueryRepo.NewUserQueryRepository(db)
-	userQueryServ := userQueryServ.NewUserQueryService(userQueryRepo)
+	userQueryServ := userQueryServ.NewUserQueryService(userQueryRepo, permissionServ)
 	userQueryHandler := userQueryHand.NewUserQueryHandler(userQueryServ)
-	app.Get("/users/by-role/:roleID<int>", userQueryHandler.GetUserByRolesID)
-	app.Get("/users/view", userQueryHandler.GetUserWithRolesName)
+	app.Get("/users/by-role/:roleID<int>", require("manage_users"), userQueryHandler.GetUserByRolesID)
+	app.Get("/users/view", require("manage_users"), userQueryHandler.GetUserWithRolesName)
 	app.Get("/current-user/:id<int>", userQueryHandler.GetCurrentUser)
 	// admin
 	// api.Get("/users", userHand.GetAllUsers)
@@ -172,18 +184,24 @@ func main() {
 	statusService := statusServ.NewStatusService(statusReposityDB)
 	statusHandlers := statusHand.NewStatusHandler(statusService)
 	app.Get("/status", statusHandlers.GetStatusAll)
-	app.Post("/status", statusHandlers.CreateStatus)
-	app.Patch("/status/:id", statusHandlers.UpdateStatusByID)
-	app.Delete("/status/:id", statusHandlers.DeleteStatusByID)
+	app.Post("/status", require("manage_ticket_statuses"), statusHandlers.CreateStatus)
+	app.Patch("/status/:id", require("manage_ticket_statuses"), statusHandlers.UpdateStatusByID)
+	app.Delete("/status/:id", require("manage_ticket_statuses"), statusHandlers.DeleteStatusByID)
 	// roles
 	roleReposityDB := roleRepo.NewRoleRepositoryDB(db)
 	roleService := roleServ.NewRoleService(roleReposityDB)
-	roleHandler := roleHand.NewRoleHandler(roleService)
+	roleHandler := roleHand.NewRoleHandlerWithPermission(roleService, permissionServ)
 	app.Get("/roles", roleHandler.GetRole)
-	app.Post("/roles", roleHandler.CreateRoles)
+	app.Post("/roles", require("manage_roles"), roleHandler.CreateRoles)
 	app.Get("/roles/:id<int>", roleHandler.GetRoleByID())
-	app.Patch("/roles/:id<int>", roleHandler.UpdateRoleByID)
-	app.Delete("/roles/:id<int>", roleHandler.DeleteRolesByID)
+	app.Patch("/roles/:id<int>", require("manage_roles"), roleHandler.UpdateRoleByID)
+	app.Delete("/roles/:id<int>", require("manage_roles"), roleHandler.DeleteRolesByID)
+
+	permissionHandler := permissionHand.NewPermissionHandler(permissionServ)
+	app.Get("/permissions", require("manage_roles"), permissionHandler.GetAllPermissions)
+	app.Get("/roles/:id<int>/permissions", require("manage_roles"), permissionHandler.GetRolePermissions)
+	app.Put("/roles/:id<int>/permissions", require("manage_roles"), permissionHandler.UpdateRolePermissions)
+	app.Patch("/roles/:id<int>/permissions", require("manage_roles"), permissionHandler.UpdateRolePermissions)
 
 	// department
 	departmentRepo := departmentRepo.NewDepartmentRepositoryDB(db)
@@ -192,50 +210,50 @@ func main() {
 	// fmt.Println(departmentServ.GetAllDepartments())
 	app.Get("/departments", departmentHandler.GetAllDepartments)
 	app.Get("/departments/:id<int>", departmentHandler.GetDepartmentByID)
-	app.Post("/departments", departmentHandler.CreateDepartments)
-	app.Patch("/departments/:id<int>", departmentHandler.UpdateDepartmentByID)
-	app.Delete("/departments/:id<int>", departmentHandler.DeleteDepartmentsByID)
+	app.Post("/departments", require("manage_departments"), departmentHandler.CreateDepartments)
+	app.Patch("/departments/:id<int>", require("manage_departments"), departmentHandler.UpdateDepartmentByID)
+	app.Delete("/departments/:id<int>", require("manage_departments"), departmentHandler.DeleteDepartmentsByID)
 	// Device
 	deviceRepo := deviceRepo.NewDeviceRepository(db)
 	deviceService := deviceServ.NewDeviceService(deviceRepo)
 	deviceHandler := deviceHand.NewDeviceHandler(deviceService)
-	app.Get("/devices", deviceHandler.GetAllDevice)
-	app.Post("/devices", deviceHandler.CreateDevices)
-	app.Put("/devices/:id<int>", deviceHandler.UpdateDevices)
-	app.Patch("/devices/:id<int>", deviceHandler.UpdateDevices)
-	app.Delete("/devices/:id", deviceHandler.DeleteDevices)
+	app.Get("/devices", requireAny("view_devices", "manage_devices"), deviceHandler.GetAllDevice)
+	app.Post("/devices", require("manage_devices"), deviceHandler.CreateDevices)
+	app.Put("/devices/:id<int>", require("manage_devices"), deviceHandler.UpdateDevices)
+	app.Patch("/devices/:id<int>", require("manage_devices"), deviceHandler.UpdateDevices)
+	app.Delete("/devices/:id", require("manage_devices"), deviceHandler.DeleteDevices)
 	// Device-Type
 	deviceTypeRepo := deviceTypeRepo.NewDeviceTypeRepository(db)
 	deviceTypeServ := deviceTypeServ.NewDeviceTypeService(deviceTypeRepo)
 	deviceTypeHandler := deviceTypeHand.NewDeviceTypeHandler(deviceTypeServ)
-	app.Get("/device-types", deviceTypeHandler.GetAllDeviceTypes)
-	app.Post("/device-types", deviceTypeHandler.CreateDeviceType)
-	app.Patch("/device-types/:id<int>", deviceTypeHandler.UpdateDeviceTypeByID)
-	app.Delete("/device-types/:id<int>", deviceTypeHandler.DeleteDeviceTypeByID)
+	app.Get("/device-types", requireAny("view_devices", "manage_devices"), deviceTypeHandler.GetAllDeviceTypes)
+	app.Post("/device-types", require("manage_devices"), deviceTypeHandler.CreateDeviceType)
+	app.Patch("/device-types/:id<int>", require("manage_devices"), deviceTypeHandler.UpdateDeviceTypeByID)
+	app.Delete("/device-types/:id<int>", require("manage_devices"), deviceTypeHandler.DeleteDeviceTypeByID)
 	// Device-Instance
 	deviceInstanceRepo := deviceInstanceRepo.NewDeviceInstanceRepository(db)
 	deviceInstanceServ := deviceInstanceServ.NewDeviceInstanceService(deviceInstanceRepo)
 	deviceInstanceHandler := deviceInstanceHand.NewDeviceInstanceHandler(deviceInstanceServ)
-	app.Get("/device-instances", deviceInstanceHandler.GetAllDeviceInstance)
-	app.Post("/device-instances", deviceInstanceHandler.Create)
-	app.Patch("/device-instances/:instanceID<int>", deviceInstanceHandler.UpdateDeviceInstanceByID)
-	app.Put("/device-instances/:instanceID<int>", deviceInstanceHandler.UpdateDeviceInstanceByID)
-	app.Delete("/device-instances/:instanceID<int>", deviceInstanceHandler.DeleteDeviceInstanceByID)
+	app.Get("/device-instances", requireAny("view_devices", "manage_devices"), deviceInstanceHandler.GetAllDeviceInstance)
+	app.Post("/device-instances", require("manage_devices"), deviceInstanceHandler.Create)
+	app.Patch("/device-instances/:instanceID<int>", require("manage_devices"), deviceInstanceHandler.UpdateDeviceInstanceByID)
+	app.Put("/device-instances/:instanceID<int>", require("manage_devices"), deviceInstanceHandler.UpdateDeviceInstanceByID)
+	app.Delete("/device-instances/:instanceID<int>", require("manage_devices"), deviceInstanceHandler.DeleteDeviceInstanceByID)
 	deviceInstanceQueryServ := deviceInstanceQueryServ.NewDeviceInstanceQueryService(deviceInstanceQueryRepo)
 	deviceInstanceQueryHand := deviceInstanceQueryHand.NewDeviceInstanceQueryHandler(deviceInstanceQueryServ)
-	app.Get("/device-instances/device/:deviceID<int>", deviceInstanceQueryHand.GetDeviceInstanceByDeviceID)
-	app.Get("/device-instances/history-repair/:deviceInstanceID<int>", deviceInstanceQueryHand.GetHistoryRepairDeviceInstanceByDeviceInstanceID)
+	app.Get("/device-instances/device/:deviceID<int>", requireAny("view_devices", "manage_devices"), deviceInstanceQueryHand.GetDeviceInstanceByDeviceID)
+	app.Get("/device-instances/history-repair/:deviceInstanceID<int>", requireAny("view_devices", "manage_devices"), deviceInstanceQueryHand.GetHistoryRepairDeviceInstanceByDeviceInstanceID)
 	// Issue
 	issueRepo := issueRepo.NewIssueRepository(db)
 	issueServ := issueServ.NewIssueService(issueRepo)
 	issueHandler := issueHand.NewIssueHandler(issueServ)
 	app.Get("/issue-categories", issueHandler.GetAllIssues)
-	app.Post("/issue-categories", issueHandler.CreateIssue)
-	app.Post("/issues-categories", issueHandler.CreateIssue)
-	app.Patch("/issue-categories/:id<int>", issueHandler.UpdateIssueByID)
-	app.Patch("/issues-categories/:id<int>", issueHandler.UpdateIssueByID)
-	app.Delete("/issue-categories/:id<int>", issueHandler.DeleteIssueByID)
-	app.Delete("/issues-categories/:id<int>", issueHandler.DeleteIssueByID)
+	app.Post("/issue-categories", require("manage_issue_categories"), issueHandler.CreateIssue)
+	app.Post("/issues-categories", require("manage_issue_categories"), issueHandler.CreateIssue)
+	app.Patch("/issue-categories/:id<int>", require("manage_issue_categories"), issueHandler.UpdateIssueByID)
+	app.Patch("/issues-categories/:id<int>", require("manage_issue_categories"), issueHandler.UpdateIssueByID)
+	app.Delete("/issue-categories/:id<int>", require("manage_issue_categories"), issueHandler.DeleteIssueByID)
+	app.Delete("/issues-categories/:id<int>", require("manage_issue_categories"), issueHandler.DeleteIssueByID)
 
 	app.Get("/technician/summary", func(c *fiber.Ctx) error {
 		type technicianSummary struct {

@@ -229,7 +229,7 @@ function Technicianpage() {
                   <Divider />
 
                   <Typography variant="body2" fontWeight={500}>
-                    {formatDate(item.created_at)}
+                    มอบหมายเมื่อ {formatDate(item.assigned_at || item.created_at)}
                   </Typography>
 
                   <Button

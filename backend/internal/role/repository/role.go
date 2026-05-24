@@ -7,7 +7,7 @@ type Role struct {
 type RoleRepository interface {
 	GetAll() ([]Role, error)
 	GetByID(int) (*Role, error)
-	Create(string) error
+	Create(string) (int, error)
 	UpdateByID(int, string) error
 	DeleteByID(int) error
 }

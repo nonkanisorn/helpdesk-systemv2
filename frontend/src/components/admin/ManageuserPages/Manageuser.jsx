@@ -27,6 +27,8 @@ import {
   FormControl,
   InputLabel,
   Select,
+  Alert,
+  Snackbar,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { useForm, Controller } from "react-hook-form";
@@ -69,6 +71,33 @@ function Manageuser() {
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [feedback, setFeedback] = useState({
+    open: false,
+    severity: "success",
+    message: "",
+  });
+
+  const showFeedback = (severity, message) => {
+    setFeedback({
+      open: true,
+      severity,
+      message,
+    });
+  };
+
+  const getErrorMessage = (error, fallback) => {
+    const responseError = error.response?.data?.error;
+    if (typeof responseError === "string" && responseError.trim()) {
+      return responseError;
+    }
+
+    const responseMessage = error.response?.data?.message;
+    if (typeof responseMessage === "string" && responseMessage.trim()) {
+      return responseMessage;
+    }
+
+    return fallback;
+  };
 
   const normalizeUsers = (payload) => {
     const list = Array.isArray(payload)
@@ -216,9 +245,17 @@ function Manageuser() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      showFeedback("success", "ลบผู้ใช้เรียบร้อยแล้ว");
       fetchUsers();
     } catch (error) {
       console.error("Error deleting user:", error);
+      showFeedback(
+        "error",
+        getErrorMessage(
+          error,
+          "ไม่สามารถลบผู้ใช้นี้ได้ เนื่องจากยังมีข้อมูลที่เกี่ยวข้องอยู่",
+        ),
+      );
     }
   };
 
@@ -244,10 +281,11 @@ function Manageuser() {
 
       reset(defaultValues);
       setOpenAddUserDialog(false);
+      showFeedback("success", "เพิ่มผู้ใช้เรียบร้อยแล้ว");
       fetchUsers();
     } catch (error) {
       console.error("Error creating user:", error.response?.data || error);
-      alert(error.response?.data?.error || "เพิ่มผู้ใช้ไม่สำเร็จ");
+      showFeedback("error", getErrorMessage(error, "เพิ่มผู้ใช้ไม่สำเร็จ"));
     } finally {
       setLoadingAddUser(false);
     }
@@ -842,6 +880,22 @@ function Manageuser() {
           />
         </Paper>
       </Box>
+
+      <Snackbar
+        open={feedback.open}
+        autoHideDuration={5000}
+        onClose={() => setFeedback((prev) => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          severity={feedback.severity}
+          variant="filled"
+          onClose={() => setFeedback((prev) => ({ ...prev, open: false }))}
+          sx={{ width: "100%" }}
+        >
+          {feedback.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 }

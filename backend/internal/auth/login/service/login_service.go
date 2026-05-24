@@ -7,15 +7,17 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/nonkanisorn/helpdesk-system/internal/auth/login/repository"
 	"github.com/nonkanisorn/helpdesk-system/internal/domain"
+	permissionService "github.com/nonkanisorn/helpdesk-system/internal/permission/service"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type loginService struct {
-	loginRepo repository.LoginRepository
+	loginRepo      repository.LoginRepository
+	permissionServ permissionService.PermissionService
 }
 
-func NewLoginService(loginRepo repository.LoginRepository) LoginService {
-	return loginService{loginRepo: loginRepo}
+func NewLoginService(loginRepo repository.LoginRepository, permissionServ permissionService.PermissionService) LoginService {
+	return loginService{loginRepo: loginRepo, permissionServ: permissionServ}
 }
 
 //	func (l loginService) Login(username string, password string) (*domain.User, *string, error) {
@@ -56,6 +58,12 @@ func (l loginService) Login(email string, password string) (*domain.User, *strin
 		fmt.Println("not compare")
 		return nil, nil, err
 	}
+
+	permissions, err := l.permissionServ.GetPermissionNamesByRoleID(user.RoleID)
+	if err != nil {
+		return nil, nil, err
+	}
+	user.Permissions = permissions
 
 	claims := jwt.MapClaims{
 		"user_id":    user.ID,

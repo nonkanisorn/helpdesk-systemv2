@@ -34,14 +34,18 @@ func (r roleRepositoryDB) GetByID(id int) (*Role, error) {
 	return &role, nil
 }
 
-func (r roleRepositoryDB) Create(roleName string) error {
+func (r roleRepositoryDB) Create(roleName string) (int, error) {
 	fmt.Println(roleName)
 	query := "insert into roles (name) values (?)"
-	_, err := r.db.Exec(query, roleName)
+	result, err := r.db.Exec(query, roleName)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	return nil
+	id, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+	return int(id), nil
 }
 
 func (r roleRepositoryDB) UpdateByID(id int, roleName string) error {

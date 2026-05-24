@@ -28,6 +28,7 @@ type UserRow struct {
 	Email        *string `db:"email"`
 	Phone        *string `db:"phone"`
 	RoleID       int     `db:"role_id"`
+	RoleName     string  `db:"role_name"`
 	DepartmentID int     `db:"department_id"`
 	Status       string  `db:"status"`
 }
@@ -46,6 +47,7 @@ func (u *UserRow) ToDomain() domain.User {
 		FirstName:    &u.FirstName,
 		LastName:     &u.LastName,
 		RoleID:       u.RoleID,
+		RoleName:     u.RoleName,
 		DepartmentID: u.DepartmentID,
 		Status:       u.Status,
 	}
@@ -79,17 +81,20 @@ func (l loginRepositoryDB) GetByEmail(email string) (*domain.User, error) {
 
 	query := `
 		SELECT 
-			id,
-			password_hash,
-			first_name,
-			last_name,
-			email,
-			phone,
-			role_id,
-			department_id,
-			status
-		FROM users
-		WHERE email = ?
+			u.id,
+			u.password_hash,
+			u.first_name,
+			u.last_name,
+			u.email,
+			u.phone,
+			COALESCE(u.role_id, 0) AS role_id,
+			COALESCE(r.name, '-') AS role_name,
+			COALESCE(u.department_id, 0) AS department_id,
+			u.status
+		FROM users u
+		LEFT JOIN roles r
+			ON u.role_id = r.id
+		WHERE u.email = ?
 	`
 	fmt.Println("db", email)
 	err := l.db.Get(&row, query, email)

@@ -61,12 +61,23 @@ import Notfound404 from "../components/Notfound404";
 import Statuscase from "../components/user/Statuscase";
 import Detailcasefinish from "../components/user/Detailcasefinish";
 import Detailcase from "../components/Detailcase";
+import { hasAnyPermission } from "../auth/permissions";
 
 const UserRoute = () => {
   const user = useSelector((state) => state.user);
 
   if (!user?.token) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (
+    !hasAnyPermission(user.permissions, [
+      "create_ticket",
+      "view_own_ticket",
+      "confirm_repair",
+    ])
+  ) {
+    return <Notfound404 statusCode={403} />;
   }
 
   return (

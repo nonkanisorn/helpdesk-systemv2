@@ -77,20 +77,21 @@ function ForgotPasswordPage() {
       >
         <CardContent sx={{ p: { xs: 3, sm: 5 } }}>
           <Stack spacing={3}>
-            <Box
-              sx={{
-                width: 64,
-                height: 64,
-                mx: "auto",
-                borderRadius: "18px",
-                background: "linear-gradient(135deg, #2563eb, #3b82f6)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: "0 12px 30px rgba(37, 99, 235, 0.25)",
-              }}
-            >
-              <LockResetOutlinedIcon sx={{ color: "white", fontSize: 34 }} />
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
+              <Box
+                sx={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: "18px",
+                  background: "linear-gradient(135deg, #2563eb, #3b82f6)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 12px 30px rgba(37, 99, 235, 0.25)",
+                }}
+              >
+                <LockResetOutlinedIcon sx={{ color: "white", fontSize: 34 }} />
+              </Box>
             </Box>
 
             <Box textAlign="center">

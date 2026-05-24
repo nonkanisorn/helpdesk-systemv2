@@ -2,15 +2,17 @@ package service
 
 import (
 	"github.com/nonkanisorn/helpdesk-system/internal/domain"
+	permissionService "github.com/nonkanisorn/helpdesk-system/internal/permission/service"
 	"github.com/nonkanisorn/helpdesk-system/internal/user/repository"
 )
 
 type userQueryService struct {
-	userQeryRepo repository.UserQueryRepository
+	userQeryRepo   repository.UserQueryRepository
+	permissionServ permissionService.PermissionService
 }
 
-func NewUserQueryService(userQueryRepo repository.UserQueryRepository) UserQueryService {
-	return userQueryService{userQeryRepo: userQueryRepo}
+func NewUserQueryService(userQueryRepo repository.UserQueryRepository, permissionServ permissionService.PermissionService) UserQueryService {
+	return userQueryService{userQeryRepo: userQueryRepo, permissionServ: permissionServ}
 }
 
 //	func (u userQueryService) GetUserWithRolesName() ([]UserResponseWithRoleName, error) {
@@ -91,6 +93,10 @@ func (u userQueryService) GetCurrentUser(userID int) (*UserResponseWithRoleName,
 	if err != nil {
 		return nil, err
 	}
+	permissions, err := u.permissionServ.GetPermissionNamesByRoleID(user.RoleID)
+	if err != nil {
+		return nil, err
+	}
 
 	userRes := UserResponseWithRoleName{
 		ID:                user.ID,
@@ -104,6 +110,7 @@ func (u userQueryService) GetCurrentUser(userID int) (*UserResponseWithRoleName,
 		DepartmentIDAlias: user.DepartmentID,
 		DepartmentName:    user.DepartmentName,
 		Status:            user.Status,
+		Permissions:       permissions,
 	}
 
 	return &userRes, nil

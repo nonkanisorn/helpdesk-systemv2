@@ -42,10 +42,11 @@ import Sidebartech from "./layout/tech/Sidebartech";
 import Testapi from "./components/Testapi";
 import SetPasswordPage from "./components/SetPasswordPage";
 import ForgotPasswordPage from "./components/ForgotPasswordPage";
+import { hasAnyPermission, hasPermission } from "./auth/permissions";
 function App() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const role_id = useSelector((state) => state.user.role_id);
+  const permissions = useSelector((state) => state.user.permissions);
   const [loading, setLoading] = useState(true); // เพิ่ม state สำหรับตรวจสอบการโหลด
   const checktimerepair = async () => {
     try {
@@ -54,24 +55,29 @@ function App() {
         .then((res) => {});
     } catch (error) {}
   };
-  const currentUser = async (idToken) => {
+  const currentUser = async (storedUser) => {
+    if (!storedUser?.token || !storedUser?.user_id) return null;
+
     try {
-      const res = await axios.post(
-        `${process.env.REACT_APP_API_URL}/current-user`,
-        {},
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URL}/current-user/${storedUser.user_id}`,
         {
           headers: {
-            authtoken: idToken,
+            Authorization: `Bearer ${storedUser.token}`,
           },
         },
       );
+      const user = res.data.result ?? res.data;
       dispatch(
         login({
-          username: res.data[0].username,
-          role: res.data[0].role_id,
-          token: idToken,
-          full_name: res.data[0].full_name,
-          user_id: res.data[0].user_id,
+          ...storedUser,
+          role_id: user.role_id,
+          role_name: user.role_name,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          user_id: user.user_id,
+          department_id: user.department_id ?? user.dep_id,
+          permissions: user.permissions ?? storedUser.permissions ?? [],
         }),
       );
       setLoading(false);
@@ -89,7 +95,7 @@ function App() {
     if (Token) {
       const idToken = JSON.parse(Token);
       dispatch(login(idToken));
-      currentUser(idToken.token)
+      currentUser(idToken)
         .catch(() => {})
         .finally(() => {
           setLoading(false);
@@ -104,16 +110,23 @@ function App() {
   return (
     <>
       <Routes>
-        <Route path="*" element={<Notfound404 text="ไม่มีpath" />} />
+        <Route path="*" element={<Notfound404 />} />
         <Route path="/" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/set-password/:token" element={<SetPasswordPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/403" element={<Notfound404 statusCode={403} />} />
+        <Route path="/404" element={<Notfound404 />} />
         <Route path="/testapi" element={<Testapi />} />
         <Route
           path="/profile"
           element={
-            role_id === 1 ? (
+            hasAnyPermission(permissions, [
+              "manage_users",
+              "manage_roles",
+              "manage_departments",
+              "manage_ticket_statuses",
+            ]) ? (
               <React.Fragment>
                 <div className="app">
                   <Sidebaradmin />
@@ -127,7 +140,10 @@ function App() {
                   </main>
                 </div>
               </React.Fragment>
-            ) : role_id === 2 ? (
+            ) : hasAnyPermission(permissions, [
+                "assign_ticket",
+                "view_all_ticket",
+              ]) ? (
               <React.Fragment>
                 <div className="app">
                   <Sidebarmanager />
@@ -141,7 +157,7 @@ function App() {
                   </main>
                 </div>
               </React.Fragment>
-            ) : role_id === 3 ? (
+            ) : hasPermission(permissions, "view_assigned_ticket") ? (
               <React.Fragment>
                 <div className="app">
                   <Sidebartech />
@@ -155,7 +171,11 @@ function App() {
                   </main>
                 </div>
               </React.Fragment>
-            ) : role_id === 4 ? (
+            ) : hasAnyPermission(permissions, [
+                "create_ticket",
+                "view_own_ticket",
+                "confirm_repair",
+              ]) ? (
               <React.Fragment>
                 <div className="app">
                   {/* <Sidebaruser /> */}
@@ -169,7 +189,9 @@ function App() {
                   </main>
                 </div>
               </React.Fragment>
-            ) : null
+            ) : (
+              <Notfound404 statusCode={403} />
+            )
           }
         />
         <Route path="/admin/*" element={<AdminRoute />} />

@@ -248,6 +248,26 @@ func (t ticketsQueryHandler) ConfirmAndCloseTicketByUser(c *fiber.Ctx) error {
 	})
 }
 
+func (t ticketsQueryHandler) RejectRepairByUser(c *fiber.Ctx) error {
+	ticketID, err := strconv.Atoi(c.Params("ticketID"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"error":   err.Error(),
+		})
+	}
+	err = t.ticketQueryServ.RejectRepairByUser(ticketID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"error":   err.Error(),
+		})
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"success": true,
+	})
+}
+
 func (t ticketsQueryHandler) WaitingForPartByTechnicianID(c *fiber.Ctx) error {
 	ticketID, err := strconv.Atoi(c.Params("ticketID"))
 	if err != nil {

@@ -169,6 +169,7 @@ import { Box, IconButton, Typography } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import ProfileInitialsAvatar from "../ProfileInitialsAvatar";
+import { hasAnyPermission, hasPermission } from "../../auth/permissions";
 
 /* ICONS */
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
@@ -187,6 +188,7 @@ const Sidebarmanager = () => {
 
   const firstName = useSelector((state) => state.user.first_name);
   const lastName = useSelector((state) => state.user.last_name);
+  const permissions = useSelector((state) => state.user.permissions);
   const full_name = `${firstName ?? ""} ${lastName ?? ""}`.trim() || "-";
 
   const menuItems = [
@@ -199,18 +201,26 @@ const Sidebarmanager = () => {
       title: "รายการแจ้งซ่อม",
       path: "/manager/reportticket",
       icon: <AssignmentOutlinedIcon />,
+      permission: "assign_ticket",
     },
     {
       title: "สถานะการซ่อม",
       path: "/manager/statusticket",
       icon: <BuildOutlinedIcon />,
+      permission: "view_all_ticket",
     },
     {
       title: "จัดการอุปกรณ์",
       path: "/manager/manage/device",
       icon: <DevicesOutlinedIcon />,
+      permissions: ["view_devices", "manage_devices"],
     },
   ];
+  const visibleMenuItems = menuItems.filter((item) => {
+    if (item.permission) return hasPermission(permissions, item.permission);
+    if (item.permissions) return hasAnyPermission(permissions, item.permissions);
+    return true;
+  });
 
   return (
     <Box
@@ -377,7 +387,7 @@ const Sidebarmanager = () => {
                 }),
               }}
             >
-              {menuItems.map((item) => (
+              {visibleMenuItems.map((item) => (
                 <MenuItem
                   key={item.path}
                   active={location.pathname === item.path}

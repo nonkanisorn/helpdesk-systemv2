@@ -299,6 +299,26 @@ func (t ticketQueryRepository) ConfirmAndCloseTicketByUser(ticketID int) error {
 	return nil
 }
 
+func (t ticketQueryRepository) RejectRepairByUser(ticketID int) error {
+	statusID := 1
+	query := `
+		UPDATE tickets
+		SET
+			status_id = ?,
+			technician_id = NULL,
+			assigned_at = NULL,
+			started_at = NULL,
+			completed_at = NULL,
+			closed_at = NULL
+		WHERE id = ?
+	`
+	_, err := t.db.Exec(query, statusID, ticketID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (t ticketQueryRepository) GetTicketForAutoClose() ([]int, error) {
 	var ticketID []int
 	query := "select id from tickets where completed_at is NOT NULL AND status_id = 4 AND completed_at + INTERVAL + 3 DAY <= NOW()"

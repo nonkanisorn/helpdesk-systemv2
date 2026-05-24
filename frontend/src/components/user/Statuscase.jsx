@@ -8,16 +8,24 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { useSelector } from "react-redux";
-import { Button, Typography } from "@mui/material";
+import { Alert, Button, Snackbar, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { Box } from "@mui/material";
+import { hasPermission } from "../../auth/permissions";
 function Statuscase() {
   const user_id = useSelector((state) => state.user.user_id);
   const token = useSelector((state) => state.user.token);
+  const permissions = useSelector((state) => state.user.permissions);
   const apiUrl = process.env.REACT_APP_API_URL;
   const [ticketData, setticketData] = useState([]);
   const [reFresh, setRefresh] = useState(true);
+  const [notification, setNotification] = useState({
+    open: false,
+    severity: "success",
+    message: "",
+  });
   const navigate = useNavigate();
+  const canConfirmRepair = hasPermission(permissions, "confirm_repair");
 
   const statusMap = {
     1: "แจ้งปัญหาใหม่",
@@ -43,10 +51,47 @@ function Statuscase() {
       )
       .then((result) => {
         console.log(result);
+        setNotification({
+          open: true,
+          severity: "success",
+          message: "ยืนยันการซ่อมสำเร็จ",
+        });
         setRefresh((prev) => !prev);
       })
       .catch((err) => {
         console.log(err);
+        setNotification({
+          open: true,
+          severity: "error",
+          message: "ยืนยันการซ่อมไม่สำเร็จ",
+        });
+      });
+  };
+
+  const rejectRepairTicket = (ticket_id) => {
+    axios
+      .patch(
+        `${apiUrl}/tickets/${ticket_id}/reject-repair`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      )
+      .then(() => {
+        setNotification({
+          open: true,
+          severity: "success",
+          message: "ส่งคำขอตรวจสอบอีกครั้งให้เมเนเจอร์แล้ว",
+        });
+        setRefresh((prev) => !prev);
+      })
+      .catch((err) => {
+        console.log(err);
+        setNotification({
+          open: true,
+          severity: "error",
+          message: "ส่งกลับให้เมเนเจอร์ไม่สำเร็จ",
+        });
       });
   };
 
@@ -83,8 +128,10 @@ function Statuscase() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {ticketData.map((item, index) =>
-              item.status_id === 5 ? null : (
+            {ticketData.map((item, index) => {
+              const statusId = Number(item.status_id);
+
+              return statusId === 5 ? null : (
                 <TableRow
                   key={index}
                   sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
@@ -96,7 +143,7 @@ function Statuscase() {
 
                   <TableCell>{item.description}</TableCell>
                   <TableCell>
-                    {item.status_name ?? statusMap[item.status_id] ?? "-"}
+                    {item.status_name ?? statusMap[statusId] ?? "-"}
                   </TableCell>
                   <TableCell>
                     <Button
@@ -107,30 +154,76 @@ function Statuscase() {
                     </Button>
                   </TableCell>
                   <TableCell>
-                    {item.status_id === 4 ? (
+                    {canConfirmRepair && statusId === 4 ? (
+                      <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                        <Button
+                          onClick={() => {
+                            if (window.confirm("ยืนยันการซ่อม")) {
+                              updatestatusticket(item.ticket_id);
+                            }
+                          }}
+                          variant="contained"
+                          color="success"
+                        >
+                          ยืนยันการซ่อม
+                        </Button>
+
+                        <Button
+                          onClick={() => {
+                            if (
+                              window.confirm(
+                                "ต้องการส่งงานกลับไปให้เมเนเจอร์ตรวจสอบอีกครั้งใช่ไหม?",
+                              )
+                            ) {
+                              rejectRepairTicket(item.ticket_id);
+                            }
+                          }}
+                          variant="outlined"
+                          color="error"
+                        >
+                          ขอให้ตรวจสอบอีกครั้ง
+                        </Button>
+                      </Box>
+                    ) : statusId !== 5 ? (
                       <Button
-                        onClick={() => {
-                          if (window.confirm("ยืนยันการซ่อม")) {
-                            updatestatusticket(item.ticket_id);
-                          }
-                        }}
                         variant="contained"
-                        color="success"
+                        color="error"
+                        onClick={() =>
+                          setNotification({
+                            open: true,
+                            severity: "error",
+                            message: "ยังไม่สามารถยืนยันการซ่อมได้",
+                          })
+                        }
                       >
-                        ยืนยันการซ่อม
-                      </Button>
-                    ) : item.status_id !== 5 ? (
-                      <Button variant="contained" color="error">
                         ยืนยันการซ่อม
                       </Button>
                     ) : null}
                   </TableCell>
                 </TableRow>
-              ),
-            )}
+              );
+            })}
           </TableBody>
         </Table>
       </TableContainer>
+
+      <Snackbar
+        open={notification.open}
+        autoHideDuration={3500}
+        onClose={() => setNotification((prev) => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() =>
+            setNotification((prev) => ({ ...prev, open: false }))
+          }
+          severity={notification.severity}
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {notification.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 }
