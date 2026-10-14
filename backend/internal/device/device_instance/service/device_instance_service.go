@@ -20,12 +20,15 @@ func (d deviceInstanceService) GetAllDeviceInstance() ([]DeviceInstanceResponse,
 
 	for _, device := range deviceInstances {
 		deviceInstance := DeviceInstanceResponse{
-			ID:           device.ID,
-			DeviceID:     device.DeviceID,
-			SerialNumber: device.SerialNumber,
-			DeviceNumber: device.DeviceNumber,
-			DepartmentID: device.DepartmentID,
-			Status:       device.Status,
+			ID:             device.ID,
+			DeviceID:       device.DeviceID,
+			SerialNumber:   device.SerialNumber,
+			DeviceNumber:   device.DeviceNumber,
+			DepartmentID:   device.DepartmentID,
+			Status:         device.Status,
+			DeviceName:     device.DeviceName,
+			DeviceTypeName: device.DeviceTypeName,
+			DepartmentName: device.DepartmentName,
 		}
 
 		deviceInstanceResponse = append(deviceInstanceResponse, deviceInstance)

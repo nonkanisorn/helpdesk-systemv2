@@ -24,12 +24,15 @@ type DeviceInstanceCreateRequest struct {
 }
 
 type DeviceInstance struct {
-	ID           *int   `db:"id"`
-	DeviceID     *int   `db:"device_id"`
-	SerialNumber string `db:"serial_number"`
-	DeviceNumber int    `db:"device_number"`
-	DepartmentID *int   `db:"department_id"`
-	Status       string `db:"status"`
+	ID             *int    `db:"id"`
+	DeviceID       *int    `db:"device_id"`
+	SerialNumber   string  `db:"serial_number"`
+	DeviceNumber   int     `db:"device_number"`
+	DepartmentID   *int    `db:"department_id"`
+	Status         string  `db:"status"`
+	DeviceName     *string `db:"device_name"`
+	DeviceTypeName *string `db:"device_type_name"`
+	DepartmentName *string `db:"department_name"`
 }
 
 type HistoryRepairDeviceInstance struct {

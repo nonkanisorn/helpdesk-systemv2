@@ -17,15 +17,21 @@ func (d deviceInstanceRepository) GetAll() ([]domain.DeviceInstance, error) {
 	var deviceInstances []domain.DeviceInstance
 	query := `
 		SELECT
-			id,
-			device_id,
-			serial_number,
-			device_number,
-			department_id,
-			COALESCE(status, 'active') AS status
-		FROM device_instances
-		WHERE COALESCE(status, 'active') = 'active'
-		ORDER BY id
+			di.id,
+			di.device_id,
+			di.serial_number,
+			di.device_number,
+			di.department_id,
+			COALESCE(di.status, 'active') AS status,
+			COALESCE(d.name, '') AS device_name,
+			COALESCE(dt.name, '') AS device_type_name,
+			COALESCE(dep.name, '') AS department_name
+		FROM device_instances di
+		LEFT JOIN devices d ON di.device_id = d.id
+		LEFT JOIN device_types dt ON d.device_type_id = dt.id
+		LEFT JOIN departments dep ON di.department_id = dep.id
+		WHERE COALESCE(di.status, 'active') = 'active'
+		ORDER BY di.serial_number ASC, di.id ASC
 	`
 	err := d.db.Select(&deviceInstances, query)
 	if err != nil {
