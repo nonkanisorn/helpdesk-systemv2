@@ -92,9 +92,11 @@ func (l loginRepositoryDB) GetByEmail(email string) (*domain.User, error) {
 			COALESCE(u.department_id, 0) AS department_id,
 			u.status
 		FROM users u
-		LEFT JOIN roles r
+		JOIN roles r
 			ON u.role_id = r.id
+			AND r.deleted_at IS NULL
 		WHERE u.email = ?
+			AND u.status = 'active'
 	`
 	fmt.Println("db", email)
 	err := l.db.Get(&row, query, email)

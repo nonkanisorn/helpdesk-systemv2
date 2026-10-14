@@ -8,11 +8,12 @@ type DeviceInstanceResponse struct {
 	SerialNumber string `db:"serial_number"`
 	DeviceNumber int    `db:"device_number"`
 	DepartmentID *int   `db:"department_id"`
+	Status       string `db:"status"`
 }
 type DeviceInstanceService interface {
 	GetAllDeviceInstance() ([]DeviceInstanceResponse, error)
 	Create(deviceID int, depID *int, serialNumber string) error
-	UpdateDeviceInstanceByID(instanceID int, depID *int, serialNumber string) error
+	UpdateDeviceInstanceByID(instanceID int, depID *int, serialNumber string, status string) error
 	DeleteDeviceInstanceByID(instanceID int) error
 }
 

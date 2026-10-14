@@ -13,6 +13,7 @@ import {
   TableContainer,
   TablePagination,
   Divider,
+  TextField,
 } from "@mui/material";
 import axios from "axios";
 import { Link } from "react-router-dom";
@@ -21,6 +22,10 @@ import { useSelector } from "react-redux";
 
 import AddDeviceDialog from "../shareDialog/AddDialog/AddDeviceDialog";
 import EditDeviceDialog from "../shareDialog/EditDialog/EditDeviceDialog";
+import {
+  technicianPrimaryButtonSx,
+  technicianSecondaryButtonSx,
+} from "./buttonStyles";
 
 const ManageDevice = () => {
   const apiUrl = process.env.REACT_APP_API_URL;
@@ -28,6 +33,8 @@ const ManageDevice = () => {
 
   const [device, setDevice] = useState([]);
   const [typeDevice, setTypeDevice] = useState([]);
+  const [deviceInstances, setDeviceInstances] = useState([]);
+  const [serialSearch, setSerialSearch] = useState("");
 
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
@@ -40,11 +47,21 @@ const ManageDevice = () => {
 
   const [editDeviceName, setEditDeviceName] = useState("");
   const [editDeviceType, setEditDeviceType] = useState("");
+  const [editDeviceDescription, setEditDeviceDescription] = useState("");
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const paginatedDevice = device.slice(
+  const normalizedSearch = serialSearch.trim().toLowerCase();
+  const filteredDevices = device.filter((item) => {
+    if (!normalizedSearch) return true;
+    return deviceInstances.some(
+      (instance) =>
+        Number(instance.device_id ?? instance.dev_id) === Number(item.dev_id) &&
+        String(instance.serial_number ?? "").toLowerCase().includes(normalizedSearch),
+    );
+  });
+  const paginatedDevice = filteredDevices.slice(
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage,
   );
@@ -62,6 +79,26 @@ const ManageDevice = () => {
     }));
   };
 
+  const normalizeDevices = (payload) => {
+    const list = Array.isArray(payload)
+      ? payload
+      : (payload?.data ?? payload?.result ?? []);
+
+    return list.map((item) => ({
+      ...item,
+      dev_id: item.dev_id ?? item.id,
+      dev_name: item.dev_name ?? item.name,
+      dev_type: item.dev_type ?? item.device_type_id,
+      dev_description: item.dev_description ?? item.description ?? "",
+      numberofinstancedevice:
+        item.numberofinstancedevice ??
+        item.number_of_instance_device ??
+        item.instance_count ??
+        item.device_count ??
+        0,
+    }));
+  };
+
   const getDeviceTypeName = (typeId) => {
     const found = typeDevice.find(
       (t) => Number(t.devicetype_id) === Number(typeId),
@@ -73,7 +110,7 @@ const ManageDevice = () => {
     const res = await axios.get(`${apiUrl}/devices`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    setDevice(res.data.result ?? res.data ?? []);
+    setDevice(normalizeDevices(res.data));
   };
 
   const fetchDeviceTypes = async () => {
@@ -83,43 +120,67 @@ const ManageDevice = () => {
     setTypeDevice(normalizeDeviceTypes(res.data));
   };
 
+  const fetchDeviceInstances = async () => {
+    const res = await axios.get(`${apiUrl}/device-instances`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const list = res.data?.result ?? res.data?.data ?? res.data ?? [];
+    setDeviceInstances(Array.isArray(list) ? list : []);
+  };
+
   useEffect(() => {
     if (token) {
       fetchDevices();
       fetchDeviceTypes();
+      fetchDeviceInstances();
     }
   }, [token]);
 
   const handleAddDevice = async () => {
     if (!newDeviceName.trim() || !newDeviceType) return;
 
-    await axios.post(
-      `${apiUrl}/devices`,
-      {
-        dev_name: newDeviceName.trim(),
-        dev_type: Number(newDeviceType),
-        dev_description: newDeviceDescription.trim(),
-      },
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
+    try {
+      await axios.post(
+        `${apiUrl}/devices`,
+        {
+          dev_name: newDeviceName.trim(),
+          name: newDeviceName.trim(),
+          dev_type: Number(newDeviceType),
+          device_type_id: Number(newDeviceType),
+          dev_description: newDeviceDescription.trim(),
+          description: newDeviceDescription.trim(),
+        },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
 
-    setOpenAddDialog(false);
-    setNewDeviceName("");
-    setNewDeviceType("");
-    setNewDeviceDescription("");
-    fetchDevices();
+      setOpenAddDialog(false);
+      setNewDeviceName("");
+      setNewDeviceType("");
+      setNewDeviceDescription("");
+      setPage(0);
+      fetchDevices();
+    } catch (error) {
+      console.error("Error adding device:", error);
+    }
   };
 
   const handleOpenEditDialog = (item) => {
-    setSelectedDevice(item);
+    setSelectedDevice({
+      ...item,
+      devicetype_name: item.devicetype_name ?? getDeviceTypeName(item.dev_type),
+    });
     setEditDeviceName(item.dev_name ?? "");
     setEditDeviceType(item.dev_type ?? "");
+    setEditDeviceDescription(item.dev_description ?? "");
     setOpenEditDialog(true);
   };
 
   const handleCloseEditDialog = () => {
     setOpenEditDialog(false);
     setSelectedDevice(null);
+    setEditDeviceName("");
+    setEditDeviceType("");
+    setEditDeviceDescription("");
   };
 
   const handleEditDevice = async () => {
@@ -128,23 +189,18 @@ const ManageDevice = () => {
     await axios.put(
       `${apiUrl}/devices/${selectedDevice.dev_id}`,
       {
+        dev_name: editDeviceName.trim(),
+        name: editDeviceName.trim(),
         newdevicename: editDeviceName.trim(),
         dev_type: Number(editDeviceType),
+        device_type_id: Number(editDeviceType),
+        dev_description: editDeviceDescription.trim(),
+        description: editDeviceDescription.trim(),
       },
       { headers: { Authorization: `Bearer ${token}` } },
     );
 
     handleCloseEditDialog();
-    fetchDevices();
-  };
-
-  const handleDeleteDevice = async (id) => {
-    if (!window.confirm("ลบจริง?")) return;
-
-    await axios.delete(`${apiUrl}/devices/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
     fetchDevices();
   };
 
@@ -167,10 +223,27 @@ const ManageDevice = () => {
             </Typography>
           </Box>
 
-          <Button variant="contained" onClick={() => setOpenAddDialog(true)}>
+          <Button
+            variant="contained"
+            onClick={() => setOpenAddDialog(true)}
+            sx={technicianPrimaryButtonSx}
+          >
             + เพิ่มอุปกรณ์
           </Button>
         </Stack>
+
+        <TextField
+          fullWidth
+          size="small"
+          label="ค้นหาด้วย Serial Number"
+          placeholder="กรอก Serial Number เพื่อค้นหาอุปกรณ์"
+          value={serialSearch}
+          onChange={(event) => {
+            setSerialSearch(event.target.value);
+            setPage(0);
+          }}
+          sx={{ mb: 2 }}
+        />
 
         {/* DESKTOP TABLE */}
         <TableContainer sx={{ display: { xs: "none", md: "block" } }}>
@@ -216,17 +289,9 @@ const ManageDevice = () => {
                         variant="outlined"
                         size="small"
                         onClick={() => handleOpenEditDialog(item)}
+                        sx={technicianSecondaryButtonSx}
                       >
                         แก้ไข
-                      </Button>
-
-                      <Button
-                        variant="outlined"
-                        color="error"
-                        size="small"
-                        onClick={() => handleDeleteDevice(item.dev_id)}
-                      >
-                        ลบ
                       </Button>
 
                       <Button
@@ -234,6 +299,7 @@ const ManageDevice = () => {
                         to={`detail/${item.dev_id}`}
                         variant="outlined"
                         size="small"
+                        sx={technicianSecondaryButtonSx}
                       >
                         รายการ
                       </Button>
@@ -241,6 +307,13 @@ const ManageDevice = () => {
                   </TableCell>
                 </TableRow>
               ))}
+              {filteredDevices.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={5} align="center">
+                    {normalizedSearch ? "ไม่พบอุปกรณ์ที่ตรงกับ Serial Number" : "ยังไม่มีข้อมูลอุปกรณ์"}
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </TableContainer>
@@ -274,37 +347,36 @@ const ManageDevice = () => {
                     variant="outlined"
                     fullWidth
                     onClick={() => handleOpenEditDialog(item)}
+                    sx={technicianSecondaryButtonSx}
                   >
                     แก้ไข
                   </Button>
 
                   <Button
+                    component={Link}
+                    to={`detail/${item.dev_id}`}
                     variant="outlined"
-                    color="error"
                     fullWidth
-                    onClick={() => handleDeleteDevice(item.dev_id)}
+                    sx={technicianSecondaryButtonSx}
                   >
-                    ลบ
+                    รายการอุปกรณ์
                   </Button>
                 </Stack>
-
-                {/* ✅ FIX: ปุ่มรายการ */}
-                <Button
-                  component={Link}
-                  to={`detail/${item.dev_id}`}
-                  variant="outlined"
-                  fullWidth
-                >
-                  รายการอุปกรณ์
-                </Button>
               </Stack>
             </Paper>
           ))}
+          {filteredDevices.length === 0 && (
+            <Paper sx={{ p: 3, textAlign: "center", borderRadius: 2.5 }}>
+              <Typography color="text.secondary">
+                {normalizedSearch ? "ไม่พบอุปกรณ์ที่ตรงกับ Serial Number" : "ยังไม่มีข้อมูลอุปกรณ์"}
+              </Typography>
+            </Paper>
+          )}
         </Stack>
 
         <TablePagination
           component="div"
-          count={device.length}
+          count={filteredDevices.length}
           page={page}
           onPageChange={(e, newPage) => setPage(newPage)}
           rowsPerPage={rowsPerPage}
@@ -333,11 +405,14 @@ const ManageDevice = () => {
         open={openEditDialog}
         onClose={handleCloseEditDialog}
         onSubmit={handleEditDevice}
+        device={selectedDevice}
         typeDevice={typeDevice}
         editDeviceName={editDeviceName}
         setEditDeviceName={setEditDeviceName}
         editDeviceType={editDeviceType}
         setEditDeviceType={setEditDeviceType}
+        editDeviceDescription={editDeviceDescription}
+        setEditDeviceDescription={setEditDeviceDescription}
       />
     </Box>
   );

@@ -86,8 +86,17 @@ func (r registerRepositoryDB) CreateTest(users *domain.Usertest) (*int, error) {
 }
 
 func (r registerRepositoryDB) SetPassword(users *domain.Usertest) error {
-	query := "update users set password_hash = ? , status = ? where id = ?  "
-	_, err := r.db.Exec(query, users.PasswordHash, "active", users.UserID)
+	query := `
+		UPDATE users
+		SET
+			password_hash = ?,
+			status = CASE
+				WHEN status = 'pending' THEN 'active'
+				ELSE status
+			END
+		WHERE id = ?
+	`
+	_, err := r.db.Exec(query, users.PasswordHash, users.UserID)
 	if err != nil {
 		return err
 	}

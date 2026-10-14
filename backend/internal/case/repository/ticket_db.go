@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -23,6 +24,18 @@ func NewTicketRepository(db *sqlx.DB) TicketRepository {
 //		return nil
 //	}
 func (t ticketRepositoryDB) CreateTicket(ticket *CreateTicketRow) error {
+	var issueCategoryCount int
+	if err := t.db.Get(
+		&issueCategoryCount,
+		"SELECT COUNT(1) FROM issue_categories WHERE id = ? AND deleted_at IS NULL",
+		ticket.IssueCategoryID,
+	); err != nil {
+		return err
+	}
+	if issueCategoryCount == 0 {
+		return fmt.Errorf("ประเภทปัญหานี้ไม่พร้อมใช้งานแล้ว กรุณาเลือกใหม่")
+	}
+
 	query := `
 		INSERT INTO tickets (
 			title,

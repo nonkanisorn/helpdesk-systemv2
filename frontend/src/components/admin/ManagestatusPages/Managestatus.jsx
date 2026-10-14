@@ -20,6 +20,11 @@ import {
 import Addstatus from "./Addstatus.jsx";
 import Editstatus from "./Editstatus.jsx";
 import { useSelector } from "react-redux";
+import {
+  confirmSoftDelete,
+  getErrorMessage,
+  useAdminFeedback,
+} from "../useAdminFeedback";
 import AddStatusDialog from "../dialog/AddDialog/AddStatusDialog.jsx";
 
 function Managestatus() {
@@ -34,6 +39,7 @@ function Managestatus() {
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const { showFeedback, FeedbackSnackbar } = useAdminFeedback();
 
   const fetchData = async () => {
     try {
@@ -62,17 +68,21 @@ function Managestatus() {
   };
 
   const handleDelete = async (statusId) => {
-    const confirmDelete = window.confirm("ต้องการลบสถานะนี้ใช่ไหม?");
-    if (!confirmDelete) return;
+    if (!confirmSoftDelete("สถานะ")) return;
 
     try {
       await axios.delete(`${apiUrl}/status/${statusId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      showFeedback("success", "ซ่อนสถานะออกจากรายการแล้ว");
       fetchData();
     } catch (error) {
-      console.log(error);
+      console.error("Error deleting status:", error);
+      showFeedback(
+        "error",
+        getErrorMessage(error, "ไม่สามารถลบสถานะได้ เนื่องจากยังมีรายการแจ้งซ่อมที่ใช้งานอยู่"),
+      );
     }
   };
 
@@ -318,6 +328,7 @@ function Managestatus() {
           />
         </Paper>
       </Box>
+      <FeedbackSnackbar />
     </>
   );
 }

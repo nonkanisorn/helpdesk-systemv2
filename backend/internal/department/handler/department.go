@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -101,6 +102,12 @@ func (d departmentHandler) DeleteDepartmentsByID(c *fiber.Ctx) error {
 	}
 	err = d.depServ.DeleteDepartmentsByID(id)
 	if err != nil {
+		if errors.Is(err, domain.ErrResourceInUse) {
+			return c.Status(fiber.StatusConflict).JSON(fiber.Map{
+				"success": false,
+				"error":   domain.PublicErrorMessage(err),
+			})
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"success": false,
 			"error":   err.Error(),

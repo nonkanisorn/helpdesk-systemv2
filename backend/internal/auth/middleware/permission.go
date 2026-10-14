@@ -10,7 +10,7 @@ import (
 
 func RequirePermission(permissionServ permissionService.PermissionService, permissionName string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		allowed, err := hasAnyPermission(c, permissionServ, []string{permissionName})
+		matchedPermission, allowed, err := findAnyPermission(c, permissionServ, []string{permissionName})
 		if err != nil {
 			return permissionErrorResponse(c, err)
 		}
@@ -21,14 +21,14 @@ func RequirePermission(permissionServ permissionService.PermissionService, permi
 			})
 		}
 
-		c.Locals("permission", permissionName)
+		c.Locals("permission", matchedPermission)
 		return c.Next()
 	}
 }
 
 func RequireAnyPermission(permissionServ permissionService.PermissionService, permissionNames ...string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		allowed, err := hasAnyPermission(c, permissionServ, permissionNames)
+		matchedPermission, allowed, err := findAnyPermission(c, permissionServ, permissionNames)
 		if err != nil {
 			return permissionErrorResponse(c, err)
 		}
@@ -39,25 +39,26 @@ func RequireAnyPermission(permissionServ permissionService.PermissionService, pe
 			})
 		}
 
+		c.Locals("permission", matchedPermission)
 		return c.Next()
 	}
 }
 
-func hasAnyPermission(c *fiber.Ctx, permissionServ permissionService.PermissionService, permissionNames []string) (bool, error) {
+func findAnyPermission(c *fiber.Ctx, permissionServ permissionService.PermissionService, permissionNames []string) (string, bool, error) {
 	token, ok := c.Locals("user").(*jwt.Token)
 	if !ok || token == nil {
-		return false, fiber.NewError(fiber.StatusUnauthorized, "unauthorized")
+		return "", false, fiber.NewError(fiber.StatusUnauthorized, "unauthorized")
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return false, fiber.NewError(fiber.StatusUnauthorized, "unauthorized")
+		return "", false, fiber.NewError(fiber.StatusUnauthorized, "unauthorized")
 	}
 
 	roleID, roleOK := getIntClaim(claims, "role_id")
 	userID, userOK := getIntClaim(claims, "user_id")
 	if !userOK && !roleOK {
-		return false, fiber.NewError(fiber.StatusUnauthorized, "unauthorized")
+		return "", false, fiber.NewError(fiber.StatusUnauthorized, "unauthorized")
 	}
 
 	for _, permissionName := range permissionNames {
@@ -69,14 +70,14 @@ func hasAnyPermission(c *fiber.Ctx, permissionServ permissionService.PermissionS
 			allowed, err = permissionServ.RoleHasPermission(roleID, permissionName)
 		}
 		if err != nil {
-			return false, err
+			return "", false, err
 		}
 		if allowed {
-			return true, nil
+			return permissionName, true, nil
 		}
 	}
 
-	return false, nil
+	return "", false, nil
 }
 
 func permissionErrorResponse(c *fiber.Ctx, err error) error {

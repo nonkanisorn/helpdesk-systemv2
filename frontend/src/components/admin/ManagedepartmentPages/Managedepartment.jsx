@@ -19,6 +19,11 @@ import {
 import AddDepartmentDialog from "../dialog/AddDialog/AddDepartmentDialog";
 import EditDepartmentDialog from "../dialog/EditDialog/EditDepartmentsDialog";
 import { useSelector } from "react-redux";
+import {
+  confirmSoftDelete,
+  getErrorMessage,
+  useAdminFeedback,
+} from "../useAdminFeedback";
 
 function Managedepartment() {
   const apiUrl = process.env.REACT_APP_API_URL;
@@ -33,6 +38,7 @@ function Managedepartment() {
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const { showFeedback, FeedbackSnackbar } = useAdminFeedback();
 
   const fetchDepartment = async () => {
     try {
@@ -61,17 +67,21 @@ function Managedepartment() {
   };
 
   const handleDeleteDepartment = async (depId) => {
-    const shouldDelete = window.confirm("ต้องการลบแผนกนี้ใช่ไหม?");
-    if (!shouldDelete) return;
+    if (!confirmSoftDelete("แผนก")) return;
 
     try {
       await axios.delete(`${apiUrl}/departments/${depId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      showFeedback("success", "ซ่อนแผนกออกจากรายการแล้ว");
       fetchDepartment();
     } catch (error) {
       console.error("Error deleting department:", error);
+      showFeedback(
+        "error",
+        getErrorMessage(error, "ไม่สามารถลบแผนกได้ เนื่องจากยังมีข้อมูลที่เกี่ยวข้องอยู่"),
+      );
     }
   };
 
@@ -313,6 +323,7 @@ function Managedepartment() {
           />
         </Paper>
       </Box>
+      <FeedbackSnackbar />
     </>
   );
 }

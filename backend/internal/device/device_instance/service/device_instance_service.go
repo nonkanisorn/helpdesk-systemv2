@@ -25,6 +25,7 @@ func (d deviceInstanceService) GetAllDeviceInstance() ([]DeviceInstanceResponse,
 			SerialNumber: device.SerialNumber,
 			DeviceNumber: device.DeviceNumber,
 			DepartmentID: device.DepartmentID,
+			Status:       device.Status,
 		}
 
 		deviceInstanceResponse = append(deviceInstanceResponse, deviceInstance)
@@ -42,8 +43,8 @@ func (d deviceInstanceService) Create(deviceID int, departmentID *int, serialNum
 	return nil
 }
 
-func (d deviceInstanceService) UpdateDeviceInstanceByID(id int, departmentID *int, serialNumber string) error {
-	err := d.deviceInstanceRepo.UpdateDeviceInstanceByID(id, departmentID, serialNumber)
+func (d deviceInstanceService) UpdateDeviceInstanceByID(id int, departmentID *int, serialNumber string, status string) error {
+	err := d.deviceInstanceRepo.UpdateDeviceInstanceByID(id, departmentID, serialNumber, status)
 	if err != nil {
 		return err
 	}

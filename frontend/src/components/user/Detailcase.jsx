@@ -8,6 +8,7 @@ import DateRangeRoundedIcon from "@mui/icons-material/DateRangeRounded";
 import OutlinedFlagRoundedIcon from "@mui/icons-material/OutlinedFlagRounded";
 import AccountCircleRoundedIcon from "@mui/icons-material/AccountCircleRounded";
 import { lightBlue } from "@mui/material/colors";
+import { technicianStatusButtonSx } from "../technician/buttonStyles";
 function Detailcase() {
   const { ticket_id } = useParams();
   const navigate = useNavigate();
@@ -143,7 +144,9 @@ function Detailcase() {
                 <Typography variant="subtitle1" fontWeight="fontWeightBold">
                   การดำเนินการ
                 </Typography>
-                <Button>ยืนยันการซ่อม</Button>
+                <Button variant="contained" color="success" sx={technicianStatusButtonSx}>
+                  ยืนยันการซ่อม
+                </Button>
               </Paper>
             </Grid>
           </Grid>

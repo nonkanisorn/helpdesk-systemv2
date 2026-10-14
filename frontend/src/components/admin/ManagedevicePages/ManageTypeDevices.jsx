@@ -19,6 +19,11 @@ import {
 import AddDeviceTypeDialog from "../dialog/AddDialog/AddDeviceTypeDialog";
 import EditDeviceTypeDialog from "../dialog/EditDialog/EditDeviceTypeDialog";
 import { useSelector } from "react-redux";
+import {
+  confirmSoftDelete,
+  getErrorMessage,
+  useAdminFeedback,
+} from "../useAdminFeedback";
 
 function ManageTypeDevices() {
   const apiUrl = process.env.REACT_APP_API_URL;
@@ -33,6 +38,7 @@ function ManageTypeDevices() {
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const { showFeedback, FeedbackSnackbar } = useAdminFeedback();
 
   const fetchTypeDevice = async () => {
     try {
@@ -63,17 +69,21 @@ function ManageTypeDevices() {
   };
 
   const handleDeleteDeviceType = async (deviceTypeId) => {
-    const shouldDelete = window.confirm("ต้องการลบประเภทอุปกรณ์นี้ใช่ไหม?");
-    if (!shouldDelete) return;
+    if (!confirmSoftDelete("ประเภทอุปกรณ์")) return;
 
     try {
       await axios.delete(`${apiUrl}/device-types/${deviceTypeId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      showFeedback("success", "ซ่อนประเภทอุปกรณ์ออกจากรายการแล้ว");
       fetchTypeDevice();
     } catch (error) {
       console.error("Error deleting device type:", error);
+      showFeedback(
+        "error",
+        getErrorMessage(error, "ไม่สามารถลบประเภทอุปกรณ์ได้ เนื่องจากยังมีอุปกรณ์ที่ใช้งานอยู่"),
+      );
     }
   };
 
@@ -321,6 +331,7 @@ function ManageTypeDevices() {
           />
         </Paper>
       </Box>
+      <FeedbackSnackbar />
     </>
   );
 }

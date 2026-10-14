@@ -8,10 +8,24 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { useSelector } from "react-redux";
-import { Alert, Button, Snackbar, Typography } from "@mui/material";
+import {
+  Alert,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Snackbar,
+  Typography,
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { Box } from "@mui/material";
 import { hasPermission } from "../../auth/permissions";
+import {
+  technicianNeutralButtonSx,
+  technicianPrimaryButtonSx,
+  technicianStatusButtonSx,
+} from "../technician/buttonStyles";
 function Statuscase() {
   const user_id = useSelector((state) => state.user.user_id);
   const token = useSelector((state) => state.user.token);
@@ -24,6 +38,7 @@ function Statuscase() {
     severity: "success",
     message: "",
   });
+  const [rejectingTicketId, setRejectingTicketId] = useState(null);
   const navigate = useNavigate();
   const canConfirmRepair = hasPermission(permissions, "confirm_repair");
 
@@ -34,6 +49,7 @@ function Statuscase() {
     4: "ทำเสร็จแล้วรอการยืนยัน",
     5: "เสร็จสิ้น",
     6: "รออะไหล่",
+    7: "รอผู้จัดการตรวจสอบ",
   };
 
   const topagedetail = (ticket_id) => {
@@ -81,8 +97,9 @@ function Statuscase() {
         setNotification({
           open: true,
           severity: "success",
-          message: "ส่งคำขอตรวจสอบอีกครั้งให้เมเนเจอร์แล้ว",
+          message: "ส่งกลับให้ผู้จัดการตรวจสอบแล้ว",
         });
+        setRejectingTicketId(null);
         setRefresh((prev) => !prev);
       })
       .catch((err) => {
@@ -149,6 +166,7 @@ function Statuscase() {
                     <Button
                       variant="contained"
                       onClick={() => topagedetail(item.ticket_id)}
+                      sx={technicianPrimaryButtonSx}
                     >
                       เพิ่มเติม
                     </Button>
@@ -164,30 +182,25 @@ function Statuscase() {
                           }}
                           variant="contained"
                           color="success"
+                          sx={technicianStatusButtonSx}
                         >
                           ยืนยันการซ่อม
                         </Button>
 
                         <Button
-                          onClick={() => {
-                            if (
-                              window.confirm(
-                                "ต้องการส่งงานกลับไปให้เมเนเจอร์ตรวจสอบอีกครั้งใช่ไหม?",
-                              )
-                            ) {
-                              rejectRepairTicket(item.ticket_id);
-                            }
-                          }}
+                          onClick={() => setRejectingTicketId(item.ticket_id)}
                           variant="outlined"
                           color="error"
+                          sx={technicianStatusButtonSx}
                         >
-                          ขอให้ตรวจสอบอีกครั้ง
+                          ไม่ยอมรับผลซ่อม
                         </Button>
                       </Box>
                     ) : statusId !== 5 ? (
                       <Button
                         variant="contained"
                         color="error"
+                        sx={technicianStatusButtonSx}
                         onClick={() =>
                           setNotification({
                             open: true,
@@ -206,6 +219,37 @@ function Statuscase() {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <Dialog
+        open={Boolean(rejectingTicketId)}
+        onClose={() => setRejectingTicketId(null)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>ไม่ยอมรับผลการซ่อม</DialogTitle>
+        <DialogContent>
+          <Typography color="text.secondary" sx={{ mt: 1 }}>
+            งานนี้จะถูกส่งกลับให้ผู้จัดการตรวจสอบ และมอบหมายช่างเพื่อดำเนินการอีกครั้ง
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setRejectingTicketId(null)}
+            color="inherit"
+            sx={technicianNeutralButtonSx}
+          >
+            ยกเลิก
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => rejectRepairTicket(rejectingTicketId)}
+            sx={technicianStatusButtonSx}
+          >
+            ส่งกลับให้ผู้จัดการตรวจสอบ
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar
         open={notification.open}

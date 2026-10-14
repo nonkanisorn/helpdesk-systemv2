@@ -8,12 +8,13 @@ sequenceDiagram
     participant Login as 3.2 หน้าเข้าสู่ระบบ
     participant Home as 3.5/3.6/3.7/3.8 หน้าหลัก
     participant DB as ฐานข้อมูล
-    Aactor->>Login: กรอกอีเมลและรหัสผ่าน
-    Login->>DB: ตรวจสอบข้อมูลผู้ใช้
+    Aactor->>Login: กรอกข้อมูลผู้ใช้งาน
+    Login->>DB: ส่งข้อมูลผู้ใช้งาน
+    DB->>DB: ตรวจสอบข้อมูล
     DB-->>Login: ส่งผลการตรวจสอบ
-    Login->>Home: ไปหน้าหลักตามสิทธิ์
-    Home-->>Aactor: แสดงหน้าหลัก
-    Login-->>Aactor: ถ้าไม่ถูกต้อง แจ้งผิดพลาด
+    Login-->>Aactor: [ข้อมูลไม่ถูกต้อง] แจ้งเตือนข้อมูลไม่ถูกต้อง
+    Login->>Home: [ข้อมูลถูกต้อง]เรียกหน้าหลักตามสิทธิ์ผู้ใช้
+    Home-->>Aactor: แสดงหน้าหลักตามสิทธิ์ผู้ใช้
 ```
 
 ## UC02 ตั้งรหัสผ่านครั้งแรก
@@ -46,19 +47,20 @@ sequenceDiagram
     participant Reset as 3.3 หน้ารีเซ็ตรหัสผ่าน
     participant SetPass as 3.4 หน้าตั้งรหัสผ่าน
     participant DB as ฐานข้อมูล
-    Aactor->>Login: เลือกลืมรหัสผ่าน
+    Aactor->>Login: คลิกลืมรหัสผ่าน
     Login->>Reset: เปิดหน้ารีเซ็ตรหัสผ่าน
-    Aactor->>Reset: กรอกอีเมล
-    Reset->>DB: ตรวจสอบอีเมลผู้ใช้
-    Reset->>DB: บันทึก token รีเซ็ต
-    DB-->>Reset: ส่งผลการขอรีเซ็ต
-    Reset-->>Aactor: แจ้งผลการส่งลิงก์
-    Aactor->>SetPass: เปิดลิงก์ตั้งรหัสผ่าน
-    SetPass->>DB: ตรวจสอบ token
-    SetPass->>DB: บันทึกรหัสผ่านใหม่
-    DB-->>SetPass: บันทึกสำเร็จ
-    SetPass->>Login: กลับหน้าเข้าสู่ระบบ
-    Login-->>Aactor: แสดงหน้าเข้าสู่ระบบ
+    Aactor->>Reset: กรอกข้อมูลอีเมล
+    Reset->>DB: ส่งข้อมูลอีเมล์
+DB->>DB:ตรวจสอบข้อมูล
+DB-->>Reset:ส่งผลตรวจสอบข้อมูล
+Reset-->>Aactor:ส่งอีเมล์เปลี่ยนรหัสผ่าน
+Aactor->>SetPass:เรียกหน้าตั้งรหัสผ่านใหม่
+SetPass-->>Aactor:แสดงหน้าตั้งรหัสผ่านใหม่
+Aactor->>SetPass:กรอกรหัสผ่านใหม่
+    SetPass->>DB: ส่งข้อมูลรหัสผ่านใหม่
+DB->>DB:บันทึกข้อมูล
+    DB-->>SetPass: ส่งผลการบันทึก
+SetPass-->>Aactor:แสดงผลการบันทึก
 ```
 
 ## UC04 เพิ่มการแจ้งซ่อม
@@ -102,18 +104,15 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor Aactor as ผู้ใช้ทั่วไป
-    participant History as 3.10 หน้าประวัติ
-    participant Detail as 3.11 หน้ารายละเอียด
+    participant MainPage as 3.6 หน้าหลัก(ผู้ใช้ทั่วไป)
+    participant History as 3.11 หน้าติดตามสถานะและประวัติการแจ้งซ่อม
     participant DB as ฐานข้อมูล
-    Aactor->>History: เปิดหน้าประวัติ
-    History->>DB: ค้นหาประวัติของผู้ใช้
-    DB-->>History: ส่งรายการประวัติ
-    History-->>Aactor: แสดงประวัติ
-    Aactor->>History: เลือกดูรายละเอียด
-    History->>Detail: เปิดหน้ารายละเอียด
-    Detail->>DB: ค้นหารายละเอียดงาน
-    DB-->>Detail: ส่งรายละเอียด
-    Detail-->>Aactor: แสดงรายละเอียด
+Aactor->>MainPage:เลือกเมนูประวัติการซ่อมของฉัน
+MainPage->>History:เรียกหน้าติดตามสถานะและปรวัติการแจ้งซ่อม
+History->>DB:เรียกข้อมูลการประวัติการแจ้งซ่อมของผู้ใช้
+DB->>DB:ดึงข้อมูล
+DB-->>History:ส่งข้อมูลประวัติการแจ้งซ่อมของผู้ใช้
+History-->>Aactor:แสดงผลประวัติการแจ้งซ่อมของผู้ใช้
 ```
 
 ## UC07 ยืนยันผลการซ่อม
@@ -121,18 +120,29 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor Aactor as ผู้ใช้ทั่วไป
-    participant Track as 3.10 หน้าติดตามสถานะ
-    participant Detail as 3.11 หน้ารายละเอียด
+
+    participant MainPage as 3.6 หน้าหลัก
+    participant Track as 3.11 หน้าติดตามสถานะและประวัติการแจ้งซ่อม
+    participant Detail as 3.12 หน้ารายละเอียดการซ่อม
     participant DB as ฐานข้อมูล
-    Aactor->>Track: เลือกงานรอยืนยัน
-    Track->>Detail: เปิดรายละเอียดงาน
-    Detail->>DB: อ่านสถานะงาน
-    DB-->>Detail: ส่งรายละเอียดงาน
-    Detail-->>Aactor: แสดงรายละเอียด
-    Aactor->>Detail: กดยืนยันการซ่อม
-    Detail->>DB: ปรับสถานะเสร็จสิ้น
-    DB-->>Detail: บันทึกสำเร็จ
-    Detail-->>Aactor: แสดงสถานะล่าสุด
+Aactor->>MainPage:เลือกเมนูประวัติการแจ้งซ่อม
+MainPage->>Track:เรียกหน้าติดตามสถานะและประวัติการแจ้งซ่อม
+Track->>DB:เรียกข้อมูลประวัติการแจ้งซ่อมของผู้ใช้
+DB->>DB:ดึงข้อมูล
+DB-->Track:ส่งข้อมูลประวัติการแจ้งซ่อมของผู้ใช้
+Track-->>Aactor:แสดงหน้าติดตามสถานะและประวัติการแจ้งซ่อม
+Aactor->>Track:เลือกข้อมูลการแจ้งซ่อมที่ต้องการยืนยัน
+Track->>Detail:เรียกหน้ารายละเอียดการซ่อม
+Detail->>DB:เรียกข้อมูการแจ้งซ่อมที่ต้องการยืนยัน
+DB->>DB:ดึงข้อมูล
+DB-->>Detail:ส่งข้อมูลการแจ้งซ่อม
+Detail-->>Aactor:แสดงหน้ารายละเอียดการซ่อม
+Aactor->>Detail:กดปุ่มยืนยันการซ่อม
+Detail->>DB:ส่งผลการยืนยัน
+DB->>DB:บันทึกผล
+DB-->>Detail:ส่งผลการบันทึก
+Detail-->>Aactor:แสดงผลการบันทึก
+
 ```
 
 ## UC08 ดูหน้าประวัติส่วนตัว
@@ -140,14 +150,14 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor Aactor as ผู้ใช้งานระบบ
-    participant Home as 3.5/3.6/3.7/3.8 หน้าหลักตามสิทธิ์
-    participant Profile as 3.17 หน้าดูประวัติส่วนตัว
+    participant MainPage as 3.6/3.7/3.8/3.9 หน้าหลักตามสิทธิ์
+    participant Profile as 3.26 หน้าประวัติส่วนตัว
     participant DB as ฐานข้อมูล
-    Aactor->>Home: เลือกโปรไฟล์
-    Home->>Profile: เปิดหน้าข้อมูลส่วนตัว
-    Profile->>DB: ค้นหาข้อมูลผู้ใช้
-    DB-->>Profile: ส่งข้อมูลผู้ใช้
-    Profile-->>Aactor: แสดงข้อมูลส่วนตัว
+    Aactor->>MainPage: เลือกเมนูโปรไฟล์
+Profile->>DB:เรียกข้อมูลประวัติส่วนตัว
+DB->>DB:ดึงข้อมูล
+DB-->>Profile:ส่งข้อมูลประวัติส่วนตัว
+Profile-->>Aactor:แสดงหน้าประวัติส่วนตัว
 ```
 
 ## UC09 ดูงานซ่อมที่ได้รับมอบหมาย
@@ -172,16 +182,16 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor Aactor as ช่างเทคนิค
-    participant Home as 3.7 หน้าหลัก
-    participant History as 3.16 หน้าประวัติการซ่อม
+    participant MainPage as 3.8 หน้าหลัก(ข่างเทคนิค)
+    participant History as 3.24 หน้าประวัติการซ่อม
     participant DB as ฐานข้อมูล
-    Aactor->>Home: เลือกประวัติการซ่อม
-    Home->>History: เปิดหน้าประวัติการซ่อม
-    History->>DB: ค้นหาประวัติงาน
-    DB-->>History: ส่งรายการประวัติ
-    History-->>Aactor: แสดงประวัติการซ่อม
-    Aactor->>History: ค้นหาหรือกรองสถานะ
-    History-->>Aactor: แสดงรายการที่ตรงเงื่อนไข
+Aactor->>MainPage:เลือกเมนูประวัติการซ่อม
+MainPage->>History:เรียกหน้าประวัติการซ่อม
+History->>DB:เรียกข้อมูลประวัติการซ่อม
+DB->>DB:ดึงข้อมูล
+DB-->>History:ส่งข้อมูลประวัติการซ่อม
+History-->>Aactor:แสดงหน้าประวัติการซ่อม
+
 ```
 
 ## UC12 จัดการรายการอุปกรณ์
@@ -240,16 +250,25 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor Aactor as ช่างเทคนิค
+    participant MainPage as หน้าหลัก
     participant Assigned as 3.15 หน้างานที่ได้รับมอบหมาย
     participant Record as 3.38 หน้าบันทึกการซ่อม
     participant DB as ฐานข้อมูล
-    Aactor->>Assigned: เลือกงานที่ต้องบันทึกผล
-    Assigned->>Record: เปิดหน้าบันทึกการซ่อม
-    Record->>DB: อ่านรายละเอียดงาน
-    DB-->>Record: ส่งรายละเอียดงาน
-    Record-->>Aactor: แสดงฟอร์มบันทึกผล
-    Aactor->>Record: กรอกผลการซ่อม
-    Record->>DB: บันทึกผลการซ่อม
+    Aactor->>MainPage:เลือกเมนูงานที่ได้รับมอบหมาย
+    MainPage->>Assigned:เรียกหน้างานที่ได้รับมอบหมาย
+    Assigned->>DB:เรียกข้อมูลงานที่ได้รับมอบหมาย
+    DB->>DB:ดึงข้อมูล
+    DB-->>Assigned:ส่งผลข้อมูลงานที่ได้รับมอบหมาย
+    Assigned->>Aactor:แสดงหน้างานที่ได้รับมอบหมาย
+    Aactor->>Assigned: เลือกงานที่ต้องการบันทึกผล
+    Assigned->>Record:เรียกหน้าบันทึกผลการซ่อม
+    Record->>DB:ร้องขอข้อมูลที่ต้องการบันทึกผล
+    DB->>DB:ดึงข้อมูล
+    DB-->>Record:ส่งข้อมูลที่ต้องการบันทึกผล
+    Record-->>Aactor:แสดงหน้าบันทึกผลการซ่อม
+    Aactor->>Record: กรอกข้อมูลผลการซ่อม
+    Record->>DB: ส่งข้อมูลผลการซ่อม
+    DB->>DB:บันทึกข้อมูล
     DB-->>Record: บันทึกสำเร็จ
     Record-->>Aactor: แสดงผลการบันทึก
 ```
@@ -259,18 +278,30 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor Aactor as ผู้จัดการ
-    participant List as 3.12 หน้าดูรายการแจ้งซ่อมทั้งหมด
-    participant Assign as 3.39 หน้ามอบหมายช่าง
+    participant MainPage as หน้าหลัก
+    participant List as 3.13 หน้าดูรายการแจ้งซ่อมทั้งหมด
+    participant Assign as 3.14 หน้ามอบหมายช่าง
     participant DB as ฐานข้อมูล
-    Aactor->>List: เลือกงานรอมอบหมาย
-    List->>Assign: เปิดหน้ามอบหมายช่าง
-    Assign->>DB: อ่านรายละเอียดงานและรายชื่อช่าง
-    DB-->>Assign: ส่งข้อมูลงานและช่าง
-    Assign-->>Aactor: แสดงรายชื่อช่าง
-    Aactor->>Assign: เลือกช่างและยืนยัน
-    Assign->>DB: บันทึกการมอบหมายงาน
-    DB-->>Assign: บันทึกสำเร็จ
-    Assign-->>Aactor: กลับหน้ารายการแจ้งซ่อม
+    Aactor->>MainPage: เลือกเมนูรายการแจ้งซ่อม
+    MainPage->>List:เรียกหน้าดูรายการแจ้งซ่อมทั้งหมด
+List->>DB: เรียกข้อมูลรายการแจ้งซ่อมทั้งหมด
+DB->>DB:ดึงข้อมูล
+DB-->List:ส่งข้อมูลรายการแจ้งซ่อมทั้งหมด
+List-->>Aactor:แสดงหน้ารายการแจ้งซ่อมทั้งหมด
+Aactor->>List:เลือกข้อมูลการแจ้งซ่อมที่ต้องการมอบหมายงาน
+    List->>Assign: เรียกหน้ามอบหมายช่าง
+Assign->>DB:เรียกข้อมูลการซ่อมที่ต้องการมอบหมายช่าง
+DB->>DB:ดึงข้อมูล
+DB-->>Assign:ส่งผลข้อมูลการซ่อมที่ต้องการมอบหมายช่าง
+Assign->>DB:เรียกข้อมูลช่าง
+DB->>DB:ดึงข้อมูล
+DB-->>Assign:ส่งผลข้อมูลช่าง
+Assign-->>Aactor:แสดงหน้ามอบหมายช่าง
+Aactor->>Assign:เลือกข้อมูลช่าง
+    Assign->>DB: ส่งข้อมูลช่าง
+DB->>DB:บันทึกข้อมูล
+    DB-->>Assign: ส่งผลบันทึกข้อมูล
+Assign-->>Aactor:แสดงผลการบันทึกข้อมูล
 ```
 
 ## UC15 จัดการข้อมูลผู้ใช้

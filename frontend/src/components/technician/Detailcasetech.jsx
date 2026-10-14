@@ -15,7 +15,13 @@ import {
   CircularProgress,
 } from "@mui/material";
 import AssignmentIcon from "@mui/icons-material/Assignment";
+import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { blue } from "@mui/material/colors";
+import {
+  technicianNeutralButtonSx,
+  technicianPrimaryButtonSx,
+} from "./buttonStyles";
 
 function Detailcasetech() {
   const { ticket_id } = useParams();
@@ -90,7 +96,10 @@ function Detailcasetech() {
       navigate(-2);
     } catch (error) {
       console.error("Error completing repair:", error.response?.data || error);
-      alert("กรุณาใส่รหัสอุปกรณ์ให้ถูกต้อง");
+      alert(
+        error.response?.data?.error ||
+          "บันทึกผลการซ่อมไม่สำเร็จ กรุณาลองใหม่อีกครั้ง",
+      );
     } finally {
       setLoading(false);
     }
@@ -224,9 +233,14 @@ function Detailcasetech() {
                   <Button
                     type="button"
                     color="inherit"
+                    startIcon={<CloseRoundedIcon />}
                     disabled={loading}
                     onClick={handleCancel}
-                    sx={{ width: { xs: "100%", sm: "auto" } }}
+                    sx={{
+                      ...technicianNeutralButtonSx,
+                      width: { xs: "100%", sm: "auto" },
+                      py: 1.1,
+                    }}
                   >
                     ยกเลิก
                   </Button>
@@ -234,8 +248,13 @@ function Detailcasetech() {
                   <Button
                     type="submit"
                     variant="contained"
+                    startIcon={!loading && <CheckRoundedIcon />}
                     disabled={loading}
-                    sx={{ width: { xs: "100%", sm: "auto" } }}
+                    sx={{
+                      ...technicianPrimaryButtonSx,
+                      width: { xs: "100%", sm: "auto" },
+                      py: 1.1,
+                    }}
                   >
                     {loading ? (
                       <Stack direction="row" spacing={1} alignItems="center">

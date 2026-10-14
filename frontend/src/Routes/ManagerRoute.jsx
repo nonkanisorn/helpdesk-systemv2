@@ -15,6 +15,7 @@ import Devicehistory from "../components/Manager/Devicehistory";
 import ManageDevice from "../components/Manager/ManageDevice";
 import DeviceDetailPages from "../components/Manager/DeviceDetailPages";
 import InstanceDeviceHistoryPage from "../components/Manager/InstanceDeviceHistoryPage";
+import RestoreDeletedItems from "../components/admin/RestorePages/RestoreDeletedItems";
 import Detailcase from "../components/Detailcase";
 import { hasAnyPermission } from "../auth/permissions";
 
@@ -79,6 +80,19 @@ const ManagerRoute = () => {
             <Route path="adduser" element={<Adduser />} />
             <Route path="statusticket" element={<Statuscase />} />
             <Route path="manage/device" element={<ManageDevice />} />
+            <Route
+              path="manage/device/restore"
+              element={
+                <RestoreDeletedItems
+                  listEndpoint="/manager/deleted-device-items"
+                  restoreEndpoint={(item) =>
+                    `/manager/deleted-device-items/${item.resource_type}/${item.id}/restore`
+                  }
+                  title="กู้คืนอุปกรณ์ที่ถูกลบ"
+                  subtitle="กู้คืนอุปกรณ์และรายการอุปกรณ์ที่ถูกซ่อนออกจากรายการใช้งาน"
+                />
+              }
+            />
             <Route
               path="instance/:instance_id/history"
               element={<InstanceDeviceHistoryPage />}

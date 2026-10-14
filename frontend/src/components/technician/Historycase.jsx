@@ -24,6 +24,7 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { technicianSecondaryButtonSx } from "./buttonStyles";
 
 function Historycase() {
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ function Historycase() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const allowedStatus = [3, 4, 5, 6];
+  const allowedStatus = [3, 4, 5, 6, 7];
 
   const technicianStatusMap = {
     1: "เปิดงาน",
@@ -46,6 +47,7 @@ function Historycase() {
     4: "รอผู้ใช้ยืนยัน",
     5: "เสร็จสิ้น",
     6: "รออะไหล่",
+    7: "รอผู้จัดการตรวจสอบ",
   };
 
   const statusColorMap = {
@@ -55,6 +57,7 @@ function Historycase() {
     4: "secondary",
     5: "success",
     6: "warning",
+    7: "error",
   };
 
   const fetchTickets = async () => {
@@ -163,7 +166,7 @@ function Historycase() {
               setPage(0);
             }}
             label="ค้นหา"
-            placeholder="ค้นหาหัวข้อ รายละเอียด หรือรหัสงาน"
+            placeholder="ค้นหาหัวข้อ รายละเอียด หรือเลขที่งาน"
             fullWidth
             InputProps={{
               startAdornment: (
@@ -200,7 +203,7 @@ function Historycase() {
           <Table sx={{ minWidth: 850 }}>
             <TableHead>
               <TableRow>
-                <TableCell>รหัสงาน</TableCell>
+                <TableCell>เลขที่งาน</TableCell>
                 <TableCell>หัวข้อ</TableCell>
                 <TableCell>รายละเอียด</TableCell>
                 <TableCell>สถานะ</TableCell>
@@ -252,6 +255,7 @@ function Historycase() {
                         variant="outlined"
                         size="small"
                         onClick={() => goDetail(item.ticket_id)}
+                        sx={technicianSecondaryButtonSx}
                       >
                         ดูรายละเอียด
                       </Button>
@@ -308,7 +312,7 @@ function Historycase() {
                     </Box>
 
                     <Chip
-                      label={`ID: ${item.ticket_id}`}
+                      label={`เลขที่งาน: ${item.ticket_id}`}
                       size="small"
                       variant="outlined"
                     />
@@ -354,6 +358,7 @@ function Historycase() {
                     variant="outlined"
                     fullWidth
                     onClick={() => goDetail(item.ticket_id)}
+                    sx={technicianSecondaryButtonSx}
                   >
                     ดูรายละเอียด
                   </Button>

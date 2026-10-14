@@ -15,7 +15,18 @@ func NewDeviceInstanceRepository(db *sqlx.DB) DeviceInstanceRepository {
 
 func (d deviceInstanceRepository) GetAll() ([]domain.DeviceInstance, error) {
 	var deviceInstances []domain.DeviceInstance
-	query := "SELECT id, device_id, serial_number, device_number, department_id FROM device_instances ORDER BY id"
+	query := `
+		SELECT
+			id,
+			device_id,
+			serial_number,
+			device_number,
+			department_id,
+			COALESCE(status, 'active') AS status
+		FROM device_instances
+		WHERE COALESCE(status, 'active') = 'active'
+		ORDER BY id
+	`
 	err := d.db.Select(&deviceInstances, query)
 	if err != nil {
 		return nil, err
@@ -29,7 +40,8 @@ func (d deviceInstanceRepository) Create(deviceID int, depID *int, serialNumber 
 			device_id,
 			serial_number,
 			device_number,
-			department_id
+			department_id,
+			status
 		)
 		VALUES (
 			?,
@@ -42,7 +54,8 @@ func (d deviceInstanceRepository) Create(deviceID int, depID *int, serialNumber 
 					WHERE device_id = ?
 				) AS temp
 			),
-			?
+			?,
+			'active'
 		)
 	`
 	_, err := d.db.Exec(query, deviceID, serialNumber, deviceID, depID)
@@ -52,16 +65,17 @@ func (d deviceInstanceRepository) Create(deviceID int, depID *int, serialNumber 
 	return nil
 }
 
-func (d deviceInstanceRepository) UpdateDeviceInstanceByID(instanceID int, depID *int, serialNumber string) error {
+func (d deviceInstanceRepository) UpdateDeviceInstanceByID(instanceID int, depID *int, serialNumber string, status string) error {
 	query := `
 		UPDATE device_instances
 		SET
 			serial_number = ?,
-			department_id = ?
+			department_id = ?,
+			status = ?
 		WHERE id = ?
 	`
 
-	_, err := d.db.Exec(query, serialNumber, depID, instanceID)
+	_, err := d.db.Exec(query, serialNumber, depID, status, instanceID)
 	if err != nil {
 		return err
 	}
@@ -70,7 +84,7 @@ func (d deviceInstanceRepository) UpdateDeviceInstanceByID(instanceID int, depID
 }
 
 func (d deviceInstanceRepository) DeleteDeviceInstanceByID(instanceID int) error {
-	query := "DELETE FROM device_instances WHERE id = ?"
+	query := "UPDATE device_instances SET status = 'inactive' WHERE id = ? AND COALESCE(status, 'active') = 'active'"
 	_, err := d.db.Exec(query, instanceID)
 	if err != nil {
 		return err

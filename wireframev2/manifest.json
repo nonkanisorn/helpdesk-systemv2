@@ -1,0 +1,1320 @@
+{
+  "generatedAt": "2026-06-08T20:33:09.105Z",
+  "source": "http://localhost:5173",
+  "realCaptures": "/private/tmp/helpdesk-real-captures",
+  "discovered": {
+    "user": [
+      {
+        "name": "user_dashboard",
+        "route": "/user",
+        "observed": {
+          "url": "http://localhost:5173/user",
+          "title": "ยินดีต้อนรับสู่ระบบแจ้งซ่อม",
+          "text": "HELPDESK APP\nหน้าหลัก\nแจ้งซ่อม\nติดตามสถานะ/ประวัติของฉัน\nยินดีต้อนรับสู่ระบบแจ้งซ่อม\n\nเราพร้อมให้บริการและดูแลปัญหาของคุณอย่างรวดเร็วและมีประสิทธิภาพ\n\nเริ่มต้นใช้งาน\n\nเลือกเมนูที่ต้องการใช้งาน\n\nแจ้งซ่อม\n\nแจ้งปัญหาและขอรับบริการซ่อม\n\nเลือก\nติดตามสถานะ/ประวัติการซ่อมของฉัน\n\nดูรายการซ่อมทั้งหมดของคุณ\n\nเลือก\nรายการล่าสุด\n\nรายการแจ้งซ่อมล่าสุดของคุณ\n\nดูทั้งหมด\n\nคอมพิวเตอร์เปิดไม่ติด\n\n23 พฤษภาคม 2569 เวลา 09:22\n\nID: 10\nกำลังดำเนินการ\nดูรายละเอียด",
+          "links": [
+            {
+              "text": "หน้าหลัก",
+              "href": "/user"
+            },
+            {
+              "text": "แจ้งซ่อม",
+              "href": "/user/repair-request"
+            },
+            {
+              "text": "ติดตามสถานะ/ประวัติของฉัน",
+              "href": "/user/repair-history"
+            },
+            {
+              "text": "เลือก",
+              "href": "/user/repair-request"
+            },
+            {
+              "text": "เลือก",
+              "href": "/user/repair-history"
+            },
+            {
+              "text": "ดูทั้งหมด",
+              "href": "/user/repair-history"
+            },
+            {
+              "text": "ดูรายละเอียด",
+              "href": "/user/repair-detail/10"
+            },
+            {
+              "text": "",
+              "href": "/profile"
+            },
+            {
+              "text": "",
+              "href": "/login"
+            }
+          ],
+          "buttons": []
+        }
+      },
+      {
+        "name": "user_create_ticket",
+        "route": "/user/repair-request",
+        "observed": {
+          "url": "http://localhost:5173/user/repair-request",
+          "title": "แจ้งซ่อม",
+          "text": "HELPDESK APP\nหน้าหลัก\nแจ้งซ่อม\nติดตามสถานะ/ประวัติของฉัน\nแจ้งซ่อม\n\nกรุณากรอกข้อมูลให้ครบถ้วนเพื่อความรวดเร็วในการดำเนินการ\n\nหัวข้อการแจ้งซ่อม *\nหัวข้อการแจ้งซ่อม *\n\nกรุณากรอกหัวข้อการแจ้งซ่อม\n\nรายละเอียดปัญหา *\nรายละเอียดปัญหา *\n\nกรุณากรอกรายละเอียดปัญหา\n\nหมวดหมู่ปัญหา *\n​\nหมวดหมู่ปัญหา *\n\nกรุณาเลือกหมวดหมู่ปัญหา\n\nล้างข้อมูล\nเพิ่มการแจ้งซ่อม",
+          "links": [
+            {
+              "text": "หน้าหลัก",
+              "href": "/user"
+            },
+            {
+              "text": "แจ้งซ่อม",
+              "href": "/user/repair-request"
+            },
+            {
+              "text": "ติดตามสถานะ/ประวัติของฉัน",
+              "href": "/user/repair-history"
+            },
+            {
+              "text": "",
+              "href": "/profile"
+            },
+            {
+              "text": "",
+              "href": "/login"
+            }
+          ],
+          "buttons": [
+            "ล้างข้อมูล",
+            "เพิ่มการแจ้งซ่อม"
+          ]
+        }
+      },
+      {
+        "name": "user_ticket_history",
+        "route": "/user/repair-history",
+        "observed": {
+          "url": "http://localhost:5173/user/repair-history",
+          "title": "ประวัติการซ่อมแจ้งซ่อมของฉัน",
+          "text": "HELPDESK APP\nหน้าหลัก\nแจ้งซ่อม\nติดตามสถานะ/ประวัติของฉัน\nประวัติการซ่อมแจ้งซ่อมของฉัน\n\nรายการคำขอซ่อมทั้งหมดของคุณ\n\n1\n\nทั้งหมด\n\n0\n\nรอดำเนินการ\n\n1\n\nอยู่ระหว่างซ่อม\n\n0\n\nรอการยืนยัน\n\n0\n\nเสร็จสิ้น\n\nรายการแจ้งซ่อม\n\nกรองและดูรายละเอียดรายการแจ้งซ่อมของคุณ\n\n1 รายการ\nทั้งหมด\nรอดำเนินการ\nอยู่ระหว่างซ่อม\nรอการยืนยัน\nเสร็จสิ้น\n\nคอมพิวเตอร์เปิดไม่ติด\n\nเปิดไม่ติด\n\nID: 10\nอยู่ระหว่างซ่อม\nแจ้งเมื่อ\n\n23 พฤษภาคม 2569 เวลา 09:22\n\nดูรายละเอียด",
+          "links": [
+            {
+              "text": "หน้าหลัก",
+              "href": "/user"
+            },
+            {
+              "text": "แจ้งซ่อม",
+              "href": "/user/repair-request"
+            },
+            {
+              "text": "ติดตามสถานะ/ประวัติของฉัน",
+              "href": "/user/repair-history"
+            },
+            {
+              "text": "ดูรายละเอียด",
+              "href": "/user/repair-detail/10"
+            },
+            {
+              "text": "",
+              "href": "/profile"
+            },
+            {
+              "text": "",
+              "href": "/login"
+            }
+          ],
+          "buttons": [
+            "ทั้งหมด",
+            "รอดำเนินการ",
+            "อยู่ระหว่างซ่อม",
+            "รอการยืนยัน",
+            "เสร็จสิ้น"
+          ]
+        }
+      },
+      {
+        "name": "user_profile",
+        "route": "/profile",
+        "observed": {
+          "url": "http://localhost:5173/profile",
+          "title": "ข้อมูลส่วนตัว",
+          "text": "HELPDESK APP\nหน้าหลัก\nแจ้งซ่อม\nติดตามสถานะ/ประวัติของฉัน\nข้อมูลส่วนตัว\n\nข้อมูลบัญชีและสิทธิ์การใช้งานของคุณ\n\nUser\nพร้อมใช้งาน\n\nโปรไฟล์ผู้ใช้งาน\n\nยอ\nยศกร อุดมเดชรักษา\n\nUser ID: 12\n\nรายละเอียดบัญชี\n\nชื่อ-นามสกุล\n\nยศกร อุดมเดชรักษา\n\nอีเมล\n\nuser@example.com\n\nเบอร์โทรศัพท์\n\n0982351237\n\nบทบาท\n\nUser\n\nแผนก\n\nบัญชี\n\nสถานะบัญชี\n\nพร้อมใช้งาน",
+          "links": [
+            {
+              "text": "หน้าหลัก",
+              "href": "/user"
+            },
+            {
+              "text": "แจ้งซ่อม",
+              "href": "/user/repair-request"
+            },
+            {
+              "text": "ติดตามสถานะ/ประวัติของฉัน",
+              "href": "/user/repair-history"
+            },
+            {
+              "text": "",
+              "href": "/profile"
+            },
+            {
+              "text": "",
+              "href": "/login"
+            }
+          ],
+          "buttons": []
+        }
+      }
+    ],
+    "technician": [
+      {
+        "name": "technician_dashboard",
+        "route": "/technician/index",
+        "observed": {
+          "url": "http://localhost:5173/technician/index",
+          "title": "Dashboard ช่าง",
+          "text": "Helpdesk\n\nเจ\n\nเจิมจันทร์ จรัสวงศ์\n\nTechnician\n\nหน้าหลัก\nงานที่ได้รับมอบหมาย\nประวัติการซ่อม\nจัดการอุปกรณ์\nDashboard ช่าง\n\nจัดการงานและติดตามงานที่ได้รับมอบหมาย\n\nงานที่ได้รับมอบหมาย\n\n1\n\nรอการยืนยันจากผู้ใช้\n\n0\n\nเสร็จสิ้น\n\n0\n\nกำลังดำเนินการ\n\n1\nงานที่ได้รับมอบหมาย\n\nรายการงานซ่อมที่ถูกมอบหมายให้คุณดำเนินการ\n\n1 งาน\n\nคอมพิวเตอร์เปิดไม่ติด\n\nเปิดไม่ติด\n\nID: 10\nกำลังดำเนินการ\n\nมอบหมายเมื่อ 30 พฤษภาคม 2569 เวลา 01:15\n\nดูรายละเอียด",
+          "links": [
+            {
+              "text": "หน้าหลัก",
+              "href": "/technician/index"
+            },
+            {
+              "text": "งานที่ได้รับมอบหมาย",
+              "href": "/technician/reporttickettech"
+            },
+            {
+              "text": "ประวัติการซ่อม",
+              "href": "/technician/Historyticket"
+            },
+            {
+              "text": "จัดการอุปกรณ์",
+              "href": "/technician/device"
+            },
+            {
+              "text": "ดูรายละเอียด",
+              "href": "/technician/repairs/10"
+            },
+            {
+              "text": "",
+              "href": "/profile"
+            },
+            {
+              "text": "",
+              "href": "/login"
+            }
+          ],
+          "buttons": []
+        }
+      },
+      {
+        "name": "technician_assigned_jobs",
+        "route": "/technician/reporttickettech",
+        "observed": {
+          "url": "http://localhost:5173/technician/reporttickettech",
+          "title": "งานที่ได้รับมอบหมาย",
+          "text": "Helpdesk\n\nเจ\n\nเจิมจันทร์ จรัสวงศ์\n\nTechnician\n\nหน้าหลัก\nงานที่ได้รับมอบหมาย\nประวัติการซ่อม\nจัดการอุปกรณ์\nงานที่ได้รับมอบหมาย\n\nรายการงานซ่อมที่ได้รับมอบหมายและสามารถจัดการได้\n\n0 งาน\nID\tชื่องาน\tผู้แจ้ง\tรายละเอียดงาน\tสถานะ\tดำเนินการ\nไม่พบรายการแจ้งซ่อมที่ได้รับมอบหมาย\n\nแถวต่อหน้า\n\n5\n\n0-0 จาก 0",
+          "links": [
+            {
+              "text": "หน้าหลัก",
+              "href": "/technician/index"
+            },
+            {
+              "text": "งานที่ได้รับมอบหมาย",
+              "href": "/technician/reporttickettech"
+            },
+            {
+              "text": "ประวัติการซ่อม",
+              "href": "/technician/Historyticket"
+            },
+            {
+              "text": "จัดการอุปกรณ์",
+              "href": "/technician/device"
+            },
+            {
+              "text": "",
+              "href": "/profile"
+            },
+            {
+              "text": "",
+              "href": "/login"
+            }
+          ],
+          "buttons": []
+        }
+      },
+      {
+        "name": "technician_history",
+        "route": "/technician/Historyticket",
+        "observed": {
+          "url": "http://localhost:5173/technician/Historyticket",
+          "title": "ประวัติการซ่อม",
+          "text": "Helpdesk\n\nเจ\n\nเจิมจันทร์ จรัสวงศ์\n\nTechnician\n\nหน้าหลัก\nงานที่ได้รับมอบหมาย\nประวัติการซ่อม\nจัดการอุปกรณ์\nประวัติการซ่อม\n\nรายการงานซ่อมที่กำลังดำเนินการ รอผู้ใช้ยืนยัน และปิดงาน\n\n1 รายการ\nค้นหา\nค้นหา\nสถานะ\nทั้งหมด\nสถานะ\nรหัสงาน\tหัวข้อ\tรายละเอียด\tสถานะ\tจัดการ\n10\t\n\nคอมพิวเตอร์เปิดไม่ติด\n\n\t\n\nเปิดไม่ติด\n\n\t\nกำลังดำเนินการ\n\tดูรายละเอียด\n\nแถวต่อหน้า\n\n5\n\n1-1 จาก 1",
+          "links": [
+            {
+              "text": "หน้าหลัก",
+              "href": "/technician/index"
+            },
+            {
+              "text": "งานที่ได้รับมอบหมาย",
+              "href": "/technician/reporttickettech"
+            },
+            {
+              "text": "ประวัติการซ่อม",
+              "href": "/technician/Historyticket"
+            },
+            {
+              "text": "จัดการอุปกรณ์",
+              "href": "/technician/device"
+            },
+            {
+              "text": "",
+              "href": "/profile"
+            },
+            {
+              "text": "",
+              "href": "/login"
+            }
+          ],
+          "buttons": [
+            "ดูรายละเอียด",
+            "ดูรายละเอียด"
+          ]
+        }
+      },
+      {
+        "name": "technician_manage_devices",
+        "route": "/technician/device",
+        "observed": {
+          "url": "http://localhost:5173/technician/device",
+          "title": "จัดการอุปกรณ์",
+          "text": "Helpdesk\n\nเจ\n\nเจิมจันทร์ จรัสวงศ์\n\nTechnician\n\nหน้าหลัก\nงานที่ได้รับมอบหมาย\nประวัติการซ่อม\nจัดการอุปกรณ์\nจัดการอุปกรณ์\n\nเพิ่ม / แก้ไข / ลบ อุปกรณ์\n\n+ เพิ่มอุปกรณ์\nID\tชื่อ\tประเภท\tจำนวน\tจัดการ\n1\t\n\nGaming Notebook Nitro V 15 ANV15-A31-R13G (Obsidian black)\n\n\t\nNotebook\n\t\n1\n\t\nแก้ไข\nลบ\nรายการ\n\n8\t\n\nCOMPUTER SET JIB MARU-2605066 RYZEN3 3200G / ON BOARD / A520M / 8GB DDR4 / M.2 500GB\n\n\t\nPC\n\t\n1\n\t\nแก้ไข\nลบ\nรายการ\n\nRows per page:\n\n​\n\n1–2 of 2",
+          "links": [
+            {
+              "text": "หน้าหลัก",
+              "href": "/technician/index"
+            },
+            {
+              "text": "งานที่ได้รับมอบหมาย",
+              "href": "/technician/reporttickettech"
+            },
+            {
+              "text": "ประวัติการซ่อม",
+              "href": "/technician/Historyticket"
+            },
+            {
+              "text": "จัดการอุปกรณ์",
+              "href": "/technician/device"
+            },
+            {
+              "text": "รายการ",
+              "href": "/technician/device/detail/1"
+            },
+            {
+              "text": "รายการ",
+              "href": "/technician/device/detail/8"
+            },
+            {
+              "text": "รายการอุปกรณ์",
+              "href": "/technician/device/detail/1"
+            },
+            {
+              "text": "รายการอุปกรณ์",
+              "href": "/technician/device/detail/8"
+            },
+            {
+              "text": "",
+              "href": "/profile"
+            },
+            {
+              "text": "",
+              "href": "/login"
+            }
+          ],
+          "buttons": [
+            "+ เพิ่มอุปกรณ์",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ"
+          ]
+        }
+      },
+      {
+        "name": "technician_profile",
+        "route": "/profile",
+        "observed": {
+          "url": "http://localhost:5173/profile",
+          "title": "ข้อมูลส่วนตัว",
+          "text": "Helpdesk\n\nเจ\n\nเจิมจันทร์ จรัสวงศ์\n\nTechnician\n\nหน้าหลัก\nงานที่ได้รับมอบหมาย\nประวัติการซ่อม\nจัดการอุปกรณ์\nข้อมูลส่วนตัว\n\nข้อมูลบัญชีและสิทธิ์การใช้งานของคุณ\n\nTechnician\nพร้อมใช้งาน\n\nโปรไฟล์ผู้ใช้งาน\n\nเจ\nเจิมจันทร์ จรัสวงศ์\n\nUser ID: 11\n\nรายละเอียดบัญชี\n\nชื่อ-นามสกุล\n\nเจิมจันทร์ จรัสวงศ์\n\nอีเมล\n\ntechnician@example.com\n\nเบอร์โทรศัพท์\n\n0628937610\n\nบทบาท\n\nTechnician\n\nแผนก\n\nไอที\n\nสถานะบัญชี\n\nพร้อมใช้งาน",
+          "links": [
+            {
+              "text": "หน้าหลัก",
+              "href": "/technician/index"
+            },
+            {
+              "text": "งานที่ได้รับมอบหมาย",
+              "href": "/technician/reporttickettech"
+            },
+            {
+              "text": "ประวัติการซ่อม",
+              "href": "/technician/Historyticket"
+            },
+            {
+              "text": "จัดการอุปกรณ์",
+              "href": "/technician/device"
+            },
+            {
+              "text": "",
+              "href": "/profile"
+            },
+            {
+              "text": "",
+              "href": "/login"
+            }
+          ],
+          "buttons": []
+        }
+      }
+    ],
+    "manager": [
+      {
+        "name": "manager_dashboard",
+        "route": "/manager/index",
+        "observed": {
+          "url": "http://localhost:5173/manager/index",
+          "title": "Dashboard ผู้จัดการ",
+          "text": "Helpdesk\n\nภว\n\nภูริพัฒน์ วิชยประเสริฐกุล\n\nManager\n\nหน้าหลัก\nรายการแจ้งซ่อม\nสถานะการซ่อม\nจัดการอุปกรณ์\nกู้คืนอุปกรณ์\nDashboard ผู้จัดการ\n\nภาพรวมรายงานการซ่อมทั้งหมด\n\nดูรายงานเต็ม\n\nงานทั้งหมด\n\n1\n\nเสร็จสิ้น\n\n0\n\nกำลังดำเนินการ\n\n1\n\nรอมอบหมาย\n\n0\nสรุปผลงานช่างแต่ละคน\n\nจำนวนงานที่ได้รับมอบหมายและงานที่เสร็จสิ้น\n\n1 ช่าง\n\nเจิมจันทร์ จรัสวงศ์\n\nสรุปภาระงานของช่าง\n\n1\n\nได้รับมอบหมาย\n\n0\n\nเสร็จสิ้น",
+          "links": [
+            {
+              "text": "หน้าหลัก",
+              "href": "/manager/index"
+            },
+            {
+              "text": "รายการแจ้งซ่อม",
+              "href": "/manager/reportticket"
+            },
+            {
+              "text": "สถานะการซ่อม",
+              "href": "/manager/statusticket"
+            },
+            {
+              "text": "จัดการอุปกรณ์",
+              "href": "/manager/manage/device"
+            },
+            {
+              "text": "กู้คืนอุปกรณ์",
+              "href": "/manager/manage/device/restore"
+            },
+            {
+              "text": "ดูรายงานเต็ม",
+              "href": "/manager/reportticket"
+            },
+            {
+              "text": "",
+              "href": "/profile"
+            },
+            {
+              "text": "",
+              "href": "/login"
+            }
+          ],
+          "buttons": []
+        }
+      },
+      {
+        "name": "manager_all_tickets",
+        "route": "/manager/reportticket",
+        "observed": {
+          "url": "http://localhost:5173/manager/reportticket",
+          "title": "รายการแจ้งซ่อม",
+          "text": "Helpdesk\n\nภว\n\nภูริพัฒน์ วิชยประเสริฐกุล\n\nManager\n\nหน้าหลัก\nรายการแจ้งซ่อม\nสถานะการซ่อม\nจัดการอุปกรณ์\nกู้คืนอุปกรณ์\nรายการแจ้งซ่อม\n\nรายการที่รอมอบหมายช่างให้รับผิดชอบ\n\n0 รายการ\nID\tชื่องาน\tสถานะ\tวันที่แจ้ง\tจัดการ\nไม่พบรายการแจ้งซ่อมที่รอมอบหมาย\n\nแถวต่อหน้า\n\n5\n\n0-0 จาก 0",
+          "links": [
+            {
+              "text": "หน้าหลัก",
+              "href": "/manager/index"
+            },
+            {
+              "text": "รายการแจ้งซ่อม",
+              "href": "/manager/reportticket"
+            },
+            {
+              "text": "สถานะการซ่อม",
+              "href": "/manager/statusticket"
+            },
+            {
+              "text": "จัดการอุปกรณ์",
+              "href": "/manager/manage/device"
+            },
+            {
+              "text": "กู้คืนอุปกรณ์",
+              "href": "/manager/manage/device/restore"
+            },
+            {
+              "text": "",
+              "href": "/profile"
+            },
+            {
+              "text": "",
+              "href": "/login"
+            }
+          ],
+          "buttons": []
+        }
+      },
+      {
+        "name": "manager_status_overview",
+        "route": "/manager/statusticket",
+        "observed": {
+          "url": "http://localhost:5173/manager/statusticket",
+          "title": "สถานะการซ่อม",
+          "text": "Helpdesk\n\nภว\n\nภูริพัฒน์ วิชยประเสริฐกุล\n\nManager\n\nหน้าหลัก\nรายการแจ้งซ่อม\nสถานะการซ่อม\nจัดการอุปกรณ์\nกู้คืนอุปกรณ์\nสถานะการซ่อม\n\nติดตามงานที่มอบหมายแล้ว กำลังดำเนินการ รอการยืนยัน เสร็จสิ้น และรออะไหล่\n\n1 รายการ\nค้นหา\nค้นหา\nสถานะ\nทั้งหมด\nสถานะ\nรหัสงาน\tชื่องาน\tผู้แจ้ง\tสถานะ\tวันที่แจ้ง\tรายละเอียด\n10\t\n\nคอมพิวเตอร์เปิดไม่ติด\n\n\tยศกร อุดมเดชรักษา\t\nอยู่ระหว่างดำเนินการ\n\t23 พฤษภาคม 2569 เวลา 09:22\tดูรายละเอียด\n\nแถวต่อหน้า\n\n5\n\n1-1 จาก 1",
+          "links": [
+            {
+              "text": "หน้าหลัก",
+              "href": "/manager/index"
+            },
+            {
+              "text": "รายการแจ้งซ่อม",
+              "href": "/manager/reportticket"
+            },
+            {
+              "text": "สถานะการซ่อม",
+              "href": "/manager/statusticket"
+            },
+            {
+              "text": "จัดการอุปกรณ์",
+              "href": "/manager/manage/device"
+            },
+            {
+              "text": "กู้คืนอุปกรณ์",
+              "href": "/manager/manage/device/restore"
+            },
+            {
+              "text": "",
+              "href": "/profile"
+            },
+            {
+              "text": "",
+              "href": "/login"
+            }
+          ],
+          "buttons": [
+            "ดูรายละเอียด",
+            "ดูรายละเอียด"
+          ]
+        }
+      },
+      {
+        "name": "manager_manage_devices",
+        "route": "/manager/manage/device",
+        "observed": {
+          "url": "http://localhost:5173/manager/manage/device",
+          "title": "จัดการอุปกรณ์",
+          "text": "Helpdesk\n\nภว\n\nภูริพัฒน์ วิชยประเสริฐกุล\n\nManager\n\nหน้าหลัก\nรายการแจ้งซ่อม\nสถานะการซ่อม\nจัดการอุปกรณ์\nกู้คืนอุปกรณ์\nจัดการอุปกรณ์\n\nเพิ่ม แก้ไข ลบ และดูรายการอุปกรณ์ในระบบ\n\n+ เพิ่มอุปกรณ์\nค้นหาอุปกรณ์\nค้นหาอุปกรณ์\nประเภทอุปกรณ์\nทุกประเภท\nประเภทอุปกรณ์\nID\tชื่อ\tประเภท\tจำนวน\tจัดการ\n1\t\n\nGaming Notebook Nitro V 15 ANV15-A31-R13G (Obsidian black)\n\nAMD Ryzen™ 5 150 Processor NVIDIA® GeForce RTX™ 5060 8GB GDDR7 laptop GPU 15.6 inch FHD (1920x1080) IPS 180Hz, Color gamut sRGB 100% RAM 16GB DDR5, 1TB PCIe NVMe SSD 4-zone RGB keyboard Warranty (Local) : 3 Years (Parts/Labor/Onsite) Warranty\n\n\t\nNotebook\n\t\n1\n\t\nแก้ไข\nลบ\nรายการ\n\n8\t\n\nCOMPUTER SET JIB MARU-2605066 RYZEN3 3200G / ON BOARD / A520M / 8GB DDR4 / M.2 500GB\n\nAMD RYZEN 3 3200G 3.6 GHz (SOCKET AM4) ASUS PRIME A520M-K - AMD SOCKET AM4 DDR4 MICRO-ATX 8GB (8GBx1) DDR4 3200MHz RAM HIKSEMI FUTURE DDR4 - BLACK HSC408U32C2 8G\n\n\t\nPC\n\t\n1\n\t\nแก้ไข\nลบ\nรายการ\n\nแถวต่อหน้า\n\n5\n\n1-2 จาก 2",
+          "links": [
+            {
+              "text": "หน้าหลัก",
+              "href": "/manager/index"
+            },
+            {
+              "text": "รายการแจ้งซ่อม",
+              "href": "/manager/reportticket"
+            },
+            {
+              "text": "สถานะการซ่อม",
+              "href": "/manager/statusticket"
+            },
+            {
+              "text": "จัดการอุปกรณ์",
+              "href": "/manager/manage/device"
+            },
+            {
+              "text": "กู้คืนอุปกรณ์",
+              "href": "/manager/manage/device/restore"
+            },
+            {
+              "text": "รายการ",
+              "href": "/manager/manage/device/1/instances"
+            },
+            {
+              "text": "รายการ",
+              "href": "/manager/manage/device/8/instances"
+            },
+            {
+              "text": "รายการอุปกรณ์",
+              "href": "/manager/manage/device/1/instances"
+            },
+            {
+              "text": "รายการอุปกรณ์",
+              "href": "/manager/manage/device/8/instances"
+            },
+            {
+              "text": "",
+              "href": "/profile"
+            },
+            {
+              "text": "",
+              "href": "/login"
+            }
+          ],
+          "buttons": [
+            "+ เพิ่มอุปกรณ์",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ"
+          ]
+        }
+      },
+      {
+        "name": "manager_restore_devices",
+        "route": "/manager/manage/device/restore",
+        "observed": {
+          "url": "http://localhost:5173/manager/manage/device/restore",
+          "title": "กู้คืนอุปกรณ์ที่ถูกลบ",
+          "text": "Helpdesk\n\nภว\n\nภูริพัฒน์ วิชยประเสริฐกุล\n\nManager\n\nหน้าหลัก\nรายการแจ้งซ่อม\nสถานะการซ่อม\nจัดการอุปกรณ์\nกู้คืนอุปกรณ์\nกู้คืนอุปกรณ์ที่ถูกลบ\n\nกู้คืนอุปกรณ์และรายการอุปกรณ์ที่ถูกซ่อนออกจากรายการใช้งาน\n\nประเภทข้อมูล\nทั้งหมด\nประเภทข้อมูล\nรีเฟรช\nประเภท\tID\tชื่อข้อมูล\tรายละเอียด\tวันที่ลบ\tจัดการ\n\nอุปกรณ์\n\t9\t\n\ntt\n\n\t\n\ntt\n\n\t29 พ.ค. 2569 23:59\t\nกู้คืน\n\nแถวต่อหน้า\n\n10\n\n1-1 จาก 1",
+          "links": [
+            {
+              "text": "หน้าหลัก",
+              "href": "/manager/index"
+            },
+            {
+              "text": "รายการแจ้งซ่อม",
+              "href": "/manager/reportticket"
+            },
+            {
+              "text": "สถานะการซ่อม",
+              "href": "/manager/statusticket"
+            },
+            {
+              "text": "จัดการอุปกรณ์",
+              "href": "/manager/manage/device"
+            },
+            {
+              "text": "กู้คืนอุปกรณ์",
+              "href": "/manager/manage/device/restore"
+            },
+            {
+              "text": "",
+              "href": "/profile"
+            },
+            {
+              "text": "",
+              "href": "/login"
+            }
+          ],
+          "buttons": [
+            "รีเฟรช",
+            "กู้คืน",
+            "กู้คืน"
+          ]
+        }
+      },
+      {
+        "name": "manager_profile",
+        "route": "/profile",
+        "observed": {
+          "url": "http://localhost:5173/profile",
+          "title": "ข้อมูลส่วนตัว",
+          "text": "Helpdesk\n\nภว\n\nภูริพัฒน์ วิชยประเสริฐกุล\n\nManager\n\nหน้าหลัก\nรายการแจ้งซ่อม\nสถานะการซ่อม\nจัดการอุปกรณ์\nกู้คืนอุปกรณ์\nข้อมูลส่วนตัว\n\nข้อมูลบัญชีและสิทธิ์การใช้งานของคุณ\n\nManager\nพร้อมใช้งาน\n\nโปรไฟล์ผู้ใช้งาน\n\nภว\nภูริพัฒน์ วิชยประเสริฐกุล\n\nUser ID: 10\n\nรายละเอียดบัญชี\n\nชื่อ-นามสกุล\n\nภูริพัฒน์ วิชยประเสริฐกุล\n\nอีเมล\n\nmanager@example.com\n\nเบอร์โทรศัพท์\n\n0869572819\n\nบทบาท\n\nManager\n\nแผนก\n\nไอที\n\nสถานะบัญชี\n\nพร้อมใช้งาน",
+          "links": [
+            {
+              "text": "หน้าหลัก",
+              "href": "/manager/index"
+            },
+            {
+              "text": "รายการแจ้งซ่อม",
+              "href": "/manager/reportticket"
+            },
+            {
+              "text": "สถานะการซ่อม",
+              "href": "/manager/statusticket"
+            },
+            {
+              "text": "จัดการอุปกรณ์",
+              "href": "/manager/manage/device"
+            },
+            {
+              "text": "กู้คืนอุปกรณ์",
+              "href": "/manager/manage/device/restore"
+            },
+            {
+              "text": "",
+              "href": "/profile"
+            },
+            {
+              "text": "",
+              "href": "/login"
+            }
+          ],
+          "buttons": []
+        }
+      }
+    ],
+    "admin": [
+      {
+        "name": "admin_dashboard",
+        "route": "/admin/index",
+        "observed": {
+          "url": "http://localhost:5173/admin/index",
+          "title": "Admin Dashboard",
+          "text": "Helpdesk\n\nอห\n\nอภิลดา ห้าวหาญ\n\nAdministrator\n\nหน้าหลัก\nจัดการสมาชิก\nจัดการบทบาท\nจัดการสถานะ\nจัดการแผนก\nจัดการประเภทอุปกรณ์\nจัดการประเภทปัญหา\nกู้คืนข้อมูล\nAdmin Dashboard\n\nภาพรวมระบบและการจัดการทั้งหมด\n\nสมาชิก\n\n5\n\nบทบาท\n\n4\n\nสถานะ\n\n6\n\nแผนก\n\n2\nการจัดการด่วน\n\nเพิ่มข้อมูลพื้นฐานของระบบได้จากเมนูลัด\n\nผู้ใช้งาน\n\nเพิ่มผู้ใช้งาน\n\nเพิ่ม\n\nบทบาท\n\nเพิ่มบทบาท\n\nเพิ่ม\n\nสถานะ\n\nเพิ่มสถานะ\n\nเพิ่ม\n\nแผนก\n\nเพิ่มแผนก\n\nเพิ่ม",
+          "links": [
+            {
+              "text": "หน้าหลัก",
+              "href": "/admin/index"
+            },
+            {
+              "text": "จัดการสมาชิก",
+              "href": "/admin/manageuser"
+            },
+            {
+              "text": "จัดการบทบาท",
+              "href": "/admin/Managerole"
+            },
+            {
+              "text": "จัดการสถานะ",
+              "href": "/admin/Managestatus"
+            },
+            {
+              "text": "จัดการแผนก",
+              "href": "/admin/Managedepartment"
+            },
+            {
+              "text": "จัดการประเภทอุปกรณ์",
+              "href": "/admin/Managetypedevice"
+            },
+            {
+              "text": "จัดการประเภทปัญหา",
+              "href": "/admin/manage/issues-categories"
+            },
+            {
+              "text": "กู้คืนข้อมูล",
+              "href": "/admin/restore"
+            },
+            {
+              "text": "",
+              "href": "/profile"
+            },
+            {
+              "text": "",
+              "href": "/login"
+            }
+          ],
+          "buttons": [
+            "เพิ่ม",
+            "เพิ่ม",
+            "เพิ่ม",
+            "เพิ่ม"
+          ]
+        }
+      },
+      {
+        "name": "admin_manage_users",
+        "route": "/admin/manageuser",
+        "observed": {
+          "url": "http://localhost:5173/admin/manageuser",
+          "title": "จัดการผู้ใช้",
+          "text": "Helpdesk\n\nอห\n\nอภิลดา ห้าวหาญ\n\nAdministrator\n\nหน้าหลัก\nจัดการสมาชิก\nจัดการบทบาท\nจัดการสถานะ\nจัดการแผนก\nจัดการประเภทอุปกรณ์\nจัดการประเภทปัญหา\nกู้คืนข้อมูล\nจัดการผู้ใช้\n\nเพิ่ม แก้ไข ลบ และจัดการสถานะผู้ใช้งานในระบบ\n\n+ เพิ่มผู้ใช้\nค้นหาผู้ใช้\n​\nค้นหาผู้ใช้\nบทบาท\nทุกบทบาท\nบทบาท\nสถานะ\nทุกสถานะ\nสถานะ\nID\tชื่อผู้ใช้\tบทบาท\tแผนก\tสถานะ\tจัดการ\n10\t\n\nภูริพัฒน์ วิชยประเสริฐกุล\n\nmanager@example.com\n\n\tManager\tไอที\t\nพร้อมใช้งาน\n\t\nรีเซ็ตรหัสผ่าน\nแก้ไข\nลบ\n\n11\t\n\nเจิมจันทร์ จรัสวงศ์\n\ntechnician@example.com\n\n\tTechnician\tไอที\t\nพร้อมใช้งาน\n\t\nรีเซ็ตรหัสผ่าน\nแก้ไข\nลบ\n\n12\t\n\nยศกร อุดมเดชรักษา\n\nuser@example.com\n\n\tUser\tบัญชี\t\nพร้อมใช้งาน\n\t\nรีเซ็ตรหัสผ่าน\nแก้ไข\nลบ\n\n13\t\n\nอภิลดา ห้าวหาญ\n\nadmin@example.com\n\n\tAdmin\tไอที\t\nพร้อมใช้งาน\n\t\nรีเซ็ตรหัสผ่าน\nแก้ไข\nลบ\n\n29\t\n\nคณิศร ขันตีสา\n\nkanisorn.kha3@gmail.com\n\n\tManager\tบัญชี\t\nพร้อมใช้งาน\n\t\nรีเซ็ตรหัสผ่าน\nแก้ไข\nลบ\n\nแถวต่อหน้า\n\n5\n\n1-5 จาก 5",
+          "links": [
+            {
+              "text": "หน้าหลัก",
+              "href": "/admin/index"
+            },
+            {
+              "text": "จัดการสมาชิก",
+              "href": "/admin/manageuser"
+            },
+            {
+              "text": "จัดการบทบาท",
+              "href": "/admin/Managerole"
+            },
+            {
+              "text": "จัดการสถานะ",
+              "href": "/admin/Managestatus"
+            },
+            {
+              "text": "จัดการแผนก",
+              "href": "/admin/Managedepartment"
+            },
+            {
+              "text": "จัดการประเภทอุปกรณ์",
+              "href": "/admin/Managetypedevice"
+            },
+            {
+              "text": "จัดการประเภทปัญหา",
+              "href": "/admin/manage/issues-categories"
+            },
+            {
+              "text": "กู้คืนข้อมูล",
+              "href": "/admin/restore"
+            },
+            {
+              "text": "",
+              "href": "/profile"
+            },
+            {
+              "text": "",
+              "href": "/login"
+            }
+          ],
+          "buttons": [
+            "+ เพิ่มผู้ใช้",
+            "รีเซ็ตรหัสผ่าน",
+            "แก้ไข",
+            "ลบ",
+            "รีเซ็ตรหัสผ่าน",
+            "แก้ไข",
+            "ลบ",
+            "รีเซ็ตรหัสผ่าน",
+            "แก้ไข",
+            "ลบ",
+            "รีเซ็ตรหัสผ่าน",
+            "แก้ไข",
+            "ลบ",
+            "รีเซ็ตรหัสผ่าน",
+            "แก้ไข",
+            "ลบ",
+            "รีเซ็ต",
+            "แก้ไข",
+            "ลบ",
+            "รีเซ็ต",
+            "แก้ไข",
+            "ลบ",
+            "รีเซ็ต",
+            "แก้ไข",
+            "ลบ",
+            "รีเซ็ต",
+            "แก้ไข",
+            "ลบ",
+            "รีเซ็ต",
+            "แก้ไข",
+            "ลบ"
+          ]
+        }
+      },
+      {
+        "name": "admin_manage_roles",
+        "route": "/admin/Managerole",
+        "observed": {
+          "url": "http://localhost:5173/admin/Managerole",
+          "title": "จัดการบทบาท",
+          "text": "Helpdesk\n\nอห\n\nอภิลดา ห้าวหาญ\n\nAdministrator\n\nหน้าหลัก\nจัดการสมาชิก\nจัดการบทบาท\nจัดการสถานะ\nจัดการแผนก\nจัดการประเภทอุปกรณ์\nจัดการประเภทปัญหา\nกู้คืนข้อมูล\nจัดการบทบาท\n\nเพิ่ม แก้ไข และลบบทบาทของผู้ใช้งานในระบบ\n\n+ เพิ่มบทบาท\nID\tชื่อบทบาท\tจัดการ\n1\t\n\nAdmin\n\n\t\nแก้ไข\nลบ\n\n2\t\n\nManager\n\n\t\nแก้ไข\nลบ\n\n3\t\n\nTechnician\n\n\t\nแก้ไข\nลบ\n\n4\t\n\nUser\n\n\t\nแก้ไข\nลบ\n\nแถวต่อหน้า\n\n5\n\n1-4 จาก 4",
+          "links": [
+            {
+              "text": "หน้าหลัก",
+              "href": "/admin/index"
+            },
+            {
+              "text": "จัดการสมาชิก",
+              "href": "/admin/manageuser"
+            },
+            {
+              "text": "จัดการบทบาท",
+              "href": "/admin/Managerole"
+            },
+            {
+              "text": "จัดการสถานะ",
+              "href": "/admin/Managestatus"
+            },
+            {
+              "text": "จัดการแผนก",
+              "href": "/admin/Managedepartment"
+            },
+            {
+              "text": "จัดการประเภทอุปกรณ์",
+              "href": "/admin/Managetypedevice"
+            },
+            {
+              "text": "จัดการประเภทปัญหา",
+              "href": "/admin/manage/issues-categories"
+            },
+            {
+              "text": "กู้คืนข้อมูล",
+              "href": "/admin/restore"
+            },
+            {
+              "text": "",
+              "href": "/profile"
+            },
+            {
+              "text": "",
+              "href": "/login"
+            }
+          ],
+          "buttons": [
+            "+ เพิ่มบทบาท",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ"
+          ]
+        }
+      },
+      {
+        "name": "admin_manage_statuses",
+        "route": "/admin/Managestatus",
+        "observed": {
+          "url": "http://localhost:5173/admin/Managestatus",
+          "title": "จัดการสถานะ",
+          "text": "Helpdesk\n\nอห\n\nอภิลดา ห้าวหาญ\n\nAdministrator\n\nหน้าหลัก\nจัดการสมาชิก\nจัดการบทบาท\nจัดการสถานะ\nจัดการแผนก\nจัดการประเภทอุปกรณ์\nจัดการประเภทปัญหา\nกู้คืนข้อมูล\nจัดการสถานะ\n\nเพิ่ม แก้ไข และลบสถานะของรายการแจ้งซ่อม\n\n+ เพิ่มสถานะ\nID\tชื่อสถานะ\tจัดการ\n1\t\n\nแจ้งปัญหาใหม่\n\n\t\nแก้ไข\nลบ\n\n2\t\n\nมอบหมายให้ช่าง\n\n\t\nแก้ไข\nลบ\n\n3\t\n\nกำลังทำ\n\n\t\nแก้ไข\nลบ\n\n4\t\n\nทำเสร็จแล้วรอการยืนยัน\n\n\t\nแก้ไข\nลบ\n\n5\t\n\nเสร็จสิ้น\n\n\t\nแก้ไข\nลบ\n\nแถวต่อหน้า\n\n5\n\n1-5 จาก 6",
+          "links": [
+            {
+              "text": "หน้าหลัก",
+              "href": "/admin/index"
+            },
+            {
+              "text": "จัดการสมาชิก",
+              "href": "/admin/manageuser"
+            },
+            {
+              "text": "จัดการบทบาท",
+              "href": "/admin/Managerole"
+            },
+            {
+              "text": "จัดการสถานะ",
+              "href": "/admin/Managestatus"
+            },
+            {
+              "text": "จัดการแผนก",
+              "href": "/admin/Managedepartment"
+            },
+            {
+              "text": "จัดการประเภทอุปกรณ์",
+              "href": "/admin/Managetypedevice"
+            },
+            {
+              "text": "จัดการประเภทปัญหา",
+              "href": "/admin/manage/issues-categories"
+            },
+            {
+              "text": "กู้คืนข้อมูล",
+              "href": "/admin/restore"
+            },
+            {
+              "text": "",
+              "href": "/profile"
+            },
+            {
+              "text": "",
+              "href": "/login"
+            }
+          ],
+          "buttons": [
+            "+ เพิ่มสถานะ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ"
+          ]
+        }
+      },
+      {
+        "name": "admin_manage_departments",
+        "route": "/admin/Managedepartment",
+        "observed": {
+          "url": "http://localhost:5173/admin/Managedepartment",
+          "title": "จัดการแผนก",
+          "text": "Helpdesk\n\nอห\n\nอภิลดา ห้าวหาญ\n\nAdministrator\n\nหน้าหลัก\nจัดการสมาชิก\nจัดการบทบาท\nจัดการสถานะ\nจัดการแผนก\nจัดการประเภทอุปกรณ์\nจัดการประเภทปัญหา\nกู้คืนข้อมูล\nจัดการแผนก\n\nเพิ่ม แก้ไข และลบแผนกในระบบ\n\n+ เพิ่มแผนก\nID\tชื่อแผนก\tจัดการ\n1\t\n\nไอที\n\n\t\nแก้ไข\nลบ\n\n2\t\n\nบัญชี\n\n\t\nแก้ไข\nลบ\n\nแถวต่อหน้า\n\n5\n\n1-2 จาก 2",
+          "links": [
+            {
+              "text": "หน้าหลัก",
+              "href": "/admin/index"
+            },
+            {
+              "text": "จัดการสมาชิก",
+              "href": "/admin/manageuser"
+            },
+            {
+              "text": "จัดการบทบาท",
+              "href": "/admin/Managerole"
+            },
+            {
+              "text": "จัดการสถานะ",
+              "href": "/admin/Managestatus"
+            },
+            {
+              "text": "จัดการแผนก",
+              "href": "/admin/Managedepartment"
+            },
+            {
+              "text": "จัดการประเภทอุปกรณ์",
+              "href": "/admin/Managetypedevice"
+            },
+            {
+              "text": "จัดการประเภทปัญหา",
+              "href": "/admin/manage/issues-categories"
+            },
+            {
+              "text": "กู้คืนข้อมูล",
+              "href": "/admin/restore"
+            },
+            {
+              "text": "",
+              "href": "/profile"
+            },
+            {
+              "text": "",
+              "href": "/login"
+            }
+          ],
+          "buttons": [
+            "+ เพิ่มแผนก",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ"
+          ]
+        }
+      },
+      {
+        "name": "admin_manage_device_types",
+        "route": "/admin/Managetypedevice",
+        "observed": {
+          "url": "http://localhost:5173/admin/Managetypedevice",
+          "title": "จัดการประเภทอุปกรณ์",
+          "text": "Helpdesk\n\nอห\n\nอภิลดา ห้าวหาญ\n\nAdministrator\n\nหน้าหลัก\nจัดการสมาชิก\nจัดการบทบาท\nจัดการสถานะ\nจัดการแผนก\nจัดการประเภทอุปกรณ์\nจัดการประเภทปัญหา\nกู้คืนข้อมูล\nจัดการประเภทอุปกรณ์\n\nเพิ่ม แก้ไข และลบประเภทอุปกรณ์ในระบบ\n\n+ เพิ่มประเภทอุปกรณ์\nID\tชื่อประเภทอุปกรณ์\tจัดการ\n1\t\n\nNotebook\n\n\t\nแก้ไข\nลบ\n\n2\t\n\nPrinter\n\n\t\nแก้ไข\nลบ\n\n3\t\n\nPC\n\n\t\nแก้ไข\nลบ\n\n4\t\n\nMonitor\n\n\t\nแก้ไข\nลบ\n\nแถวต่อหน้า\n\n5\n\n1-4 จาก 4",
+          "links": [
+            {
+              "text": "หน้าหลัก",
+              "href": "/admin/index"
+            },
+            {
+              "text": "จัดการสมาชิก",
+              "href": "/admin/manageuser"
+            },
+            {
+              "text": "จัดการบทบาท",
+              "href": "/admin/Managerole"
+            },
+            {
+              "text": "จัดการสถานะ",
+              "href": "/admin/Managestatus"
+            },
+            {
+              "text": "จัดการแผนก",
+              "href": "/admin/Managedepartment"
+            },
+            {
+              "text": "จัดการประเภทอุปกรณ์",
+              "href": "/admin/Managetypedevice"
+            },
+            {
+              "text": "จัดการประเภทปัญหา",
+              "href": "/admin/manage/issues-categories"
+            },
+            {
+              "text": "กู้คืนข้อมูล",
+              "href": "/admin/restore"
+            },
+            {
+              "text": "",
+              "href": "/profile"
+            },
+            {
+              "text": "",
+              "href": "/login"
+            }
+          ],
+          "buttons": [
+            "+ เพิ่มประเภทอุปกรณ์",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ"
+          ]
+        }
+      },
+      {
+        "name": "admin_manage_issue_categories",
+        "route": "/admin/manage/issues-categories",
+        "observed": {
+          "url": "http://localhost:5173/admin/manage/issues-categories",
+          "title": "จัดการประเภทปัญหา",
+          "text": "Helpdesk\n\nอห\n\nอภิลดา ห้าวหาญ\n\nAdministrator\n\nหน้าหลัก\nจัดการสมาชิก\nจัดการบทบาท\nจัดการสถานะ\nจัดการแผนก\nจัดการประเภทอุปกรณ์\nจัดการประเภทปัญหา\nกู้คืนข้อมูล\nจัดการประเภทปัญหา\n\nเพิ่ม แก้ไข และลบประเภทปัญหาในระบบแจ้งซ่อม\n\n+ เพิ่มประเภทปัญหา\nID\tชื่อประเภทปัญหา\tจัดการ\n1\t\n\nฮาร์ดแวร์\n\n\t\nแก้ไข\nลบ\n\n2\t\n\nซอฟต์แวร์\n\n\t\nแก้ไข\nลบ\n\n3\t\n\nเครือข่าย / อินเทอร์เน็ต\n\n\t\nแก้ไข\nลบ\n\n4\t\n\nอื่นๆ\n\n\t\nแก้ไข\nลบ\n\nแถวต่อหน้า\n\n5\n\n1-4 จาก 4",
+          "links": [
+            {
+              "text": "หน้าหลัก",
+              "href": "/admin/index"
+            },
+            {
+              "text": "จัดการสมาชิก",
+              "href": "/admin/manageuser"
+            },
+            {
+              "text": "จัดการบทบาท",
+              "href": "/admin/Managerole"
+            },
+            {
+              "text": "จัดการสถานะ",
+              "href": "/admin/Managestatus"
+            },
+            {
+              "text": "จัดการแผนก",
+              "href": "/admin/Managedepartment"
+            },
+            {
+              "text": "จัดการประเภทอุปกรณ์",
+              "href": "/admin/Managetypedevice"
+            },
+            {
+              "text": "จัดการประเภทปัญหา",
+              "href": "/admin/manage/issues-categories"
+            },
+            {
+              "text": "กู้คืนข้อมูล",
+              "href": "/admin/restore"
+            },
+            {
+              "text": "",
+              "href": "/profile"
+            },
+            {
+              "text": "",
+              "href": "/login"
+            }
+          ],
+          "buttons": [
+            "+ เพิ่มประเภทปัญหา",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ",
+            "แก้ไข",
+            "ลบ"
+          ]
+        }
+      },
+      {
+        "name": "admin_restore_deleted_items",
+        "route": "/admin/restore",
+        "observed": {
+          "url": "http://localhost:5173/admin/restore",
+          "title": "กู้คืนข้อมูลที่ถูกลบ",
+          "text": "Helpdesk\n\nอห\n\nอภิลดา ห้าวหาญ\n\nAdministrator\n\nหน้าหลัก\nจัดการสมาชิก\nจัดการบทบาท\nจัดการสถานะ\nจัดการแผนก\nจัดการประเภทอุปกรณ์\nจัดการประเภทปัญหา\nกู้คืนข้อมูล\nกู้คืนข้อมูลที่ถูกลบ\n\nดูและกู้คืนข้อมูลที่ถูกลบออกจากรายการใช้งาน\n\nประเภทข้อมูล\nทั้งหมด\nประเภทข้อมูล\nรีเฟรช\nประเภท\tID\tชื่อข้อมูล\tรายละเอียด\tวันที่ลบ\tจัดการ\n\nแผนก\n\t10\t\n\ntest\n\n\t\n\n-\n\n\t24 พ.ค. 2569 22:17\t\nกู้คืน\n\n\nอุปกรณ์\n\t9\t\n\ntt\n\n\t\n\ntt\n\n\t29 พ.ค. 2569 23:59\t\nกู้คืน\n\n\nบทบาท\n\t8\t\n\nTest\n\n\t\n\n-\n\n\t24 พ.ค. 2569 21:16\t\nกู้คืน\n\n\nสถานะ\n\t12\t\n\ntesteiei\n\n\t\n\n-\n\n\t25 พ.ค. 2569 21:41\t\nกู้คืน\n\nแถวต่อหน้า\n\n10\n\n1-4 จาก 4",
+          "links": [
+            {
+              "text": "หน้าหลัก",
+              "href": "/admin/index"
+            },
+            {
+              "text": "จัดการสมาชิก",
+              "href": "/admin/manageuser"
+            },
+            {
+              "text": "จัดการบทบาท",
+              "href": "/admin/Managerole"
+            },
+            {
+              "text": "จัดการสถานะ",
+              "href": "/admin/Managestatus"
+            },
+            {
+              "text": "จัดการแผนก",
+              "href": "/admin/Managedepartment"
+            },
+            {
+              "text": "จัดการประเภทอุปกรณ์",
+              "href": "/admin/Managetypedevice"
+            },
+            {
+              "text": "จัดการประเภทปัญหา",
+              "href": "/admin/manage/issues-categories"
+            },
+            {
+              "text": "กู้คืนข้อมูล",
+              "href": "/admin/restore"
+            },
+            {
+              "text": "",
+              "href": "/profile"
+            },
+            {
+              "text": "",
+              "href": "/login"
+            }
+          ],
+          "buttons": [
+            "รีเฟรช",
+            "กู้คืน",
+            "กู้คืน",
+            "กู้คืน",
+            "กู้คืน",
+            "กู้คืน",
+            "กู้คืน",
+            "กู้คืน",
+            "กู้คืน"
+          ]
+        }
+      },
+      {
+        "name": "admin_profile",
+        "route": "/profile",
+        "observed": {
+          "url": "http://localhost:5173/profile",
+          "title": "ข้อมูลส่วนตัว",
+          "text": "Helpdesk\n\nอห\n\nอภิลดา ห้าวหาญ\n\nAdministrator\n\nหน้าหลัก\nจัดการสมาชิก\nจัดการบทบาท\nจัดการสถานะ\nจัดการแผนก\nจัดการประเภทอุปกรณ์\nจัดการประเภทปัญหา\nกู้คืนข้อมูล\nข้อมูลส่วนตัว\n\nข้อมูลบัญชีและสิทธิ์การใช้งานของคุณ\n\nAdmin\nพร้อมใช้งาน\n\nโปรไฟล์ผู้ใช้งาน\n\nอห\nอภิลดา ห้าวหาญ\n\nUser ID: 13\n\nรายละเอียดบัญชี\n\nชื่อ-นามสกุล\n\nอภิลดา ห้าวหาญ\n\nอีเมล\n\nadmin@example.com\n\nเบอร์โทรศัพท์\n\n0987896728\n\nบทบาท\n\nAdmin\n\nแผนก\n\nไอที\n\nสถานะบัญชี\n\nพร้อมใช้งาน",
+          "links": [
+            {
+              "text": "หน้าหลัก",
+              "href": "/admin/index"
+            },
+            {
+              "text": "จัดการสมาชิก",
+              "href": "/admin/manageuser"
+            },
+            {
+              "text": "จัดการบทบาท",
+              "href": "/admin/Managerole"
+            },
+            {
+              "text": "จัดการสถานะ",
+              "href": "/admin/Managestatus"
+            },
+            {
+              "text": "จัดการแผนก",
+              "href": "/admin/Managedepartment"
+            },
+            {
+              "text": "จัดการประเภทอุปกรณ์",
+              "href": "/admin/Managetypedevice"
+            },
+            {
+              "text": "จัดการประเภทปัญหา",
+              "href": "/admin/manage/issues-categories"
+            },
+            {
+              "text": "กู้คืนข้อมูล",
+              "href": "/admin/restore"
+            },
+            {
+              "text": "",
+              "href": "/profile"
+            },
+            {
+              "text": "",
+              "href": "/login"
+            }
+          ],
+          "buttons": []
+        }
+      }
+    ]
+  },
+  "inaccessible": [],
+  "files": [
+    "user/user_dashboard.png",
+    "user/user_create_ticket.png",
+    "user/user_ticket_history.png",
+    "user/user_ticket_detail.png",
+    "user/user_profile.png",
+    "technician/technician_dashboard.png",
+    "technician/technician_assigned_jobs.png",
+    "technician/technician_job_detail.png",
+    "technician/technician_repair_result.png",
+    "technician/technician_history.png",
+    "technician/technician_manage_devices.png",
+    "technician/technician_device_detail.png",
+    "technician/technician_device_history.png",
+    "technician/technician_profile.png",
+    "manager/manager_dashboard.png",
+    "manager/manager_all_tickets.png",
+    "manager/manager_assign_technician.png",
+    "manager/manager_ticket_detail.png",
+    "manager/manager_status_overview.png",
+    "manager/manager_manage_devices.png",
+    "manager/manager_manage_devices_add_dialog.png",
+    "manager/manager_manage_devices_edit_dialog.png",
+    "manager/manager_manage_devices_delete_dialog.png",
+    "manager/manager_device_detail.png",
+    "manager/manager_device_history.png",
+    "manager/manager_restore_devices.png",
+    "manager/manager_profile.png",
+    "admin/admin_dashboard.png",
+    "admin/admin_manage_users.png",
+    "admin/admin_manage_users_add_dialog.png",
+    "admin/admin_manage_users_edit_dialog.png",
+    "admin/admin_manage_users_delete_dialog.png",
+    "admin/admin_manage_roles.png",
+    "admin/admin_manage_roles_add_dialog.png",
+    "admin/admin_manage_roles_edit_dialog.png",
+    "admin/admin_manage_roles_delete_dialog.png",
+    "admin/admin_manage_statuses.png",
+    "admin/admin_manage_statuses_add_dialog.png",
+    "admin/admin_manage_statuses_edit_dialog.png",
+    "admin/admin_manage_statuses_delete_dialog.png",
+    "admin/admin_manage_departments.png",
+    "admin/admin_manage_departments_add_dialog.png",
+    "admin/admin_manage_departments_edit_dialog.png",
+    "admin/admin_manage_departments_delete_dialog.png",
+    "admin/admin_manage_device_types.png",
+    "admin/admin_manage_device_types_add_dialog.png",
+    "admin/admin_manage_device_types_edit_dialog.png",
+    "admin/admin_manage_device_types_delete_dialog.png",
+    "admin/admin_manage_issue_categories.png",
+    "admin/admin_manage_issue_categories_add_dialog.png",
+    "admin/admin_manage_issue_categories_edit_dialog.png",
+    "admin/admin_manage_issue_categories_delete_dialog.png",
+    "admin/admin_restore_deleted_items.png",
+    "admin/admin_profile.png"
+  ]
+}

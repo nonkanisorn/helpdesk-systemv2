@@ -19,6 +19,11 @@ import {
 import AddIssuesCategoriesDialog from "../dialog/AddDialog/AddIssuesCategoriesDialog";
 import EditIssuesCategoriesDialog from "../dialog/EditDialog/EditIssuesCategories";
 import { useSelector } from "react-redux";
+import {
+  confirmSoftDelete,
+  getErrorMessage,
+  useAdminFeedback,
+} from "../useAdminFeedback";
 
 function ManageissuesPages() {
   const apiUrl = process.env.REACT_APP_API_URL;
@@ -34,6 +39,7 @@ function ManageissuesPages() {
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const { showFeedback, FeedbackSnackbar } = useAdminFeedback();
 
   const fetchIssuesCategories = async () => {
     try {
@@ -64,18 +70,21 @@ function ManageissuesPages() {
   };
 
   const handleDeleteIssuesCategory = async (id) => {
-    console.log(id);
-    const shouldDelete = window.confirm("ต้องการลบประเภทปัญหานี้ใช่ไหม?");
-    if (!shouldDelete) return;
+    if (!confirmSoftDelete("ประเภทปัญหา")) return;
 
     try {
       await axios.delete(`${apiUrl}/issues-categories/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      showFeedback("success", "ซ่อนประเภทปัญหาออกจากรายการแล้ว");
       fetchIssuesCategories();
     } catch (error) {
       console.error("Error deleting issues category:", error);
+      showFeedback(
+        "error",
+        getErrorMessage(error, "ไม่สามารถลบประเภทปัญหาได้ เนื่องจากยังมีรายการแจ้งซ่อมที่ใช้งานอยู่"),
+      );
     }
   };
 
@@ -325,6 +334,7 @@ function ManageissuesPages() {
           />
         </Paper>
       </Box>
+      <FeedbackSnackbar />
     </>
   );
 }

@@ -29,7 +29,7 @@ function Reportcase() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const statusId = 1;
+  const assignmentQueueStatusIds = [1, 7];
 
   const managerStatusMap = {
     1: "รอมอบหมาย",
@@ -38,15 +38,29 @@ function Reportcase() {
     4: "รอการยืนยันจากผู้ใช้",
     5: "เสร็จสิ้น",
     6: "รออะไหล่",
+    7: "รอผู้จัดการตรวจสอบ",
+  };
+
+  const statusColorMap = {
+    1: "warning",
+    7: "error",
   };
 
   const fetchTickets = async () => {
     try {
-      const response = await axios.get(`${apiUrl}/tickets/status/${statusId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const responses = await Promise.all(
+        assignmentQueueStatusIds.map((statusId) =>
+          axios.get(`${apiUrl}/tickets/status/${statusId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ),
+      );
 
-      setTicketData(response.data.result ?? response.data ?? []);
+      setTicketData(
+        responses.flatMap((response) =>
+          response.data.result ?? response.data ?? [],
+        ),
+      );
     } catch (error) {
       console.error("Error fetching report tickets:", error);
     }
@@ -105,7 +119,7 @@ function Reportcase() {
             </Typography>
 
             <Typography variant="body2" color="text.secondary">
-              รายการที่รอมอบหมายช่างให้รับผิดชอบ
+              รายการที่รอมอบหมายช่าง และรายการที่ผู้ใช้ส่งกลับให้ตรวจสอบ
             </Typography>
           </Box>
 
@@ -125,7 +139,7 @@ function Reportcase() {
           <Table sx={{ minWidth: 800 }}>
             <TableHead>
               <TableRow>
-                <TableCell>ID</TableCell>
+                <TableCell>เลขที่งาน</TableCell>
                 <TableCell>ชื่องาน</TableCell>
                 <TableCell>สถานะ</TableCell>
                 <TableCell>วันที่แจ้ง</TableCell>
@@ -146,7 +160,7 @@ function Reportcase() {
                     <Chip
                       label={managerStatusMap[item.status_id] ?? "ไม่ทราบสถานะ"}
                       size="small"
-                      color="warning"
+                      color={statusColorMap[item.status_id] ?? "warning"}
                       variant="outlined"
                     />
                   </TableCell>
@@ -168,7 +182,7 @@ function Reportcase() {
               {ticketData.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={5} align="center">
-                    ไม่พบรายการแจ้งซ่อมที่รอมอบหมาย
+                    ไม่พบรายการที่รอมอบหมายหรือต้องตรวจสอบ
                   </TableCell>
                 </TableRow>
               )}
@@ -215,7 +229,7 @@ function Reportcase() {
                   </Box>
 
                   <Chip
-                    label={`ID: ${item.ticket_id}`}
+                    label={`เลขที่งาน: ${item.ticket_id}`}
                     size="small"
                     variant="outlined"
                   />
@@ -229,7 +243,7 @@ function Reportcase() {
                   <Chip
                     label={managerStatusMap[item.status_id] ?? "ไม่ทราบสถานะ"}
                     size="small"
-                    color="warning"
+                    color={statusColorMap[item.status_id] ?? "warning"}
                     variant="outlined"
                     sx={{ width: "fit-content" }}
                   />
@@ -268,7 +282,7 @@ function Reportcase() {
               }}
             >
               <Typography color="text.secondary">
-                ไม่พบรายการแจ้งซ่อมที่รอมอบหมาย
+                ไม่พบรายการที่รอมอบหมายหรือต้องตรวจสอบ
               </Typography>
             </Paper>
           )}

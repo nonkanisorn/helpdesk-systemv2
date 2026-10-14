@@ -1,6 +1,9 @@
 package service
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/nonkanisorn/helpdesk-system/internal/domain"
 	"github.com/nonkanisorn/helpdesk-system/internal/user/repository"
 	"golang.org/x/crypto/bcrypt"
@@ -12,6 +15,19 @@ type userService struct {
 
 func NewUserService(userRepo repository.UserRepository) UserService {
 	return userService{userRepo: userRepo}
+}
+
+func normalizeUserStatus(status string) (string, error) {
+	switch strings.ToLower(strings.TrimSpace(status)) {
+	case "", "active":
+		return "active", nil
+	case "inactive":
+		return "inactive", nil
+	case "pending":
+		return "pending", nil
+	default:
+		return "", fmt.Errorf("invalid user status: %s", status)
+	}
 }
 
 func (u userService) GetAllUsers() ([]domain.UserResponse, error) {
@@ -68,10 +84,14 @@ func (u userService) UpdateUserByID(id int, req domain.UserUpdateRequest) error 
 	status := req.Status
 	if status == "" {
 		if req.IsActive != nil && *req.IsActive == 0 {
-			status = "suspended"
+			status = "inactive"
 		} else {
 			status = "active"
 		}
+	}
+	status, err := normalizeUserStatus(status)
+	if err != nil {
+		return err
 	}
 
 	var passwordHash *string
@@ -85,7 +105,7 @@ func (u userService) UpdateUserByID(id int, req domain.UserUpdateRequest) error 
 		passwordHash = &hashString
 	}
 
-	err := u.userRepo.UpdateByID(id, repository.UserUpdate{
+	err = u.userRepo.UpdateByID(id, repository.UserUpdate{
 		PasswordHash: passwordHash,
 		FirstName:    req.FirstName,
 		LastName:     req.LastName,
@@ -103,11 +123,12 @@ func (u userService) UpdateUserByID(id int, req domain.UserUpdateRequest) error 
 }
 
 func (u userService) UpdateUserStatusByID(id int, status string) error {
-	if status == "inactive" {
-		status = "suspended"
+	status, err := normalizeUserStatus(status)
+	if err != nil {
+		return err
 	}
 
-	err := u.userRepo.UpdateStatusByID(id, status)
+	err = u.userRepo.UpdateStatusByID(id, status)
 	if err != nil {
 		return err
 	}

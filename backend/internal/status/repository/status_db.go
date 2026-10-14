@@ -1,6 +1,11 @@
 package repository
 
-import "github.com/jmoiron/sqlx"
+import (
+	"fmt"
+
+	"github.com/jmoiron/sqlx"
+	"github.com/nonkanisorn/helpdesk-system/internal/domain"
+)
 
 type statusRepositoryDB struct {
 	db *sqlx.DB
@@ -39,6 +44,7 @@ func (s statusRepositoryDB) GetAll() ([]Status, error) {
 			id,
 			name
 		FROM ticket_statuses
+		WHERE deleted_at IS NULL
 		ORDER BY id
 	`
 
@@ -59,6 +65,7 @@ func (s statusRepositoryDB) GetByID(id int) (*Status, error) {
 			name
 		FROM ticket_statuses
 		WHERE id = ?
+			AND deleted_at IS NULL
 	`
 
 	err := s.db.Get(&status, query, id)
@@ -74,6 +81,7 @@ func (s statusRepositoryDB) UpdateByID(id int, statusName string) (*Status, erro
 		UPDATE ticket_statuses
 		SET name = ?
 		WHERE id = ?
+			AND deleted_at IS NULL
 	`
 
 	_, err := s.db.Exec(query, statusName, id)
@@ -85,9 +93,23 @@ func (s statusRepositoryDB) UpdateByID(id int, statusName string) (*Status, erro
 }
 
 func (s statusRepositoryDB) DeleteByID(id int) error {
+	var ticketCount int
+	if err := s.db.Get(
+		&ticketCount,
+		"SELECT COUNT(1) FROM tickets WHERE status_id = ?",
+		id,
+	); err != nil {
+		return err
+	}
+	if ticketCount > 0 {
+		return fmt.Errorf("%w: ไม่สามารถลบสถานะได้ เนื่องจากยังมีรายการแจ้งซ่อมที่ใช้สถานะนี้อยู่", domain.ErrResourceInUse)
+	}
+
 	query := `
-		DELETE FROM ticket_statuses
+		UPDATE ticket_statuses
+		SET deleted_at = NOW()
 		WHERE id = ?
+			AND deleted_at IS NULL
 	`
 
 	_, err := s.db.Exec(query, id)

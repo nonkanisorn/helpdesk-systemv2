@@ -1,6 +1,11 @@
 package repository
 
-import "github.com/jmoiron/sqlx"
+import (
+	"fmt"
+
+	"github.com/jmoiron/sqlx"
+	"github.com/nonkanisorn/helpdesk-system/internal/domain"
+)
 
 type departmentRepositoryDB struct {
 	db *sqlx.DB
@@ -23,6 +28,8 @@ func (d departmentRepositoryDB) GetAll() ([]Department, error) {
 			id,
 			name
 		FROM departments
+		WHERE deleted_at IS NULL
+		ORDER BY id
 	`
 
 	err := d.db.Select(&departments, query)
@@ -42,6 +49,7 @@ func (d departmentRepositoryDB) GetByID(id int) (*Department, error) {
 			name
 		FROM departments
 		WHERE id = ?
+			AND deleted_at IS NULL
 	`
 
 	err := d.db.Get(&department, query, id)
@@ -71,6 +79,7 @@ func (d departmentRepositoryDB) UpdateByID(id int, departmentName string) error 
 		UPDATE departments
 		SET name = ?
 		WHERE id = ?
+			AND deleted_at IS NULL
 	`
 
 	_, err := d.db.Exec(query, departmentName, id)
@@ -82,9 +91,35 @@ func (d departmentRepositoryDB) UpdateByID(id int, departmentName string) error 
 }
 
 func (d departmentRepositoryDB) DeleteByID(id int) error {
+	var userCount int
+	if err := d.db.Get(
+		&userCount,
+		"SELECT COUNT(1) FROM users WHERE department_id = ? AND status <> 'inactive'",
+		id,
+	); err != nil {
+		return err
+	}
+	if userCount > 0 {
+		return fmt.Errorf("%w: ไม่สามารถลบแผนกได้ เนื่องจากยังมีผู้ใช้อยู่ในแผนกนี้", domain.ErrResourceInUse)
+	}
+
+	var deviceInstanceCount int
+	if err := d.db.Get(
+		&deviceInstanceCount,
+		"SELECT COUNT(1) FROM device_instances WHERE department_id = ? AND COALESCE(status, 'active') = 'active'",
+		id,
+	); err != nil {
+		return err
+	}
+	if deviceInstanceCount > 0 {
+		return fmt.Errorf("%w: ไม่สามารถลบแผนกได้ เนื่องจากยังมีรายการอุปกรณ์อยู่ในแผนกนี้", domain.ErrResourceInUse)
+	}
+
 	query := `
-		DELETE FROM departments
+		UPDATE departments
+		SET deleted_at = NOW()
 		WHERE id = ?
+			AND deleted_at IS NULL
 	`
 
 	_, err := d.db.Exec(query, id)

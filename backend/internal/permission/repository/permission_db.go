@@ -37,6 +37,9 @@ func (p permissionRepositoryDB) GetPermissionsByRoleID(roleID int) ([]Permission
 			p.name,
 			p.description
 		FROM role_permissions rp
+		JOIN roles r
+			ON r.id = rp.role_id
+			AND r.deleted_at IS NULL
 		JOIN permissions p
 			ON p.id = rp.permission_id
 		WHERE rp.role_id = ?
@@ -59,11 +62,15 @@ func (p permissionRepositoryDB) GetPermissionsByUserID(userID int) ([]Permission
 			p.name,
 			p.description
 		FROM users u
+		JOIN roles r
+			ON r.id = u.role_id
+			AND r.deleted_at IS NULL
 		JOIN role_permissions rp
 			ON rp.role_id = u.role_id
 		JOIN permissions p
 			ON p.id = rp.permission_id
 		WHERE u.id = ?
+			AND u.status = 'active'
 		ORDER BY p.name
 	`
 
@@ -80,6 +87,9 @@ func (p permissionRepositoryDB) RoleHasPermission(roleID int, permissionName str
 	query := `
 		SELECT COUNT(1)
 		FROM role_permissions rp
+		JOIN roles r
+			ON r.id = rp.role_id
+			AND r.deleted_at IS NULL
 		JOIN permissions p
 			ON p.id = rp.permission_id
 		WHERE rp.role_id = ?

@@ -60,7 +60,18 @@ func (t ticketQueryRepository) UpdateStatusTicket(updateTicketRow *UpdateTicketR
 
 func (t ticketQueryRepository) AssignTechToTickets(techID int, managerID int, tikcetID int) error {
 	statusID := 2
-	query := "update tickets t set technician_id = ?, manager_id = ?, status_id = ? , assigned_at = NOW() where id = ?"
+	query := `
+		UPDATE tickets t
+		SET
+			technician_id = ?,
+			manager_id = ?,
+			status_id = ?,
+			assigned_at = NOW(),
+			started_at = NULL,
+			completed_at = NULL,
+			closed_at = NULL
+		WHERE id = ?
+	`
 	_, err := t.db.Exec(query, techID, managerID, statusID, tikcetID)
 	if err != nil {
 		return err
@@ -300,15 +311,11 @@ func (t ticketQueryRepository) ConfirmAndCloseTicketByUser(ticketID int) error {
 }
 
 func (t ticketQueryRepository) RejectRepairByUser(ticketID int) error {
-	statusID := 1
+	statusID := 7
 	query := `
 		UPDATE tickets
 		SET
 			status_id = ?,
-			technician_id = NULL,
-			assigned_at = NULL,
-			started_at = NULL,
-			completed_at = NULL,
 			closed_at = NULL
 		WHERE id = ?
 	`

@@ -177,6 +177,7 @@ import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
 import BuildOutlinedIcon from "@mui/icons-material/BuildOutlined";
 import DevicesOutlinedIcon from "@mui/icons-material/DevicesOutlined";
+import RestoreFromTrashOutlinedIcon from "@mui/icons-material/RestoreFromTrashOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 
 const Sidebarmanager = () => {
@@ -214,6 +215,12 @@ const Sidebarmanager = () => {
       path: "/manager/manage/device",
       icon: <DevicesOutlinedIcon />,
       permissions: ["view_devices", "manage_devices"],
+    },
+    {
+      title: "กู้คืนอุปกรณ์",
+      path: "/manager/manage/device/restore",
+      icon: <RestoreFromTrashOutlinedIcon />,
+      permission: "manage_devices",
     },
   ];
   const visibleMenuItems = menuItems.filter((item) => {

@@ -61,7 +61,7 @@ function Devicehistory() {
         <Table sx={{ minWidth: 650 }}>
           <TableHead>
             <TableRow>
-              <TableCell align="center">เลขเคส</TableCell>
+              <TableCell align="center">เลขที่งาน</TableCell>
               <TableCell align="center">รหัสอุปกรณ์</TableCell>
               <TableCell align="center">สถานะก่อนหน้า</TableCell>
               <TableCell align="center">สถานะใหม่</TableCell>

@@ -193,6 +193,7 @@ import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettin
 import ApartmentOutlinedIcon from "@mui/icons-material/ApartmentOutlined";
 import DevicesOutlinedIcon from "@mui/icons-material/DevicesOutlined";
 import ReportProblemOutlinedIcon from "@mui/icons-material/ReportProblemOutlined";
+import RestoreFromTrashOutlinedIcon from "@mui/icons-material/RestoreFromTrashOutlined";
 
 const Sidebaradmin = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -247,6 +248,12 @@ const Sidebaradmin = () => {
       path: "/admin/manage/issues-categories",
       icon: <ReportProblemOutlinedIcon />,
       permission: "manage_issue_categories",
+    },
+    {
+      title: "กู้คืนข้อมูล",
+      path: "/admin/restore",
+      icon: <RestoreFromTrashOutlinedIcon />,
+      permission: "manage_users",
     },
   ];
   const visibleMenuItems = menuItems.filter(

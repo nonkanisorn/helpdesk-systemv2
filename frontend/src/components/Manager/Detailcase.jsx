@@ -30,6 +30,7 @@ export const Detailcase = () => {
   const [ticketData, setTicketData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [assigningId, setAssigningId] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const roleTechnician = 3;
 
@@ -52,6 +53,7 @@ export const Detailcase = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
+      setErrorMessage("");
 
       const [technicianResponse, ticketResponse] = await Promise.all([
         axios.get(`${apiUrl}/users/by-role/${roleTechnician}`, {
@@ -64,7 +66,7 @@ export const Detailcase = () => {
 
       const technicianData =
         technicianResponse.data.result?.map((technician) => ({
-          id: technician.user_id,
+          id: technician.user_id ?? technician.id,
           fullName: `${technician.first_name || ""} ${
             technician.last_name || ""
           }`.trim(),
@@ -77,6 +79,12 @@ export const Detailcase = () => {
       setTicketData(ticketResponse.data.result ?? ticketResponse.data ?? null);
     } catch (error) {
       console.error("Error fetching technician assign data:", error);
+      setTechnicians([]);
+      setErrorMessage(
+        error.response?.status === 403
+          ? "ไม่มีสิทธิ์ดึงข้อมูลช่างสำหรับมอบหมายงาน"
+          : "ไม่สามารถโหลดข้อมูลช่างได้",
+      );
     } finally {
       setLoading(false);
     }
@@ -141,7 +149,7 @@ export const Detailcase = () => {
             </Box>
 
             <Chip
-              label={`Ticket ID: ${ticket_id}`}
+              label={`เลขที่งาน: ${ticket_id}`}
               variant="outlined"
               sx={{ width: { xs: "100%", sm: "auto" } }}
             />
@@ -200,6 +208,22 @@ export const Detailcase = () => {
             </Paper>
           ) : (
             <Grid container spacing={2}>
+              {errorMessage && (
+                <Grid item xs={12}>
+                  <Paper
+                    variant="outlined"
+                    sx={{
+                      p: 3,
+                      borderRadius: 2.5,
+                      textAlign: "center",
+                      borderColor: "error.light",
+                    }}
+                  >
+                    <Typography color="error">{errorMessage}</Typography>
+                  </Paper>
+                </Grid>
+              )}
+
               {technicians.map((tech) => (
                 <Grid item xs={12} md={6} key={tech.id}>
                   <Paper
@@ -305,7 +329,7 @@ export const Detailcase = () => {
                 </Grid>
               ))}
 
-              {technicians.length === 0 && (
+              {!errorMessage && technicians.length === 0 && (
                 <Grid item xs={12}>
                   <Paper
                     variant="outlined"

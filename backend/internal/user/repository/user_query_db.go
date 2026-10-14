@@ -39,7 +39,6 @@ func (u userQueryRepository) GetUserWithRolesName() ([]UserWithRolesName, error)
 			ON u.role_id = r.id
 		LEFT JOIN departments d
 			ON u.department_id = d.id
-		WHERE u.status IS NULL OR u.status <> 'deleted'
 		ORDER BY u.id
 	`
 
@@ -107,15 +106,17 @@ func (u userQueryRepository) GetUserByRolesID(roleID int) ([]UserTechinicianRole
 	query := `
 		SELECT 
 			id,
-			first_name,
-			last_name,
-			email,
-			phone,
+			COALESCE(first_name, '') AS first_name,
+			COALESCE(last_name, '') AS last_name,
+			COALESCE(email, '') AS email,
+			COALESCE(phone, '') AS phone,
 			role_id,
-			department_id,
-			status
+			COALESCE(department_id, 0) AS department_id,
+			COALESCE(status, '') AS status
 		FROM users
 		WHERE role_id = ?
+			AND status = 'active'
+		ORDER BY first_name, last_name, id
 	`
 
 	err := u.db.Select(&userRoleTech, query, roleID)

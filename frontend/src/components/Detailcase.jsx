@@ -24,6 +24,9 @@ import HandymanIcon from "@mui/icons-material/Handyman";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import PrecisionManufacturingIcon from "@mui/icons-material/PrecisionManufacturing";
 import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
+import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
+import EditNoteRoundedIcon from "@mui/icons-material/EditNoteRounded";
+import Inventory2RoundedIcon from "@mui/icons-material/Inventory2Rounded";
 import Timeline from "@mui/lab/Timeline";
 import TimelineItem from "@mui/lab/TimelineItem";
 import TimelineSeparator from "@mui/lab/TimelineSeparator";
@@ -50,6 +53,7 @@ function Detailcase() {
 
   const token = useSelector((state) => state.user.token);
   const permissions = useSelector((state) => state.user.permissions);
+  const isEndUserView = window.location.pathname.startsWith("/user/");
 
   const statusMap = {
     1: {
@@ -58,7 +62,7 @@ function Detailcase() {
       icon: <ErrorOutlineRoundedIcon sx={{ color: blue[600] }} />,
     },
     2: {
-      label: "มอบหมายแล้ว",
+      label: "มอบหมายงาน",
       color: "warning",
       icon: <AssignmentIndIcon sx={{ color: amber[700] }} />,
     },
@@ -332,7 +336,7 @@ function Detailcase() {
       color: amber[600],
     },
     {
-      label: "มอบหมายแล้ว",
+      label: "มอบหมายงาน",
       date: ticketData.assigned_at,
       icon: <AssignmentIndIcon />,
       color: blue[600],
@@ -571,7 +575,7 @@ function Detailcase() {
                     </Typography>
 
                     <Typography variant="body2" color="text.secondary">
-                      รหัสแผนก: {showText(ticketData.user_department_id)}
+                      แผนก: {showText(ticketData.user_department_name)}
                     </Typography>
                   </Box>
                 </Stack>
@@ -623,7 +627,7 @@ function Detailcase() {
                 </Stack>
               </Paper>
 
-              {isHardwareCategory() && (
+              {!isEndUserView && isHardwareCategory() && (
                 <Paper
                   elevation={2}
                   sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}
@@ -669,8 +673,24 @@ function Detailcase() {
                     <Button
                       variant="contained"
                       fullWidth
+                      startIcon={<PlayArrowRoundedIcon />}
                       disabled={loadingAction}
                       onClick={startJobForTechnician}
+                      sx={{
+                        py: 1.1,
+                        borderRadius: 99,
+                        fontWeight: 700,
+                        textTransform: "none",
+                        boxShadow: "0 6px 16px rgba(25, 118, 210, 0.24)",
+                        transition: "transform 180ms ease, box-shadow 180ms ease",
+                        "&:hover": {
+                          boxShadow: "0 10px 22px rgba(25, 118, 210, 0.32)",
+                          transform: "translateY(-2px)",
+                        },
+                        "&.Mui-disabled": {
+                          boxShadow: "none",
+                        },
+                      }}
                     >
                       เริ่มงาน
                     </Button>
@@ -683,7 +703,29 @@ function Detailcase() {
                         to={`/technician/ticket/${ticket_id}/repair`}
                         variant="contained"
                         fullWidth
+                        endIcon={<EditNoteRoundedIcon />}
                         disabled={loadingAction}
+                        sx={{
+                          py: 1.25,
+                          borderRadius: 99,
+                          fontWeight: 700,
+                          textTransform: "none",
+                          background:
+                            "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
+                          boxShadow: "0 8px 18px rgba(25, 118, 210, 0.28)",
+                          transition:
+                            "transform 180ms ease, box-shadow 180ms ease, filter 180ms ease",
+                          "&:hover": {
+                            background:
+                              "linear-gradient(135deg, #1e88e5 0%, #1565c0 100%)",
+                            boxShadow: "0 12px 26px rgba(25, 118, 210, 0.34)",
+                            filter: "saturate(1.08)",
+                            transform: "translateY(-2px)",
+                          },
+                          "&.Mui-disabled": {
+                            boxShadow: "none",
+                          },
+                        }}
                       >
                         บันทึกการซ่อม
                       </Button>
@@ -693,8 +735,29 @@ function Detailcase() {
                           variant="outlined"
                           color="warning"
                           fullWidth
+                          startIcon={<Inventory2RoundedIcon />}
                           disabled={loadingAction}
                           onClick={waitingForPartButton}
+                          sx={{
+                            py: 1.15,
+                            borderRadius: 99,
+                            fontWeight: 700,
+                            textTransform: "none",
+                            borderColor: orange[200],
+                            backgroundColor: orange[50],
+                            color: orange[900],
+                            transition:
+                              "transform 180ms ease, background-color 180ms ease, box-shadow 180ms ease, border-color 180ms ease",
+                            "&:hover": {
+                              borderColor: orange[400],
+                              backgroundColor: orange[100],
+                              boxShadow: "0 8px 18px rgba(237, 108, 2, 0.2)",
+                              transform: "translateY(-2px)",
+                            },
+                            "&.Mui-disabled": {
+                              boxShadow: "none",
+                            },
+                          }}
                         >
                           รออะไหล่
                         </Button>

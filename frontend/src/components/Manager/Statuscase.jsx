@@ -36,7 +36,7 @@ function Statuscase() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const allowedStatus = [2, 3, 4, 5, 6];
+  const allowedStatus = [2, 3, 4, 5, 6, 7];
 
   const managerStatusMap = {
     2: "มอบหมายแล้ว",
@@ -44,6 +44,7 @@ function Statuscase() {
     4: "รอการยืนยันจากผู้ใช้",
     5: "เสร็จสิ้น",
     6: "รออะไหล่",
+    7: "รอผู้จัดการตรวจสอบ",
   };
 
   const statusColorMap = {
@@ -52,6 +53,7 @@ function Statuscase() {
     4: "primary",
     5: "success",
     6: "warning",
+    7: "error",
   };
 
   const getRequesterName = (item) => {
@@ -153,7 +155,7 @@ function Statuscase() {
 
             <Typography variant="body2" color="text.secondary">
               ติดตามงานที่มอบหมายแล้ว กำลังดำเนินการ รอการยืนยัน เสร็จสิ้น
-              และรออะไหล่
+              รออะไหล่ และงานที่ผู้ใช้ส่งกลับให้ตรวจสอบ
             </Typography>
           </Box>
 
@@ -176,7 +178,7 @@ function Statuscase() {
               setPage(0);
             }}
             label="ค้นหา"
-            placeholder="ค้นหาชื่องาน ผู้แจ้ง รายละเอียด หรือรหัสงาน"
+            placeholder="ค้นหาชื่องาน ผู้แจ้ง รายละเอียด หรือเลขที่งาน"
             fullWidth
             InputProps={{
               startAdornment: (
@@ -214,7 +216,7 @@ function Statuscase() {
           <Table sx={{ minWidth: 950 }}>
             <TableHead>
               <TableRow>
-                <TableCell>รหัสงาน</TableCell>
+                <TableCell>เลขที่งาน</TableCell>
                 <TableCell>ชื่องาน</TableCell>
                 <TableCell>ผู้แจ้ง</TableCell>
                 <TableCell>สถานะ</TableCell>
@@ -298,7 +300,7 @@ function Statuscase() {
                   </Box>
 
                   <Chip
-                    label={`ID: ${item.ticket_id}`}
+                    label={`เลขที่งาน: ${item.ticket_id}`}
                     size="small"
                     variant="outlined"
                   />

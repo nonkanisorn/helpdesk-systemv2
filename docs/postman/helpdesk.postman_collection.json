@@ -141,7 +141,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"new.user@example.com\",\n  \"first_name\": \"สมชาย\",\n  \"last_name\": \"ใจดี\",\n  \"phone\": \"0891234567\",\n  \"role_id\": 4,\n  \"department_id\": 1,\n  \"status\": \"pending\"\n}"
+              "raw": "{\n  \"email\": \"new.user@example.com\",\n  \"first_name\": \"สมชาย\",\n  \"last_name\": \"ใจดี\",\n  \"phone\": \"0891234567\",\n  \"role_id\": 4,\n  \"department_id\": 1,\n  \"status\": \"inactive\"\n}"
             },
             "url": "{{baseUrl}}/register",
             "description": "Create/invite a user. Body is parsed into domain.Usertest. Public route in code. Main fields used: email, first_name, last_name, phone, role_id, department_id, status."

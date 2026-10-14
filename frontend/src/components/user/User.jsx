@@ -24,6 +24,10 @@ import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 import { amber, blue, green, grey } from "@mui/material/colors";
+import {
+  technicianPrimaryButtonSx,
+  technicianSecondaryButtonSx,
+} from "../technician/buttonStyles";
 
 function User() {
   const apiUrl = process.env.REACT_APP_API_URL;
@@ -75,6 +79,11 @@ function User() {
         />
       ),
       color: "default",
+    },
+    7: {
+      label: "รอผู้จัดการตรวจสอบ",
+      icon: <HourglassEmptyIcon sx={{ color: amber[700] }} fontSize="small" />,
+      color: "warning",
     },
   };
 
@@ -178,6 +187,7 @@ function User() {
                     to="/user/repair-request"
                     variant="contained"
                     fullWidth
+                    sx={technicianPrimaryButtonSx}
                   >
                     เลือก
                   </Button>
@@ -194,7 +204,7 @@ function User() {
 
                   <Box sx={{ flexGrow: 1 }}>
                     <Typography variant="h6" fontWeight={600}>
-                      ติดตามสถานะ/ประวัติการซ่อมของฉัน
+                      สถานะการซ่อม/ประวัติการซ่อมของฉัน
                     </Typography>
 
                     <Typography variant="body2" color="text.secondary">
@@ -207,6 +217,7 @@ function User() {
                     to="/user/repair-history"
                     variant="contained"
                     fullWidth
+                    sx={technicianPrimaryButtonSx}
                   >
                     เลือก
                   </Button>
@@ -243,7 +254,10 @@ function User() {
               component={Link}
               to="/user/repair-history"
               variant="outlined"
-              sx={{ width: { xs: "100%", sm: "auto" } }}
+            sx={{
+              ...technicianSecondaryButtonSx,
+              width: { xs: "100%", sm: "auto" },
+            }}
             >
               ดูทั้งหมด
             </Button>
@@ -284,7 +298,7 @@ function User() {
 
                         <Stack direction="row" spacing={1} flexWrap="wrap">
                           <Chip
-                            label={`ID: ${item.ticket_id}`}
+                            label={`เลขที่งาน: ${item.ticket_id}`}
                             size="small"
                             variant="outlined"
                           />
@@ -305,6 +319,7 @@ function User() {
                         component={Link}
                         to={`/user/repair-detail/${item.ticket_id}`}
                         variant="outlined"
+                        sx={technicianSecondaryButtonSx}
                       >
                         ดูรายละเอียด
                       </Button>

@@ -28,7 +28,6 @@ func (u userRepositoryDB) GetAll() ([]User, error) {
 			COALESCE(department_id, 0) AS department_id,
 			status
 		FROM users
-		WHERE status IS NULL OR status <> 'deleted'
 		ORDER BY id
 	`
 	err := u.db.Select(&users, query)
@@ -113,7 +112,7 @@ func (u userRepositoryDB) UpdateStatusByID(id int, status string) error {
 }
 
 func (u userRepositoryDB) DeleteByID(id int) error {
-	query := "UPDATE users SET status = 'deleted' WHERE id = ?"
+	query := "UPDATE users SET status = 'inactive' WHERE id = ?"
 	_, err := u.db.Exec(query, id)
 	if err != nil {
 		return err

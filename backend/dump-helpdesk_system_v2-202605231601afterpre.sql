@@ -360,7 +360,7 @@ CREATE TABLE `users` (
   `phone` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `role_id` int DEFAULT NULL,
   `department_id` int DEFAULT NULL,
-  `status` enum('pending','active','suspended','deleted') COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `status` enum('active','inactive','suspended') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'inactive',
   `created_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_email` (`email`),
@@ -377,7 +377,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (10,'manager@example.com','$2a$10$l4xITUAWeogJxBOBpjtoNu/HXblirRpC8SthP9.LTLsTifdY1AeQK','ภูริพัฒน์ ','วิชยประเสริฐกุล','0869572819',2,1,'active','2026-05-15 08:39:03'),(11,'technician@example.com','$2a$10$8sOU49XOKHoqoKT2sjSK2esy/mOyM7W.FnjpVu3vNdA7ZoJDxVi3y','เจิมจันทร์ ','จรัสวงศ์ ','0628937610',3,1,'active','2026-05-15 08:40:48'),(12,'user@example.com','$2a$10$XsffbH72WaMUt0fG9F/MBe5.uMYHaW5xvFmWcqwbp9b5GtQGYmThi','ยศกร ','อุดมเดชรักษา','0982351237',4,2,'active','2026-05-15 08:43:00'),(13,'admin@example.com','$2a$10$.ezs29hmgxqmWLrQJ33SfeJcPnVMw5Y.9agEsOX5cGlDkmPbQMiVC','อภิลดา',' ห้าวหาญ','0987896728',1,1,'active','2026-05-15 08:43:41'),(29,'kanisorn.kha3@gmail.com',NULL,'คณิศร','ขันตีสา','0971055201',2,NULL,'pending','2026-05-23 02:38:42');
+INSERT INTO `users` VALUES (10,'manager@example.com','$2a$10$l4xITUAWeogJxBOBpjtoNu/HXblirRpC8SthP9.LTLsTifdY1AeQK','ภูริพัฒน์ ','วิชยประเสริฐกุล','0869572819',2,1,'active','2026-05-15 08:39:03'),(11,'technician@example.com','$2a$10$8sOU49XOKHoqoKT2sjSK2esy/mOyM7W.FnjpVu3vNdA7ZoJDxVi3y','เจิมจันทร์ ','จรัสวงศ์ ','0628937610',3,1,'active','2026-05-15 08:40:48'),(12,'user@example.com','$2a$10$XsffbH72WaMUt0fG9F/MBe5.uMYHaW5xvFmWcqwbp9b5GtQGYmThi','ยศกร ','อุดมเดชรักษา','0982351237',4,2,'active','2026-05-15 08:43:00'),(13,'admin@example.com','$2a$10$.ezs29hmgxqmWLrQJ33SfeJcPnVMw5Y.9agEsOX5cGlDkmPbQMiVC','อภิลดา',' ห้าวหาญ','0987896728',1,1,'active','2026-05-15 08:43:41'),(29,'kanisorn.kha3@gmail.com',NULL,'คณิศร','ขันตีสา','0971055201',2,NULL,'inactive','2026-05-23 02:38:42');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 

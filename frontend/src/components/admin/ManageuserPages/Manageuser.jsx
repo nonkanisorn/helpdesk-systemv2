@@ -15,7 +15,6 @@ import {
   TablePagination,
   Divider,
   Chip,
-  Switch,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -65,6 +64,8 @@ function Manageuser() {
   const [selectedUserID, setSelectedUserID] = useState(null);
 
   const [loadingAddUser, setLoadingAddUser] = useState(false);
+  const [sendingPasswordLinkUserID, setSendingPasswordLinkUserID] =
+    useState(null);
   const [searchText, setSearchText] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -110,7 +111,7 @@ function Manageuser() {
       department_id: item.department_id ?? item.dep_id,
       role_name: item.role_name ?? "-",
       department_name: item.department_name ?? item.dep_name ?? "-",
-      status: item.status ?? "pending",
+      status: item.status ?? "inactive",
     }));
   };
 
@@ -186,8 +187,9 @@ function Manageuser() {
     setSelectedUserID(null);
   };
 
-  const handleStatusActiveUsers = async (userId, checked) => {
-    const newStatus = checked ? "active" : "suspended";
+  const handleStatusChange = async (userId, newStatus) => {
+    const currentUser = userData.find((user) => user.user_id === userId);
+    const previousStatus = currentUser?.status ?? "inactive";
 
     setUserData((prev) =>
       prev.map((user) =>
@@ -197,65 +199,67 @@ function Manageuser() {
 
     try {
       await axios.patch(
-        `${apiUrl}/users/isactive/${userId}`,
+        `${apiUrl}/users/${userId}/status`,
         { status: newStatus },
         {
           headers: { Authorization: `Bearer ${token}` },
         },
+      );
+
+      showFeedback(
+        "success",
+        newStatus === "active"
+          ? "เปิดใช้งานผู้ใช้แล้ว"
+          : "ปิดใช้งานผู้ใช้แล้ว",
       );
     } catch (error) {
       console.error("Error updating user status:", error);
 
       setUserData((prev) =>
         prev.map((user) =>
-          user.user_id === userId
-            ? {
-                ...user,
-                status: newStatus === "active" ? "suspended" : "active",
-              }
-            : user,
+          user.user_id === userId ? { ...user, status: previousStatus } : user,
         ),
+      );
+
+      showFeedback(
+        "error",
+        getErrorMessage(error, "เปลี่ยนสถานะผู้ใช้ไม่สำเร็จ"),
       );
     }
   };
 
-  const handleSendResetPassword = async (email) => {
-    if (!email) return alert("ผู้ใช้นี้ไม่มีอีเมล");
+  const handleSendPasswordLink = async (user) => {
+    if (!user?.email) {
+      showFeedback("warning", "ผู้ใช้นี้ไม่มีอีเมล");
+      return;
+    }
+
+    const actionText =
+      user.status === "pending" ? "ส่งลิงก์ตั้งรหัสผ่าน" : "ส่งลิงก์รีเซ็ต";
 
     try {
+      setSendingPasswordLinkUserID(user.user_id);
+
       await axios.post(
         `${apiUrl}/forgot-password`,
-        { email },
+        { email: user.email },
         { headers: { Authorization: `Bearer ${token}` } },
       );
 
-      alert("ส่งลิงก์รีเซ็ตรหัสผ่านแล้ว");
+      showFeedback(
+        "success",
+        user.status === "pending"
+          ? "ส่งลิงก์ตั้งรหัสผ่านแล้ว"
+          : "ส่งลิงก์รีเซ็ตรหัสผ่านแล้ว",
+      );
     } catch (error) {
       console.error("Error sending reset password:", error);
-      alert(error.response?.data?.error || "ส่งลิงก์รีเซ็ตรหัสผ่านไม่สำเร็จ");
-    }
-  };
-
-  const handleDelete = async (userId) => {
-    const shouldDelete = window.confirm("ต้องการลบผู้ใช้นี้ใช่ไหม?");
-    if (!shouldDelete) return;
-
-    try {
-      await axios.delete(`${apiUrl}/users/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      showFeedback("success", "ลบผู้ใช้เรียบร้อยแล้ว");
-      fetchUsers();
-    } catch (error) {
-      console.error("Error deleting user:", error);
       showFeedback(
         "error",
-        getErrorMessage(
-          error,
-          "ไม่สามารถลบผู้ใช้นี้ได้ เนื่องจากยังมีข้อมูลที่เกี่ยวข้องอยู่",
-        ),
+        getErrorMessage(error, `${actionText}ไม่สำเร็จ`),
       );
+    } finally {
+      setSendingPasswordLinkUserID(null);
     }
   };
 
@@ -302,14 +306,25 @@ function Manageuser() {
 
   const getStatusLabel = (item) => {
     if (item.status === "pending") return "รอตั้งรหัสผ่าน";
-    if (item.status === "suspended") return "ปิดใช้งาน";
+    if (item.status === "inactive") return "ไม่พร้อมใช้งาน";
     return "พร้อมใช้งาน";
   };
 
   const getStatusColor = (item) => {
     if (item.status === "pending") return "warning";
-    if (item.status === "suspended") return "default";
+    if (item.status === "inactive") return "default";
     return "success";
+  };
+
+  const getStatusDescription = (item) => {
+    if (item.status === "pending") return "ยังไม่ได้ตั้งรหัสผ่าน";
+    if (item.status === "inactive") return "ถูกปิดการเข้าสู่ระบบ";
+    return "เข้าสู่ระบบได้";
+  };
+
+  const getPasswordActionLabel = (item) => {
+    if (item.status === "pending") return "ส่งลิงก์ตั้งรหัส";
+    return "รีเซ็ตรหัสผ่าน";
   };
 
   const filteredUsers = userData.filter((item) => {
@@ -536,7 +551,7 @@ function Manageuser() {
               </Typography>
 
               <Typography variant="body2" color="text.secondary">
-                เพิ่ม แก้ไข ลบ และจัดการสถานะผู้ใช้งานในระบบ
+                เพิ่ม แก้ไข ส่งลิงก์ตั้งรหัสผ่าน และจัดการสถานะผู้ใช้งาน
               </Typography>
             </Box>
 
@@ -602,9 +617,9 @@ function Manageuser() {
                 }}
               >
                 <MenuItem value="all">ทุกสถานะ</MenuItem>
-                <MenuItem value="active">พร้อมใช้งาน</MenuItem>
                 <MenuItem value="pending">รอตั้งรหัสผ่าน</MenuItem>
-                <MenuItem value="suspended">ปิดใช้งาน</MenuItem>
+                <MenuItem value="active">พร้อมใช้งาน</MenuItem>
+                <MenuItem value="inactive">ไม่พร้อมใช้งาน</MenuItem>
               </Select>
             </FormControl>
           </Stack>
@@ -643,19 +658,7 @@ function Manageuser() {
                     <TableCell>{item.department_name || "-"}</TableCell>
 
                     <TableCell>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        {item.status !== "pending" && (
-                          <Switch
-                            checked={item.status === "active"}
-                            onChange={(e) =>
-                              handleStatusActiveUsers(
-                                item.user_id,
-                                e.target.checked,
-                              )
-                            }
-                          />
-                        )}
-
+                      <Stack spacing={0.5} alignItems="flex-start">
                         <Chip
                           label={getStatusLabel(item)}
                           size="small"
@@ -666,6 +669,9 @@ function Manageuser() {
                               : "filled"
                           }
                         />
+                        <Typography variant="caption" color="text.secondary">
+                          {getStatusDescription(item)}
+                        </Typography>
                       </Stack>
                     </TableCell>
 
@@ -674,14 +680,52 @@ function Manageuser() {
                         direction="row"
                         spacing={1}
                         justifyContent="flex-end"
+                        flexWrap="wrap"
+                        useFlexGap
                       >
                         <Button
                           variant="outlined"
                           size="small"
-                          onClick={() => handleSendResetPassword(item.email)}
+                          disabled={
+                            sendingPasswordLinkUserID === item.user_id
+                          }
+                          onClick={() => handleSendPasswordLink(item)}
                         >
-                          รีเซ็ตรหัสผ่าน
+                          {sendingPasswordLinkUserID === item.user_id ? (
+                            <Stack
+                              direction="row"
+                              spacing={1}
+                              alignItems="center"
+                            >
+                              <CircularProgress size={14} />
+                              <span>กำลังส่ง...</span>
+                            </Stack>
+                          ) : (
+                            getPasswordActionLabel(item)
+                          )}
                         </Button>
+
+                        {item.status !== "pending" && (
+                          <Button
+                            variant="outlined"
+                            color={
+                              item.status === "active" ? "warning" : "success"
+                            }
+                            size="small"
+                            onClick={() =>
+                              handleStatusChange(
+                                item.user_id,
+                                item.status === "active"
+                                  ? "inactive"
+                                  : "active",
+                              )
+                            }
+                          >
+                            {item.status === "active"
+                              ? "ปิดใช้งาน"
+                              : "เปิดใช้งาน"}
+                          </Button>
+                        )}
 
                         <Button
                           variant="outlined"
@@ -693,21 +737,12 @@ function Manageuser() {
                         >
                           แก้ไข
                         </Button>
-
-                        <Button
-                          variant="outlined"
-                          color="error"
-                          size="small"
-                          onClick={() => handleDelete(item.user_id)}
-                        >
-                          ลบ
-                        </Button>
                       </Stack>
                     </TableCell>
                   </TableRow>
                 ))}
 
-                {userData.length === 0 && (
+                {filteredUsers.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={6} align="center">
                       ไม่พบข้อมูลผู้ใช้
@@ -781,40 +816,80 @@ function Manageuser() {
                   <Stack
                     direction="row"
                     justifyContent="space-between"
-                    alignItems="center"
+                    alignItems="flex-start"
+                    spacing={2}
                   >
                     <Box>
                       <Typography variant="caption" color="text.secondary">
                         สถานะ
                       </Typography>
-                      <Typography fontWeight={500}>
-                        {getStatusLabel(item)}
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ mt: 0.5 }}
+                      >
+                        {getStatusDescription(item)}
                       </Typography>
                     </Box>
 
-                    {item.status !== "pending" && (
-                      <Switch
-                        checked={item.status === "active"}
-                        onChange={(e) =>
-                          handleStatusActiveUsers(
-                            item.user_id,
-                            e.target.checked,
-                          )
-                        }
-                      />
-                    )}
+                    <Chip
+                      label={getStatusLabel(item)}
+                      size="small"
+                      color={getStatusColor(item)}
+                      variant={
+                        getStatusColor(item) === "default"
+                          ? "outlined"
+                          : "filled"
+                      }
+                    />
                   </Stack>
 
                   <Divider />
 
-                  <Stack direction="row" spacing={1}>
+                  <Stack
+                    direction={{ xs: "column", sm: "row" }}
+                    spacing={1}
+                  >
                     <Button
                       variant="outlined"
                       fullWidth
-                      onClick={() => handleSendResetPassword(item.email)}
+                      disabled={sendingPasswordLinkUserID === item.user_id}
+                      onClick={() => handleSendPasswordLink(item)}
                     >
-                      รีเซ็ต
+                      {sendingPasswordLinkUserID === item.user_id ? (
+                        <Stack
+                          direction="row"
+                          spacing={1}
+                          alignItems="center"
+                          justifyContent="center"
+                        >
+                          <CircularProgress size={14} />
+                          <span>กำลังส่ง...</span>
+                        </Stack>
+                      ) : (
+                        getPasswordActionLabel(item)
+                      )}
                     </Button>
+
+                    {item.status !== "pending" && (
+                      <Button
+                        variant="outlined"
+                        color={
+                          item.status === "active" ? "warning" : "success"
+                        }
+                        fullWidth
+                        onClick={() =>
+                          handleStatusChange(
+                            item.user_id,
+                            item.status === "active" ? "inactive" : "active",
+                          )
+                        }
+                      >
+                        {item.status === "active"
+                          ? "ปิดใช้งาน"
+                          : "เปิดใช้งาน"}
+                      </Button>
+                    )}
 
                     <Button
                       variant="outlined"
@@ -826,21 +901,12 @@ function Manageuser() {
                     >
                       แก้ไข
                     </Button>
-
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      fullWidth
-                      onClick={() => handleDelete(item.user_id)}
-                    >
-                      ลบ
-                    </Button>
                   </Stack>
                 </Stack>
               </Paper>
             ))}
 
-            {userData.length === 0 && (
+            {filteredUsers.length === 0 && (
               <Paper
                 variant="outlined"
                 sx={{ p: 3, borderRadius: 2.5, textAlign: "center" }}

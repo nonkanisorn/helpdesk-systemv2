@@ -25,6 +25,7 @@ func ToResponse(d []domain.DeviceInstance) []domain.DeviceInstanceResponse {
 			DeviceNumber:      v.DeviceNumber,
 			DepartmentID:      v.DepartmentID,
 			DepartmentIDAlias: v.DepartmentID,
+			Status:            v.Status,
 		})
 	}
 
@@ -36,21 +37,29 @@ func ToHistoryRepairDeviceInstanceResponse(h []domain.HistoryRepairDeviceInstanc
 
 	for _, v := range h {
 		devicesInstanceRes = append(devicesInstanceRes, domain.HistoryRepairDeviceInstanceResponse{
-			ID:               v.ID,
-			Title:            v.Title,
-			Description:      v.Description,
-			ResolutionNote:   v.ResolutionNote,
-			IssueCategoryID:  v.IssueCategoryID,
-			DeviceInstanceID: v.DeviceInstanceID,
-			UserID:           v.UserID,
-			TechnicianID:     v.TechnicianID,
-			ManagerID:        v.ManagerID,
-			StatusID:         v.StatusID,
-			CreatedAt:        v.CreatedAt,
-			AssignedAt:       v.AssignedAt,
-			StartedAt:        v.StartedAt,
-			CompletedAt:      v.CompletedAt,
-			ClosedAt:         v.ClosedAt,
+			ID:                  v.ID,
+			Title:               v.Title,
+			Description:         v.Description,
+			ResolutionNote:      v.ResolutionNote,
+			IssueCategoryID:     v.IssueCategoryID,
+			IssueCategoryName:   v.IssueCategoryName,
+			DeviceInstanceID:    v.DeviceInstanceID,
+			SerialNumber:        v.SerialNumber,
+			DeviceName:          v.DeviceName,
+			DeviceTypeName:      v.DeviceTypeName,
+			DepartmentName:      v.DepartmentName,
+			UserID:              v.UserID,
+			TechnicianID:        v.TechnicianID,
+			TechnicianFirstName: v.TechnicianFirstName,
+			TechnicianLastName:  v.TechnicianLastName,
+			ManagerID:           v.ManagerID,
+			StatusID:            v.StatusID,
+			StatusName:          v.StatusName,
+			CreatedAt:           v.CreatedAt,
+			AssignedAt:          v.AssignedAt,
+			StartedAt:           v.StartedAt,
+			CompletedAt:         v.CompletedAt,
+			ClosedAt:            v.ClosedAt,
 		})
 	}
 

@@ -18,6 +18,10 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import {
+  technicianPrimaryButtonSx,
+  technicianSecondaryButtonSx,
+} from "./buttonStyles";
 
 function Reportcasetech() {
   const apiUrl = process.env.REACT_APP_API_URL;
@@ -37,6 +41,7 @@ function Reportcasetech() {
     4: "รอผู้ใช้ยืนยัน",
     5: "เสร็จสิ้น",
     6: "รออะไหล่",
+    7: "รอผู้จัดการตรวจสอบ",
   };
 
   const statusChipProps = (statusId) => {
@@ -131,7 +136,7 @@ function Reportcasetech() {
           <Table sx={{ minWidth: 900 }}>
             <TableHead>
               <TableRow>
-                <TableCell>ID</TableCell>
+                <TableCell>เลขที่งาน</TableCell>
                 <TableCell>ชื่องาน</TableCell>
                 <TableCell>ผู้แจ้ง</TableCell>
                 <TableCell>รายละเอียดงาน</TableCell>
@@ -182,6 +187,7 @@ function Reportcasetech() {
                       size="small"
                       variant="outlined"
                       onClick={() => handleOpenDetail(item.ticket_id)}
+                      sx={technicianSecondaryButtonSx}
                     >
                       จัดการงาน
                     </Button>
@@ -239,7 +245,7 @@ function Reportcasetech() {
                   </Box>
 
                   <Chip
-                    label={`ID: ${item.ticket_id}`}
+                    label={`เลขที่งาน: ${item.ticket_id}`}
                     size="small"
                     variant="outlined"
                   />
@@ -296,6 +302,7 @@ function Reportcasetech() {
                   variant="contained"
                   fullWidth
                   onClick={() => handleOpenDetail(item.ticket_id)}
+                  sx={technicianPrimaryButtonSx}
                 >
                   จัดการงาน
                 </Button>

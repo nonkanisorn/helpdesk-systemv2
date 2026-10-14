@@ -246,9 +246,9 @@ const EditUserDialog = ({
                       label="สถานะผู้ใช้งาน"
                       value={field.value ?? "active"}
                     >
-                      <MenuItem value="active">พร้อมใช้งาน</MenuItem>
-                      <MenuItem value="suspended">ไม่พร้อมใช้งาน</MenuItem>
                       <MenuItem value="pending">รอตั้งรหัสผ่าน</MenuItem>
+                      <MenuItem value="active">พร้อมใช้งาน</MenuItem>
+                      <MenuItem value="inactive">ไม่พร้อมใช้งาน</MenuItem>
                     </Select>
                   </FormControl>
                 )}

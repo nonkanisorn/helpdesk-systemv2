@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -218,7 +219,11 @@ func (t ticketsQueryHandler) CompletedJobByTechnician(c *fiber.Ctx) error {
 	}
 	err = t.ticketQueryServ.CompletedJobByTechnician(ticketID, req.ResolutionNote, req.SerialNumber)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		status := fiber.StatusInternalServerError
+		if errors.Is(err, domain.ErrDeviceSerialNotFound) || errors.Is(err, domain.ErrDeviceUnavailable) {
+			status = fiber.StatusUnprocessableEntity
+		}
+		return c.Status(status).JSON(fiber.Map{
 			"success": false,
 			"error":   err.Error(),
 		})

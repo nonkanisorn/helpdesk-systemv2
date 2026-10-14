@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -34,6 +35,9 @@ import (
 	permissionHand "github.com/nonkanisorn/helpdesk-system/internal/permission/handler"
 	permissionRepo "github.com/nonkanisorn/helpdesk-system/internal/permission/repository"
 	permissionServ "github.com/nonkanisorn/helpdesk-system/internal/permission/service"
+	restoreHand "github.com/nonkanisorn/helpdesk-system/internal/restore/handler"
+	restoreRepo "github.com/nonkanisorn/helpdesk-system/internal/restore/repository"
+	restoreServ "github.com/nonkanisorn/helpdesk-system/internal/restore/service"
 	roleHand "github.com/nonkanisorn/helpdesk-system/internal/role/handler"
 	roleRepo "github.com/nonkanisorn/helpdesk-system/internal/role/repository"
 	roleServ "github.com/nonkanisorn/helpdesk-system/internal/role/service"
@@ -82,7 +86,11 @@ func main() {
 		return c.Next()
 	})
 	// app.Use(logger.New())
-	db, err := sqlx.Open("mysql", "root:@tcp(localhost:3306)/helpdesk_system_v2?parseTime=true&loc=Local")
+	dsn := os.Getenv("DB_DSN")
+	if dsn == "" {
+		dsn = "root:@tcp(localhost:3306)/helpdesk_systemv3?parseTime=true&loc=Local"
+	}
+	db, err := sqlx.Open("mysql", dsn)
 	if err != nil {
 		panic(err)
 	}
@@ -162,7 +170,7 @@ func main() {
 	app.Get("/users", require("manage_users"), userHand.GetAllUsers)
 	app.Get("/users/:id<int>", require("manage_users"), userHand.GetUserByID)
 	app.Patch("/users/:id<int>", require("manage_users"), userHand.UpdateUserByID)
-	app.Patch("/users/isactive/:id<int>", require("manage_users"), userHand.UpdateUserStatusByID)
+	app.Patch("/users/:id<int>/status", require("manage_users"), userHand.UpdateUserStatusByID)
 	app.Delete("/users/:id<int>", require("manage_users"), userHand.DeleteUsersByID)
 	// CheckRoleAdmin
 	app.Get("/admin/ping", require("manage_users"), func(c *fiber.Ctx) error {
@@ -170,11 +178,18 @@ func main() {
 			"sucess": true,
 		})
 	})
+	restoreRepo := restoreRepo.NewRestoreRepository(db)
+	restoreServ := restoreServ.NewRestoreService(restoreRepo)
+	restoreHandler := restoreHand.NewRestoreHandler(restoreServ)
+	app.Get("/admin/deleted-items", require("manage_users"), restoreHandler.GetDeletedItems)
+	app.Patch("/admin/deleted-items/:resource/:id<int>/restore", require("manage_users"), restoreHandler.Restore)
+	app.Get("/manager/deleted-device-items", require("manage_devices"), restoreHandler.GetDeletedDeviceItems)
+	app.Patch("/manager/deleted-device-items/:resource/:id<int>/restore", require("manage_devices"), restoreHandler.RestoreDeviceItem)
 	// User Query
 	userQueryRepo := userQueryRepo.NewUserQueryRepository(db)
 	userQueryServ := userQueryServ.NewUserQueryService(userQueryRepo, permissionServ)
 	userQueryHandler := userQueryHand.NewUserQueryHandler(userQueryServ)
-	app.Get("/users/by-role/:roleID<int>", require("manage_users"), userQueryHandler.GetUserByRolesID)
+	app.Get("/users/by-role/:roleID<int>", requireAny("manage_users", "assign_ticket"), userQueryHandler.GetUserByRolesID)
 	app.Get("/users/view", require("manage_users"), userQueryHandler.GetUserWithRolesName)
 	app.Get("/current-user/:id<int>", userQueryHandler.GetCurrentUser)
 	// admin
@@ -218,9 +233,9 @@ func main() {
 	deviceService := deviceServ.NewDeviceService(deviceRepo)
 	deviceHandler := deviceHand.NewDeviceHandler(deviceService)
 	app.Get("/devices", requireAny("view_devices", "manage_devices"), deviceHandler.GetAllDevice)
-	app.Post("/devices", require("manage_devices"), deviceHandler.CreateDevices)
-	app.Put("/devices/:id<int>", require("manage_devices"), deviceHandler.UpdateDevices)
-	app.Patch("/devices/:id<int>", require("manage_devices"), deviceHandler.UpdateDevices)
+	app.Post("/devices", requireAny("manage_devices", "view_devices"), deviceHandler.CreateDevices)
+	app.Put("/devices/:id<int>", requireAny("manage_devices", "view_devices"), deviceHandler.UpdateDevices)
+	app.Patch("/devices/:id<int>", requireAny("manage_devices", "view_devices"), deviceHandler.UpdateDevices)
 	app.Delete("/devices/:id", require("manage_devices"), deviceHandler.DeleteDevices)
 	// Device-Type
 	deviceTypeRepo := deviceTypeRepo.NewDeviceTypeRepository(db)
@@ -235,10 +250,10 @@ func main() {
 	deviceInstanceServ := deviceInstanceServ.NewDeviceInstanceService(deviceInstanceRepo)
 	deviceInstanceHandler := deviceInstanceHand.NewDeviceInstanceHandler(deviceInstanceServ)
 	app.Get("/device-instances", requireAny("view_devices", "manage_devices"), deviceInstanceHandler.GetAllDeviceInstance)
-	app.Post("/device-instances", require("manage_devices"), deviceInstanceHandler.Create)
-	app.Patch("/device-instances/:instanceID<int>", require("manage_devices"), deviceInstanceHandler.UpdateDeviceInstanceByID)
-	app.Put("/device-instances/:instanceID<int>", require("manage_devices"), deviceInstanceHandler.UpdateDeviceInstanceByID)
-	app.Delete("/device-instances/:instanceID<int>", require("manage_devices"), deviceInstanceHandler.DeleteDeviceInstanceByID)
+	app.Post("/device-instances", requireAny("manage_devices", "view_devices"), deviceInstanceHandler.Create)
+	app.Patch("/device-instances/:instanceID<int>", requireAny("manage_devices", "view_devices"), deviceInstanceHandler.UpdateDeviceInstanceByID)
+	app.Put("/device-instances/:instanceID<int>", requireAny("manage_devices", "view_devices"), deviceInstanceHandler.UpdateDeviceInstanceByID)
+	app.Delete("/device-instances/:instanceID<int>", requireAny("manage_devices", "view_devices"), deviceInstanceHandler.DeleteDeviceInstanceByID)
 	deviceInstanceQueryServ := deviceInstanceQueryServ.NewDeviceInstanceQueryService(deviceInstanceQueryRepo)
 	deviceInstanceQueryHand := deviceInstanceQueryHand.NewDeviceInstanceQueryHandler(deviceInstanceQueryServ)
 	app.Get("/device-instances/device/:deviceID<int>", requireAny("view_devices", "manage_devices"), deviceInstanceQueryHand.GetDeviceInstanceByDeviceID)
@@ -276,6 +291,7 @@ func main() {
 			LEFT JOIN tickets t
 				ON t.technician_id = u.id
 			WHERE u.role_id = 3
+				AND u.status = 'active'
 			GROUP BY u.id, u.first_name, u.last_name
 			ORDER BY u.id
 		`

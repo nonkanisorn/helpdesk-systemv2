@@ -79,7 +79,7 @@ Middleware notation:
 | GET | `/users` | `RequirePermission(manage_users)` | - |
 | GET | `/users/:id` | `RequirePermission(manage_users)` | - |
 | PATCH | `/users/:id` | `RequirePermission(manage_users)` | `password`, `first_name`, `last_name`, `email`, `phone`, `role_id`, `department_id`, `dep_id`, `status`, `is_active` |
-| PATCH | `/users/isactive/:id` | `RequirePermission(manage_users)` | `status` or `is_active` |
+| PATCH | `/users/isactive/:id` | `RequirePermission(manage_users)` | `status` (`active`, `inactive`, `suspended`) or `is_active` |
 | DELETE | `/users/:id` | `RequirePermission(manage_users)` | - |
 | GET | `/users/by-role/:roleID` | `RequirePermission(manage_users)` | - |
 | GET | `/users/view` | `RequirePermission(manage_users)` | - |

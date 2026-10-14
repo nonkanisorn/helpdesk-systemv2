@@ -18,8 +18,11 @@ import { useParams, Link } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import { technicianSecondaryButtonSx } from "./buttonStyles";
 
-const InstanceDeviceHistoryPage = () => {
+const InstanceDeviceHistoryPage = ({
+  ticketDetailPath = (ticketId) => `/technician/repairs/${ticketId}`,
+} = {}) => {
   const { instance_id } = useParams();
 
   const apiUrl = process.env.REACT_APP_API_URL;
@@ -76,6 +79,21 @@ const InstanceDeviceHistoryPage = () => {
     )[0];
   }, [historyData]);
 
+  const instanceInfo = historyData[0] ?? null;
+
+  const getStatusLabel = (item) =>
+    item?.status_name ??
+    statusMap[item?.status_id]?.label ??
+    (item?.status_id ? `สถานะ ${item.status_id}` : "-");
+
+  const getTechnicianName = (item) => {
+    const fullName = [item?.technician_first_name, item?.technician_last_name]
+      .filter(Boolean)
+      .join(" ");
+
+    return fullName || "-";
+  };
+
   const paginatedHistory = historyData.slice(
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage,
@@ -122,12 +140,42 @@ const InstanceDeviceHistoryPage = () => {
             direction={{ xs: "column", md: "row" }}
             spacing={2}
             justifyContent="space-between"
+            useFlexGap
+            flexWrap="wrap"
           >
             <Paper variant="outlined" sx={{ p: 2, borderRadius: 2.5, flex: 1 }}>
               <Typography variant="caption" color="text.secondary">
                 Instance ID
               </Typography>
               <Typography fontWeight={600}>{instance_id}</Typography>
+            </Paper>
+
+            <Paper variant="outlined" sx={{ p: 2, borderRadius: 2.5, flex: 1 }}>
+              <Typography variant="caption" color="text.secondary">
+                รหัสอุปกรณ์
+              </Typography>
+              <Typography fontWeight={600}>
+                {instanceInfo?.serial_number ?? "-"}
+              </Typography>
+            </Paper>
+
+            <Paper variant="outlined" sx={{ p: 2, borderRadius: 2.5, flex: 1 }}>
+              <Typography variant="caption" color="text.secondary">
+                อุปกรณ์
+              </Typography>
+              <Typography fontWeight={600}>
+                {instanceInfo?.device_name ?? "-"}
+              </Typography>
+            </Paper>
+
+            <Paper variant="outlined" sx={{ p: 2, borderRadius: 2.5, flex: 1 }}>
+              <Typography variant="caption" color="text.secondary">
+                ประเภท / แผนก
+              </Typography>
+              <Typography fontWeight={600}>
+                {instanceInfo?.device_type_name ?? "-"} /{" "}
+                {instanceInfo?.department_name ?? "-"}
+              </Typography>
             </Paper>
 
             <Paper variant="outlined" sx={{ p: 2, borderRadius: 2.5, flex: 1 }}>
@@ -157,12 +205,7 @@ const InstanceDeviceHistoryPage = () => {
 
               <Box sx={{ mt: 0.5 }}>
                 <Chip
-                  label={
-                    latestRepair
-                      ? (statusMap[latestRepair.status_id]?.label ??
-                        `สถานะ ${latestRepair.status_id}`)
-                      : "-"
-                  }
+                  label={getStatusLabel(latestRepair)}
                   color={
                     latestRepair
                       ? (statusMap[latestRepair.status_id]?.color ?? "default")
@@ -216,10 +259,11 @@ const InstanceDeviceHistoryPage = () => {
             <Table sx={{ minWidth: 900 }}>
               <TableHead>
                 <TableRow>
-                  <TableCell>รหัสงาน</TableCell>
+                  <TableCell>เลขที่งาน</TableCell>
                   <TableCell>ปัญหา</TableCell>
                   <TableCell>รายละเอียด</TableCell>
                   <TableCell>วันที่แจ้ง</TableCell>
+                  <TableCell>ช่าง</TableCell>
                   <TableCell>เสร็จสิ้นเมื่อ</TableCell>
                   <TableCell>สถานะ</TableCell>
                   <TableCell align="right">จัดการ</TableCell>
@@ -255,16 +299,15 @@ const InstanceDeviceHistoryPage = () => {
 
                     <TableCell>{formatDateTime(item.created_at)}</TableCell>
 
+                    <TableCell>{getTechnicianName(item)}</TableCell>
+
                     <TableCell>
                       {formatDateTime(item.completed_at ?? item.closed_at)}
                     </TableCell>
 
                     <TableCell>
                       <Chip
-                        label={
-                          statusMap[item.status_id]?.label ??
-                          `สถานะ ${item.status_id}`
-                        }
+                        label={getStatusLabel(item)}
                         color={statusMap[item.status_id]?.color ?? "default"}
                         size="small"
                         variant="outlined"
@@ -274,9 +317,10 @@ const InstanceDeviceHistoryPage = () => {
                     <TableCell align="right">
                       <Button
                         component={Link}
-                        to={`/technician/repairs/${item.ticket_id}`}
+                        to={ticketDetailPath(item.ticket_id)}
                         variant="outlined"
                         size="small"
+                        sx={technicianSecondaryButtonSx}
                       >
                         ดูรายละเอียด
                       </Button>
@@ -286,7 +330,7 @@ const InstanceDeviceHistoryPage = () => {
 
                 {historyData.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={7} align="center">
+                    <TableCell colSpan={8} align="center">
                       ไม่พบประวัติการซ่อมของอุปกรณ์
                     </TableCell>
                   </TableRow>
@@ -334,7 +378,7 @@ const InstanceDeviceHistoryPage = () => {
                     </Box>
 
                     <Chip
-                      label={`Ticket: ${item.ticket_id}`}
+                      label={`เลขที่งาน: ${item.ticket_id}`}
                       size="small"
                       variant="outlined"
                     />
@@ -357,6 +401,16 @@ const InstanceDeviceHistoryPage = () => {
                       }}
                     >
                       {item.description || "-"}
+                    </Typography>
+                  </Stack>
+
+                  <Stack spacing={0.5}>
+                    <Typography variant="caption" color="text.secondary">
+                      ช่างผู้รับผิดชอบ
+                    </Typography>
+
+                    <Typography variant="body2" fontWeight={500}>
+                      {getTechnicianName(item)}
                     </Typography>
                   </Stack>
 
@@ -386,10 +440,7 @@ const InstanceDeviceHistoryPage = () => {
                     </Typography>
 
                     <Chip
-                      label={
-                        statusMap[item.status_id]?.label ??
-                        `สถานะ ${item.status_id}`
-                      }
+                      label={getStatusLabel(item)}
                       color={statusMap[item.status_id]?.color ?? "default"}
                       size="small"
                       variant="outlined"
@@ -401,9 +452,10 @@ const InstanceDeviceHistoryPage = () => {
 
                   <Button
                     component={Link}
-                    to={`/technician/repairs/${item.ticket_id}`}
+                    to={ticketDetailPath(item.ticket_id)}
                     variant="outlined"
                     fullWidth
+                    sx={technicianSecondaryButtonSx}
                   >
                     ดูรายละเอียด
                   </Button>

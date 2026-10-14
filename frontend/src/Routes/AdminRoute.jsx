@@ -12,7 +12,7 @@ import Notfound404 from "../components/Notfound404";
 
 import Manageuser from "../components/admin/ManageuserPages/Manageuser";
 import Managerole from "../components/admin/ManagerolePages/Managerole";
-import Managedevice from "../components/admin/ManagedevicePages/Managedevice";
+import Managedevice from "../components/Manager/ManageDevice";
 import Managestatus from "../components/admin/ManagestatusPages/Managestatus";
 import Adddevice from "../components/admin/ManagedevicePages/Adddevice";
 import Editdevice from "../components/admin/ManagedevicePages/Editdevice";
@@ -28,6 +28,7 @@ import Adduser from "../components/admin/ManageuserPages/Adduser";
 import Edituser from "../components/admin/ManageuserPages/Edituser";
 import ManageissuesPages from "../components/admin/Manageissues/ManageissuesPages";
 import ManageTypeDevices from "../components/admin/ManagedevicePages/ManageTypeDevices";
+import RestoreDeletedItems from "../components/admin/RestorePages/RestoreDeletedItems";
 const AdminRoute = ({ children }) => {
   const { user } = useSelector((state) => ({ ...state }));
   const [ok, setOk] = useState(false);
@@ -150,6 +151,7 @@ const AdminRoute = ({ children }) => {
               path="manage/issues-categories"
               element={<ManageissuesPages />}
             />
+            <Route path="restore" element={<RestoreDeletedItems />} />
 
             <Route path="adduser" element={<Adduser />} />
             <Route path="*" element={<Notfound404 />} />

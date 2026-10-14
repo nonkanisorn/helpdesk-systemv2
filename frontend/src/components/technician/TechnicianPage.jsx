@@ -15,12 +15,24 @@ import ConstructionRoundedIcon from "@mui/icons-material/ConstructionRounded";
 import PendingActionsRoundedIcon from "@mui/icons-material/PendingActionsRounded";
 import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
 import AutorenewRoundedIcon from "@mui/icons-material/AutorenewRounded";
+import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 
 import { blue, orange, green, teal } from "@mui/material/colors";
 
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import PaperuiV2 from "../ui/PaperuiV2";
+import { technicianPrimaryButtonSx } from "./buttonStyles";
+
+const technicianStatusMap = {
+  1: { label: "งานใหม่", color: "info" },
+  2: { label: "ได้รับมอบหมาย", color: "warning" },
+  3: { label: "กำลังดำเนินการ", color: "info" },
+  4: { label: "รอผู้ใช้ยืนยัน", color: "warning" },
+  5: { label: "เสร็จสิ้น", color: "success" },
+  6: { label: "รออะไหล่", color: "default" },
+  7: { label: "รอผู้จัดการตรวจสอบ", color: "secondary" },
+};
 
 function Technicianpage() {
   const apiUrl = process.env.REACT_APP_API_URL;
@@ -41,6 +53,16 @@ function Technicianpage() {
         .length,
     };
   }, [ticketData]);
+
+  const ticketsNewestFirst = useMemo(
+    () =>
+      [...ticketData].sort((a, b) => {
+        const dateA = new Date(a.assigned_at || a.created_at || 0).getTime();
+        const dateB = new Date(b.assigned_at || b.created_at || 0).getTime();
+        return dateB - dateA;
+      }),
+    [ticketData],
+  );
 
   const fetchTickets = async () => {
     try {
@@ -176,7 +198,7 @@ function Technicianpage() {
           </Stack>
 
           <Stack spacing={1.5}>
-            {ticketData.map((item) => (
+            {ticketsNewestFirst.map((item) => (
               <Paper
                 key={item.ticket_id}
                 variant="outlined"
@@ -211,18 +233,16 @@ function Technicianpage() {
 
                     <Stack direction="row" spacing={1} flexWrap="wrap">
                       <Chip
-                        label={`ID: ${item.ticket_id}`}
+                        label={`เลขที่งาน: ${item.ticket_id}`}
                         size="small"
                         variant="outlined"
                       />
 
-                      {Number(item.status_id) === 3 && (
-                        <Chip
-                          label="กำลังดำเนินการ"
-                          size="small"
-                          color="info"
-                        />
-                      )}
+                      <Chip
+                        label={technicianStatusMap[Number(item.status_id)]?.label ?? "ไม่ทราบสถานะ"}
+                        size="small"
+                        color={technicianStatusMap[Number(item.status_id)]?.color ?? "default"}
+                      />
                     </Stack>
                   </Stack>
 
@@ -236,7 +256,12 @@ function Technicianpage() {
                     component={Link}
                     to={`/technician/repairs/${item.ticket_id}`}
                     variant="contained"
-                    sx={{ width: { xs: "100%", sm: "fit-content" } }}
+                    endIcon={<ArrowForwardRoundedIcon />}
+                    sx={{
+                      ...technicianPrimaryButtonSx,
+                      width: { xs: "100%", sm: "fit-content" },
+                      alignSelf: { xs: "stretch", sm: "flex-start" },
+                    }}
                   >
                     ดูรายละเอียด
                   </Button>

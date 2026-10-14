@@ -26,8 +26,16 @@ import {
   TablePagination,
 } from "@mui/material";
 import { useSelector } from "react-redux";
+import {
+  technicianNeutralButtonSx,
+  technicianPrimaryButtonSx,
+  technicianSecondaryButtonSx,
+  technicianStatusButtonSx,
+} from "./buttonStyles";
 
-const DeviceDetailPages = () => {
+const DeviceDetailPages = ({
+  historyPath = (instanceId) => `/technician/instance/${instanceId}/history`,
+} = {}) => {
   const { dev_id } = useParams();
   const deviceId = Number(dev_id);
 
@@ -35,6 +43,7 @@ const DeviceDetailPages = () => {
   const token = useSelector((state) => state.user.token);
 
   const [deviceDetail, setDeviceDetail] = useState([]);
+  const [deviceInfo, setDeviceInfo] = useState(null);
   const [departments, setDepartments] = useState([]);
   const [error, setError] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -44,6 +53,7 @@ const DeviceDetailPages = () => {
   const [selectedInstance, setSelectedInstance] = useState(null);
 
   const [searchSerial, setSearchSerial] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
@@ -52,7 +62,7 @@ const DeviceDetailPages = () => {
     handleSubmit: handleAddSubmit,
     reset: resetAddForm,
   } = useForm({
-    defaultValues: { serial_number: "", dep_id: "" },
+    defaultValues: { serial_number: "", dep_id: "", status: "active" },
   });
 
   const {
@@ -60,7 +70,7 @@ const DeviceDetailPages = () => {
     handleSubmit: handleEditSubmit,
     reset: resetEditForm,
   } = useForm({
-    defaultValues: { serial_number: "", dep_id: "" },
+    defaultValues: { serial_number: "", dep_id: "", status: "active" },
   });
 
   const normalizeArray = (payload) => {
@@ -72,7 +82,29 @@ const DeviceDetailPages = () => {
     return [];
   };
 
-  const getInstanceId = (row) => row?.device_instance_id ?? row?.instance_id;
+  const normalizeInstances = (payload) =>
+    normalizeArray(payload).map((item) => ({
+      ...item,
+      device_instance_id: item.device_instance_id ?? item.instance_id ?? item.id,
+      instance_id: item.instance_id ?? item.device_instance_id ?? item.id,
+      dep_id: item.dep_id ?? item.department_id,
+      department_id: item.department_id ?? item.dep_id,
+      status: item.status ?? "active",
+    }));
+
+  const normalizeDevices = (payload) =>
+    normalizeArray(payload).map((item) => ({
+      ...item,
+      dev_id: item.dev_id ?? item.id,
+      dev_name: item.dev_name ?? item.name,
+      dev_description: item.dev_description ?? item.description,
+    }));
+
+  const getActionErrorMessage = (err, fallback) =>
+    err.response?.data?.error ?? err.response?.data?.message ?? fallback;
+
+  const getInstanceId = (row) =>
+    row?.device_instance_id ?? row?.instance_id ?? row?.id;
 
   const getDepartmentName = (depId) => {
     if (!depId) return "-";
@@ -84,6 +116,12 @@ const DeviceDetailPages = () => {
     return found?.dep_name ?? "-";
   };
 
+  const getStatusLabel = (status) =>
+    status === "inactive" ? "ไม่ใช้งาน" : "ใช้งาน";
+
+  const getStatusColor = (status) =>
+    status === "inactive" ? "default" : "success";
+
   const fetchDeviceDetail = async () => {
     try {
       const res = await axios.get(
@@ -93,7 +131,7 @@ const DeviceDetailPages = () => {
         },
       );
 
-      setDeviceDetail(normalizeArray(res.data));
+      setDeviceDetail(normalizeInstances(res.data));
       setError(null);
     } catch (err) {
       console.error("Error fetching device detail:", err);
@@ -105,6 +143,22 @@ const DeviceDetailPages = () => {
       }
 
       setError(err);
+    }
+  };
+
+  const fetchDeviceInfo = async () => {
+    try {
+      const res = await axios.get(`${apiUrl}/devices`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const devices = normalizeDevices(res.data);
+      setDeviceInfo(
+        devices.find((item) => Number(item.dev_id) === Number(deviceId)) ??
+          null,
+      );
+    } catch (err) {
+      console.error("Error fetching device info:", err);
     }
   };
 
@@ -122,7 +176,10 @@ const DeviceDetailPages = () => {
   };
 
   useEffect(() => {
-    if (token && deviceId) fetchDeviceDetail();
+    if (token && deviceId) {
+      fetchDeviceDetail();
+      fetchDeviceInfo();
+    }
   }, [token, deviceId, refreshKey]);
 
   useEffect(() => {
@@ -132,21 +189,26 @@ const DeviceDetailPages = () => {
   const filtered = useMemo(() => {
     const safeDeviceDetail = Array.isArray(deviceDetail) ? deviceDetail : [];
 
-    if (!searchSerial.trim()) return safeDeviceDetail;
+    return safeDeviceDetail.filter((item) => {
+      const matchSearch =
+        !searchSerial.trim() ||
+        String(item.serial_number ?? "")
+          .toLowerCase()
+          .includes(searchSerial.trim().toLowerCase());
 
-    return safeDeviceDetail.filter((item) =>
-      String(item.serial_number ?? "")
-        .toLowerCase()
-        .includes(searchSerial.trim().toLowerCase()),
-    );
-  }, [deviceDetail, searchSerial]);
+      const matchStatus =
+        statusFilter === "all" || (item.status ?? "active") === statusFilter;
+
+      return matchSearch && matchStatus;
+    });
+  }, [deviceDetail, searchSerial, statusFilter]);
 
   const paginated = filtered.slice(
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage,
   );
 
-  const deviceInfo = Array.isArray(deviceDetail) ? deviceDetail[0] : null;
+  const firstInstance = Array.isArray(deviceDetail) ? deviceDetail[0] : null;
 
   const openAdd = () => {
     resetAddForm({ serial_number: "", dep_id: "" });
@@ -164,6 +226,7 @@ const DeviceDetailPages = () => {
     resetEditForm({
       serial_number: row.serial_number ?? "",
       dep_id: row.dep_id ? Number(row.dep_id) : "",
+      status: row.status ?? "active",
     });
 
     setOpenEditDialog(true);
@@ -171,7 +234,7 @@ const DeviceDetailPages = () => {
 
   const closeEdit = () => {
     setSelectedInstance(null);
-    resetEditForm({ serial_number: "", dep_id: "" });
+    resetEditForm({ serial_number: "", dep_id: "", status: "active" });
     setOpenEditDialog(false);
   };
 
@@ -183,6 +246,8 @@ const DeviceDetailPages = () => {
           device_id: deviceId,
           serial_number: data.serial_number.trim(),
           dep_id: data.dep_id ? Number(data.dep_id) : null,
+          department_id: data.dep_id ? Number(data.dep_id) : null,
+          status: data.status === "inactive" ? "inactive" : "active",
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -194,7 +259,7 @@ const DeviceDetailPages = () => {
       closeAdd();
     } catch (err) {
       console.error("Error adding instance:", err);
-      setError(err);
+      alert(getActionErrorMessage(err, "เพิ่มรายการอุปกรณ์ไม่สำเร็จ"));
     }
   };
 
@@ -203,10 +268,12 @@ const DeviceDetailPages = () => {
 
     try {
       await axios.patch(
-        `${apiUrl}/device/instance/${getInstanceId(selectedInstance)}`,
+        `${apiUrl}/device-instances/${getInstanceId(selectedInstance)}`,
         {
           serial_number: data.serial_number.trim(),
           dep_id: data.dep_id ? Number(data.dep_id) : null,
+          department_id: data.dep_id ? Number(data.dep_id) : null,
+          status: data.status === "inactive" ? "inactive" : "active",
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -217,23 +284,41 @@ const DeviceDetailPages = () => {
       closeEdit();
     } catch (err) {
       console.error("Error editing instance:", err);
-      setError(err);
+      alert(getActionErrorMessage(err, "แก้ไขรายการอุปกรณ์ไม่สำเร็จ"));
     }
   };
 
-  const deleteInstance = async (row) => {
-    const shouldDelete = window.confirm("ต้องการลบรายการอุปกรณ์นี้ใช่ไหม?");
-    if (!shouldDelete) return;
+  const toggleInstanceStatus = async (row) => {
+    const instanceId = getInstanceId(row);
+    if (!instanceId) return;
+
+    const currentStatus = row.status === "inactive" ? "inactive" : "active";
+    const nextStatus = currentStatus === "active" ? "inactive" : "active";
+    const actionLabel = nextStatus === "active" ? "เปิดใช้งาน" : "ไม่ใช้งาน";
+
+    const shouldChange = window.confirm(
+      `ต้องการ${actionLabel}รายการอุปกรณ์นี้ใช่ไหม?`,
+    );
+    if (!shouldChange) return;
 
     try {
-      await axios.delete(`${apiUrl}/device-instances/${getInstanceId(row)}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.patch(
+        `${apiUrl}/device-instances/${instanceId}`,
+        {
+          serial_number: String(row.serial_number ?? "").trim(),
+          dep_id: row.dep_id ? Number(row.dep_id) : null,
+          department_id: row.dep_id ? Number(row.dep_id) : null,
+          status: nextStatus,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       setRefreshKey((prev) => prev + 1);
     } catch (err) {
-      console.error("Error deleting instance:", err);
-      setError(err);
+      console.error("Error changing instance status:", err);
+      alert(getActionErrorMessage(err, "เปลี่ยนสถานะรายการอุปกรณ์ไม่สำเร็จ"));
     }
   };
 
@@ -273,7 +358,7 @@ const DeviceDetailPages = () => {
               </Typography>
             </Box>
 
-            <Button onClick={closeAdd} color="inherit">
+            <Button onClick={closeAdd} color="inherit" sx={technicianNeutralButtonSx}>
               ✕
             </Button>
           </Stack>
@@ -336,7 +421,7 @@ const DeviceDetailPages = () => {
           <Button
             onClick={closeAdd}
             color="inherit"
-            sx={{ width: { xs: "100%", sm: "auto" } }}
+            sx={{ ...technicianNeutralButtonSx, width: { xs: "100%", sm: "auto" } }}
           >
             ยกเลิก
           </Button>
@@ -345,7 +430,7 @@ const DeviceDetailPages = () => {
             type="submit"
             form="form-add"
             variant="contained"
-            sx={{ width: { xs: "100%", sm: "auto" } }}
+            sx={{ ...technicianPrimaryButtonSx, width: { xs: "100%", sm: "auto" } }}
           >
             เพิ่มรายการ
           </Button>
@@ -364,11 +449,11 @@ const DeviceDetailPages = () => {
                 แก้ไขรายการอุปกรณ์
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                แก้ไข Serial Number และแผนกที่ใช้งาน
+                แก้ไข Serial Number แผนกที่ใช้งาน และสถานะ
               </Typography>
             </Box>
 
-            <Button onClick={closeEdit} color="inherit">
+            <Button onClick={closeEdit} color="inherit" sx={technicianNeutralButtonSx}>
               ✕
             </Button>
           </Stack>
@@ -400,6 +485,10 @@ const DeviceDetailPages = () => {
 
                 <Typography variant="body2" color="text.secondary">
                   แผนก: {getDepartmentName(selectedInstance?.dep_id)}
+                </Typography>
+
+                <Typography variant="body2" color="text.secondary">
+                  สถานะ: {getStatusLabel(selectedInstance?.status)}
                 </Typography>
               </Box>
 
@@ -437,6 +526,17 @@ const DeviceDetailPages = () => {
                   </TextField>
                 )}
               />
+
+              <Controller
+                name="status"
+                control={editControl}
+                render={({ field }) => (
+                  <TextField {...field} select label="สถานะ" fullWidth>
+                    <MenuItem value="active">ใช้งาน</MenuItem>
+                    <MenuItem value="inactive">ไม่ใช้งาน</MenuItem>
+                  </TextField>
+                )}
+              />
             </Stack>
           </Box>
         </DialogContent>
@@ -452,7 +552,7 @@ const DeviceDetailPages = () => {
           <Button
             onClick={closeEdit}
             color="inherit"
-            sx={{ width: { xs: "100%", sm: "auto" } }}
+            sx={{ ...technicianNeutralButtonSx, width: { xs: "100%", sm: "auto" } }}
           >
             ยกเลิก
           </Button>
@@ -461,7 +561,7 @@ const DeviceDetailPages = () => {
             type="submit"
             form="form-edit"
             variant="contained"
-            sx={{ width: { xs: "100%", sm: "auto" } }}
+            sx={{ ...technicianPrimaryButtonSx, width: { xs: "100%", sm: "auto" } }}
           >
             บันทึกการแก้ไข
           </Button>
@@ -490,7 +590,7 @@ const DeviceDetailPages = () => {
             <Button
               variant="contained"
               onClick={openAdd}
-              sx={{ width: { xs: "100%", sm: "auto" } }}
+              sx={{ ...technicianPrimaryButtonSx, width: { xs: "100%", sm: "auto" } }}
             >
               + เพิ่มรายการอุปกรณ์
             </Button>
@@ -510,7 +610,7 @@ const DeviceDetailPages = () => {
 
                   <Typography fontWeight={600}>
                     {deviceInfo?.dev_name ??
-                      deviceInfo?.device_name ??
+                      firstInstance?.device_name ??
                       `Device ID: ${deviceId}`}
                   </Typography>
                 </Box>
@@ -539,7 +639,7 @@ const DeviceDetailPages = () => {
                   }}
                 >
                   {deviceInfo?.dev_description ??
-                    deviceInfo?.device_description ??
+                    firstInstance?.device_description ??
                     "-"}
                 </Typography>
               </Box>
@@ -563,6 +663,21 @@ const DeviceDetailPages = () => {
             sx={{ mb: 3 }}
           />
 
+          <TextField
+            select
+            label="สถานะ"
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setPage(0);
+            }}
+            sx={{ mb: 3, minWidth: { xs: "100%", sm: 220 } }}
+          >
+            <MenuItem value="all">ทั้งหมด</MenuItem>
+            <MenuItem value="active">ใช้งาน</MenuItem>
+            <MenuItem value="inactive">ไม่ใช้งาน</MenuItem>
+          </TextField>
+
           <TableContainer
             sx={{ display: { xs: "none", md: "block" }, overflowX: "auto" }}
           >
@@ -572,6 +687,7 @@ const DeviceDetailPages = () => {
                   <TableCell>ลำดับ</TableCell>
                   <TableCell>รหัสอุปกรณ์</TableCell>
                   <TableCell>แผนกที่ใช้งาน</TableCell>
+                  <TableCell>สถานะ</TableCell>
                   <TableCell align="right">จัดการ</TableCell>
                 </TableRow>
               </TableHead>
@@ -589,6 +705,17 @@ const DeviceDetailPages = () => {
 
                     <TableCell>{getDepartmentName(row.dep_id)}</TableCell>
 
+                    <TableCell>
+                      <Chip
+                        label={getStatusLabel(row.status)}
+                        color={getStatusColor(row.status)}
+                        size="small"
+                        variant={
+                          row.status === "inactive" ? "outlined" : "filled"
+                        }
+                      />
+                    </TableCell>
+
                     <TableCell align="right">
                       <Stack
                         direction="row"
@@ -597,10 +724,11 @@ const DeviceDetailPages = () => {
                       >
                         <Button
                           component={Link}
-                          to={`/technician/instance/${getInstanceId(row)}/history`}
+                          to={historyPath(getInstanceId(row))}
                           variant="outlined"
                           size="small"
                           disabled={!getInstanceId(row)}
+                          sx={technicianSecondaryButtonSx}
                         >
                           ประวัติการซ่อม
                         </Button>
@@ -609,18 +737,22 @@ const DeviceDetailPages = () => {
                           variant="outlined"
                           size="small"
                           onClick={() => openEdit(row)}
+                          sx={technicianSecondaryButtonSx}
                         >
                           แก้ไข
                         </Button>
 
                         <Button
                           variant="outlined"
-                          color="error"
+                          color={row.status === "inactive" ? "success" : "error"}
                           size="small"
-                          onClick={() => deleteInstance(row)}
+                          onClick={() => toggleInstanceStatus(row)}
                           disabled={!getInstanceId(row)}
+                          sx={technicianStatusButtonSx}
                         >
-                          ลบ
+                          {row.status === "inactive"
+                            ? "เปิดใช้งาน"
+                            : "ไม่ใช้งาน"}
                         </Button>
                       </Stack>
                     </TableCell>
@@ -629,7 +761,7 @@ const DeviceDetailPages = () => {
 
                 {filtered.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={4} align="center">
+                    <TableCell colSpan={5} align="center">
                       ยังไม่มีรายการอุปกรณ์
                     </TableCell>
                   </TableRow>
@@ -682,14 +814,23 @@ const DeviceDetailPages = () => {
                     </Typography>
                   </Stack>
 
+                  <Chip
+                    label={getStatusLabel(row.status)}
+                    color={getStatusColor(row.status)}
+                    size="small"
+                    variant={row.status === "inactive" ? "outlined" : "filled"}
+                    sx={{ alignSelf: "flex-start" }}
+                  />
+
                   <Divider />
 
                   <Button
                     component={Link}
-                    to={`/technician/instance/${getInstanceId(row)}/history`}
+                    to={historyPath(getInstanceId(row))}
                     variant="outlined"
                     fullWidth
                     disabled={!getInstanceId(row)}
+                    sx={technicianSecondaryButtonSx}
                   >
                     ประวัติการซ่อม
                   </Button>
@@ -699,18 +840,20 @@ const DeviceDetailPages = () => {
                       variant="outlined"
                       fullWidth
                       onClick={() => openEdit(row)}
+                      sx={technicianSecondaryButtonSx}
                     >
                       แก้ไข
                     </Button>
 
                     <Button
                       variant="outlined"
-                      color="error"
+                      color={row.status === "inactive" ? "success" : "error"}
                       fullWidth
-                      onClick={() => deleteInstance(row)}
+                      onClick={() => toggleInstanceStatus(row)}
                       disabled={!getInstanceId(row)}
+                      sx={technicianStatusButtonSx}
                     >
-                      ลบ
+                      {row.status === "inactive" ? "เปิดใช้งาน" : "ไม่ใช้งาน"}
                     </Button>
                   </Stack>
                 </Stack>

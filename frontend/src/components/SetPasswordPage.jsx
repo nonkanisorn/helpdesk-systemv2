@@ -13,16 +13,60 @@ import {
 } from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import MarkEmailReadOutlinedIcon from "@mui/icons-material/MarkEmailReadOutlined";
+import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
+import RestartAltOutlinedIcon from "@mui/icons-material/RestartAltOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import axios from "axios";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+
+const pageContent = {
+  invite: {
+    icon: <PersonAddAltOutlinedIcon fontSize="medium" />,
+    iconBg: "#e0f2fe",
+    iconColor: "#0369a1",
+    title: "ตั้งรหัสผ่านครั้งแรก",
+    subtitle:
+      "สร้างรหัสผ่านสำหรับเปิดใช้งานบัญชี Helpdesk ของคุณ หลังจากตั้งค่าเสร็จสามารถเข้าสู่ระบบได้ทันที",
+    passwordLabel: "รหัสผ่านสำหรับเข้าใช้งาน",
+    passwordPlaceholder: "ตั้งรหัสผ่านของคุณ",
+    confirmLabel: "ยืนยันรหัสผ่าน",
+    confirmPlaceholder: "กรอกรหัสผ่านอีกครั้ง",
+    submitText: "เปิดใช้งานบัญชี",
+    successText: "ตั้งรหัสผ่านสำเร็จ บัญชีของคุณพร้อมใช้งานแล้ว",
+    helperTitle: "ตั้งรหัสผ่านที่ปลอดภัย",
+    helperText:
+      "ควรมีอย่างน้อย 8 ตัวอักษร และใช้รหัสผ่านที่ไม่ซ้ำกับบริการอื่น เพื่อปกป้องบัญชีของคุณ",
+    linkNote: "ลิงก์เชิญนี้ใช้ได้ครั้งเดียวและมีเวลาจำกัด",
+  },
+  reset: {
+    icon: <RestartAltOutlinedIcon fontSize="medium" />,
+    iconBg: "#e8f0fe",
+    iconColor: "#2563eb",
+    title: "ตั้งรหัสผ่านใหม่",
+    subtitle:
+      "กรุณากำหนดรหัสผ่านใหม่สำหรับบัญชี Helpdesk ของคุณ แล้วเข้าสู่ระบบอีกครั้งด้วยรหัสผ่านล่าสุด",
+    passwordLabel: "รหัสผ่านใหม่",
+    passwordPlaceholder: "กรอกรหัสผ่านใหม่",
+    confirmLabel: "ยืนยันรหัสผ่านใหม่",
+    confirmPlaceholder: "กรอกรหัสผ่านใหม่อีกครั้ง",
+    submitText: "บันทึกรหัสผ่านใหม่",
+    successText: "เปลี่ยนรหัสผ่านสำเร็จ กำลังพาไปหน้าเข้าสู่ระบบ",
+    helperTitle: "คำแนะนำรหัสผ่านใหม่",
+    helperText:
+      "ควรตั้งรหัสผ่านที่เดายาก มีอย่างน้อย 8 ตัวอักษร และไม่ใช้รหัสผ่านเดิมที่เคยใช้",
+    linkNote: "ลิงก์รีเซ็ตรหัสผ่านนี้ใช้ได้ครั้งเดียวและมีเวลาจำกัด",
+  },
+};
 
 function SetPasswordPage() {
   const { token } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const apiUrl = process.env.REACT_APP_API_URL;
+  const mode = searchParams.get("mode") === "invite" ? "invite" : "reset";
+  const content = pageContent[mode];
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -129,8 +173,8 @@ function SetPasswordPage() {
                   width: 56,
                   height: 56,
                   borderRadius: "50%",
-                  bgcolor: success ? "#dcfce7" : "#e8f0fe",
-                  color: success ? "#16a34a" : "#2563eb",
+                  bgcolor: success ? "#dcfce7" : content.iconBg,
+                  color: success ? "#16a34a" : content.iconColor,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -139,7 +183,7 @@ function SetPasswordPage() {
                 {success ? (
                   <CheckCircleOutlineIcon fontSize="medium" />
                 ) : (
-                  <LockOutlinedIcon fontSize="medium" />
+                  content.icon
                 )}
               </Box>
             </Box>
@@ -150,7 +194,7 @@ function SetPasswordPage() {
                 fontWeight={700}
                 sx={{ fontSize: { xs: 24, sm: 28 } }}
               >
-                ตั้งรหัสผ่านใหม่
+                {content.title}
               </Typography>
 
               <Typography
@@ -161,7 +205,7 @@ function SetPasswordPage() {
                   lineHeight: 1.7,
                 }}
               >
-                กรุณากำหนดรหัสผ่านใหม่สำหรับเข้าใช้งานระบบ Helpdesk
+                {content.subtitle}
               </Typography>
             </Box>
 
@@ -169,16 +213,16 @@ function SetPasswordPage() {
 
             {success && (
               <Alert severity="success">
-                ตั้งรหัสผ่านสำเร็จ กำลังพาไปหน้าเข้าสู่ระบบ
+                {content.successText}
               </Alert>
             )}
 
             <Stack spacing={2.2}>
               <TextField
-                label="รหัสผ่านใหม่"
+                label={content.passwordLabel}
                 type={showPassword ? "text" : "password"}
                 fullWidth
-                placeholder="กรอกรหัสผ่านใหม่"
+                placeholder={content.passwordPlaceholder}
                 value={password}
                 error={Boolean(passwordError)}
                 helperText={passwordError}
@@ -208,10 +252,10 @@ function SetPasswordPage() {
               />
 
               <TextField
-                label="ยืนยันรหัสผ่าน"
+                label={content.confirmLabel}
                 type={showConfirmPassword ? "text" : "password"}
                 fullWidth
-                placeholder="กรอกรหัสผ่านอีกครั้ง"
+                placeholder={content.confirmPlaceholder}
                 value={confirmPassword}
                 error={Boolean(confirmError)}
                 helperText={confirmError}
@@ -251,15 +295,14 @@ function SetPasswordPage() {
                 }}
               >
                 <Typography fontSize={14} fontWeight={600} mb={0.8}>
-                  คำแนะนำรหัสผ่าน
+                  {content.helperTitle}
                 </Typography>
                 <Typography
                   color="text.secondary"
                   fontSize={13.5}
                   lineHeight={1.7}
                 >
-                  ควรมีอย่างน้อย 8 ตัวอักษร และควรผสมตัวอักษร ตัวเลข
-                  หรือสัญลักษณ์ เพื่อความปลอดภัย
+                  {content.helperText}
                 </Typography>
               </Box>
 
@@ -281,7 +324,7 @@ function SetPasswordPage() {
                 {loading ? (
                   <CircularProgress size={24} color="inherit" />
                 ) : (
-                  "ตั้งรหัสผ่าน"
+                  content.submitText
                 )}
               </Button>
             </Stack>
@@ -295,7 +338,7 @@ function SetPasswordPage() {
             >
               <MarkEmailReadOutlinedIcon fontSize="small" />
               <Typography fontSize={13.5}>
-                ลิงก์นี้ใช้ได้ครั้งเดียวและมีเวลาจำกัด
+                {content.linkNote}
               </Typography>
             </Stack>
           </Stack>

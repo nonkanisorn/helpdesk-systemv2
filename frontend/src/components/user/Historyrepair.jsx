@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import { technicianSecondaryButtonSx } from "../technician/buttonStyles";
 import { Link } from "react-router-dom";
 import {
   Box,
@@ -27,7 +28,7 @@ function Historyrepair() {
   const userStatusGroups = {
     all: { label: "ทั้งหมด", ids: null },
     pending: { label: "รอดำเนินการ", ids: [1, 2] },
-    progress: { label: "อยู่ระหว่างซ่อม", ids: [3, 6] },
+    progress: { label: "อยู่ระหว่างซ่อม", ids: [3, 6, 7] },
     confirm: { label: "รอการยืนยัน", ids: [4] },
     done: { label: "เสร็จสิ้น", ids: [5] },
   };
@@ -39,11 +40,12 @@ function Historyrepair() {
     4: "รอการยืนยันจากคุณ",
     5: "เสร็จสิ้นแล้ว",
     6: "รออะไหล่",
+    7: "รอผู้จัดการตรวจสอบ",
   };
 
   const chipPropsByStatus = (statusId) => {
     if (statusId === 5) return { color: "success", variant: "outlined" };
-    if (statusId === 3 || statusId === 6)
+    if (statusId === 3 || statusId === 6 || statusId === 7)
       return { color: "warning", variant: "outlined" };
     if (statusId === 4) return { color: "info", variant: "outlined" };
 
@@ -257,7 +259,7 @@ function Historyrepair() {
                           sx={{ flexWrap: "wrap", gap: 1 }}
                         >
                           <Chip
-                            label={`ID: ${item.ticket_id}`}
+                            label={`เลขที่งาน: ${item.ticket_id}`}
                             size="small"
                             variant="outlined"
                           />
@@ -287,6 +289,7 @@ function Historyrepair() {
                         to={`/user/repair-detail/${item.ticket_id}`}
                         variant="outlined"
                         fullWidth
+                        sx={technicianSecondaryButtonSx}
                       >
                         ดูรายละเอียด
                       </Button>

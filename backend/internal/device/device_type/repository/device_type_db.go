@@ -1,6 +1,11 @@
 package repository
 
-import "github.com/jmoiron/sqlx"
+import (
+	"fmt"
+
+	"github.com/jmoiron/sqlx"
+	"github.com/nonkanisorn/helpdesk-system/internal/domain"
+)
 
 type deviceTypeRepositoryDB struct {
 	db *sqlx.DB
@@ -18,6 +23,8 @@ func (d deviceTypeRepositoryDB) GetAll() ([]DeviceType, error) {
 			id,
 			name
 		FROM device_types
+		WHERE deleted_at IS NULL
+		ORDER BY id
 	`
 
 	err := d.db.Select(&deviceTypes, query)
@@ -47,6 +54,7 @@ func (d deviceTypeRepositoryDB) UpdateByID(id int, deviceTypeName string) error 
 		UPDATE device_types
 		SET name = ?
 		WHERE id = ?
+			AND deleted_at IS NULL
 	`
 
 	_, err := d.db.Exec(query, deviceTypeName, id)
@@ -58,9 +66,23 @@ func (d deviceTypeRepositoryDB) UpdateByID(id int, deviceTypeName string) error 
 }
 
 func (d deviceTypeRepositoryDB) DeleteByID(id int) error {
+	var deviceCount int
+	if err := d.db.Get(
+		&deviceCount,
+		"SELECT COUNT(1) FROM devices WHERE device_type_id = ? AND deleted_at IS NULL",
+		id,
+	); err != nil {
+		return err
+	}
+	if deviceCount > 0 {
+		return fmt.Errorf("%w: ไม่สามารถลบประเภทอุปกรณ์ได้ เนื่องจากยังมีอุปกรณ์ที่ใช้ประเภทนี้อยู่", domain.ErrResourceInUse)
+	}
+
 	query := `
-		DELETE FROM device_types
+		UPDATE device_types
+		SET deleted_at = NOW()
 		WHERE id = ?
+			AND deleted_at IS NULL
 	`
 
 	_, err := d.db.Exec(query, id)

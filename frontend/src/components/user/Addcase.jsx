@@ -14,6 +14,10 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
+import {
+  technicianNeutralButtonSx,
+  technicianPrimaryButtonSx,
+} from "../technician/buttonStyles";
 
 function Addcase() {
   const apiUrl = process.env.REACT_APP_API_URL;
@@ -163,6 +167,9 @@ function Addcase() {
               disabled={loading}
               error={!selectCategory}
               helperText={!selectCategory ? "กรุณาเลือกหมวดหมู่ปัญหา" : " "}
+              SelectProps={{
+                onOpen: fetchCategories,
+              }}
             >
               {categories.map((item) => {
                 const categoryId = item.issues_categories_id ?? item.issues_id;
@@ -190,7 +197,10 @@ function Addcase() {
                   setTicketDetail("");
                   setSelectCategory("");
                 }}
-                sx={{ width: { xs: "100%", sm: "auto" } }}
+                sx={{
+                  ...technicianNeutralButtonSx,
+                  width: { xs: "100%", sm: "auto" },
+                }}
               >
                 ล้างข้อมูล
               </Button>
@@ -199,7 +209,10 @@ function Addcase() {
                 type="submit"
                 variant="contained"
                 disabled={isDisabled}
-                sx={{ width: { xs: "100%", sm: "auto" } }}
+                sx={{
+                  ...technicianPrimaryButtonSx,
+                  width: { xs: "100%", sm: "auto" },
+                }}
               >
                 {loading ? (
                   <Stack direction="row" spacing={1} alignItems="center">

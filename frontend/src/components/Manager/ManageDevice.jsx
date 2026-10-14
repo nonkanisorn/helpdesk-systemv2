@@ -27,6 +27,11 @@ import { useSelector } from "react-redux";
 
 import AddDeviceDialog from "../shareDialog/AddDialog/AddDeviceDialog";
 import EditDeviceDialog from "../shareDialog/EditDialog/EditDeviceDialog";
+import {
+  confirmSoftDelete,
+  getErrorMessage,
+  useAdminFeedback,
+} from "../admin/useAdminFeedback";
 
 const ManageDevice = () => {
   const apiUrl = process.env.REACT_APP_API_URL;
@@ -52,6 +57,7 @@ const ManageDevice = () => {
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const { showFeedback, FeedbackSnackbar } = useAdminFeedback();
 
   const normalizeDeviceTypes = (payload) => {
     const list = Array.isArray(payload)
@@ -222,16 +228,24 @@ const ManageDevice = () => {
   };
 
   const handleDeleteDevice = async (id) => {
-    if (!window.confirm("ต้องการลบอุปกรณ์นี้ใช่ไหม?")) return;
+    if (!confirmSoftDelete("อุปกรณ์")) return;
 
     try {
       await axios.delete(`${apiUrl}/devices/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      showFeedback(
+        "success",
+        "ซ่อนอุปกรณ์และรายการย่อยแล้ว ประวัติการซ่อมยังดูได้ตามเดิม",
+      );
       fetchDevices();
     } catch (error) {
       console.error("Error deleting device:", error);
+      showFeedback(
+        "error",
+        getErrorMessage(error, "ไม่สามารถซ่อนอุปกรณ์ได้"),
+      );
     }
   };
 
@@ -594,6 +608,7 @@ const ManageDevice = () => {
         editDeviceDescription={editDeviceDescription}
         setEditDeviceDescription={setEditDeviceDescription}
       />
+      <FeedbackSnackbar />
     </Box>
   );
 };

@@ -47,12 +47,11 @@ function Profile() {
   }, [profile, storedUser]);
 
   const statusMeta = useMemo(() => {
-    const status = profile?.status || "pending";
+    const status = profile?.status || "inactive";
     const map = {
       active: { label: "พร้อมใช้งาน", color: "success" },
-      pending: { label: "รอตั้งรหัสผ่าน", color: "warning" },
-      suspended: { label: "ปิดใช้งาน", color: "default" },
-      deleted: { label: "ถูกลบ", color: "error" },
+      inactive: { label: "ไม่พร้อมใช้งาน", color: "default" },
+      suspended: { label: "ถูกระงับ", color: "warning" },
     };
 
     return map[status] ?? { label: status, color: "default" };

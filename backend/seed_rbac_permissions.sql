@@ -80,6 +80,15 @@ JOIN permissions p
 	ON p.name IN ('view_assigned_ticket', 'update_ticket_status', 'add_resolution_note', 'view_devices')
 WHERE LOWER(r.name) = 'technician';
 
+DELETE rp
+FROM role_permissions rp
+JOIN roles r
+	ON r.id = rp.role_id
+JOIN permissions p
+	ON p.id = rp.permission_id
+WHERE LOWER(r.name) = 'technician'
+	AND p.name = 'manage_devices';
+
 INSERT IGNORE INTO role_permissions (role_id, permission_id, created_at)
 SELECT r.id, p.id, NOW()
 FROM roles r

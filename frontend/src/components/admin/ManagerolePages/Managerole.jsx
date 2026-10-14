@@ -19,6 +19,11 @@ import {
 import AddRoleDialog from "../dialog/AddDialog/AddRoleDialog";
 import EditRoleDialog from "../dialog/EditDialog/EditRoleDialog";
 import { useSelector } from "react-redux";
+import {
+  confirmSoftDelete,
+  getErrorMessage,
+  useAdminFeedback,
+} from "../useAdminFeedback";
 
 function Managerole() {
   const apiUrl = process.env.REACT_APP_API_URL;
@@ -32,6 +37,7 @@ function Managerole() {
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const { showFeedback, FeedbackSnackbar } = useAdminFeedback();
 
   const fetchRoles = async () => {
     try {
@@ -60,17 +66,21 @@ function Managerole() {
   };
 
   const handleDelete = async (roleId) => {
-    const confirmDelete = window.confirm("ต้องการลบบทบาทนี้ใช่ไหม?");
-    if (!confirmDelete) return;
+    if (!confirmSoftDelete("บทบาท")) return;
 
     try {
       await axios.delete(`${apiUrl}/roles/${roleId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      showFeedback("success", "ซ่อนบทบาทออกจากรายการแล้ว");
       fetchRoles();
     } catch (error) {
       console.error("Error deleting role:", error);
+      showFeedback(
+        "error",
+        getErrorMessage(error, "ไม่สามารถลบบทบาทได้ เนื่องจากยังมีผู้ใช้หรือสิทธิ์ที่เกี่ยวข้องอยู่"),
+      );
     }
   };
 
@@ -314,6 +324,7 @@ function Managerole() {
           />
         </Paper>
       </Box>
+      <FeedbackSnackbar />
     </>
   );
 }

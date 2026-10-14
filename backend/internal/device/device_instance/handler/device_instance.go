@@ -73,7 +73,12 @@ func (d deviceInstanceHandler) UpdateDeviceInstanceByID(c *fiber.Ctx) error {
 		departmentID = req.DepartmentIDAlias
 	}
 
-	err = d.deviceInstanceServ.UpdateDeviceInstanceByID(instanceID, departmentID, req.SerialNumber)
+	status := req.Status
+	if status != "inactive" {
+		status = "active"
+	}
+
+	err = d.deviceInstanceServ.UpdateDeviceInstanceByID(instanceID, departmentID, req.SerialNumber, status)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
@@ -90,6 +95,7 @@ func (d deviceInstanceHandler) DeleteDeviceInstanceByID(c *fiber.Ctx) error {
 			"error": err,
 		})
 	}
+
 	err = d.deviceInstanceServ.DeleteDeviceInstanceByID(instanceID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

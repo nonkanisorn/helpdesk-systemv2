@@ -1,8 +1,6 @@
 package repository
 
-import (
-	"github.com/jmoiron/sqlx"
-)
+import "github.com/jmoiron/sqlx"
 
 type issueRepositoryDB struct {
 	db *sqlx.DB
@@ -20,6 +18,8 @@ func (i issueRepositoryDB) GetAll() ([]Issue, error) {
 			id,
 			name
 		FROM issue_categories
+		WHERE deleted_at IS NULL
+		ORDER BY id
 	`
 
 	err := i.db.Select(&issues, query)
@@ -49,6 +49,7 @@ func (i issueRepositoryDB) UpdateByID(id int, issueName string) error {
 		UPDATE issue_categories
 		SET name = ?
 		WHERE id = ?
+			AND deleted_at IS NULL
 	`
 
 	_, err := i.db.Exec(query, issueName, id)
@@ -61,8 +62,10 @@ func (i issueRepositoryDB) UpdateByID(id int, issueName string) error {
 
 func (i issueRepositoryDB) DeleteByID(id int) error {
 	query := `
-		DELETE FROM issue_categories
+		UPDATE issue_categories
+		SET deleted_at = NOW()
 		WHERE id = ?
+			AND deleted_at IS NULL
 	`
 
 	_, err := i.db.Exec(query, id)
