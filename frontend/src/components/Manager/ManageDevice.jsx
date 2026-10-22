@@ -39,6 +39,7 @@ const ManageDevice = () => {
 
   const [device, setDevice] = useState([]);
   const [typeDevice, setTypeDevice] = useState([]);
+  const [deviceInstances, setDeviceInstances] = useState([]);
 
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
@@ -100,10 +101,30 @@ const ManageDevice = () => {
     return found?.devicetype_name ?? "-";
   };
 
+  const getMatchedSerials = (deviceId) => {
+    const keyword = searchText.trim().toLowerCase();
+    if (!keyword) return [];
+    return deviceInstances
+      .filter(
+        (inst) =>
+          Number(inst.device_id ?? inst.dev_id) === Number(deviceId) &&
+          String(inst.serial_number ?? "").toLowerCase().includes(keyword),
+      )
+      .map((inst) => inst.serial_number)
+      .filter(Boolean);
+  };
+
   const filteredDevice = useMemo(() => {
     const keyword = searchText.trim().toLowerCase();
+    const cleanKeyword = keyword.replace(/^#/, "");
 
     return device.filter((item) => {
+      const matchInstance = deviceInstances.some(
+        (inst) =>
+          Number(inst.device_id ?? inst.dev_id) === Number(item.dev_id) &&
+          String(inst.serial_number ?? "").toLowerCase().includes(keyword),
+      );
+
       const matchSearch =
         !keyword ||
         String(item.dev_name ?? "")
@@ -111,14 +132,16 @@ const ManageDevice = () => {
           .includes(keyword) ||
         String(item.dev_id ?? "")
           .toLowerCase()
-          .includes(keyword);
+          .includes(cleanKeyword) ||
+        getDeviceTypeName(item.dev_type).toLowerCase().includes(keyword) ||
+        matchInstance;
 
       const matchType =
         typeFilter === "all" || Number(item.dev_type) === Number(typeFilter);
 
       return matchSearch && matchType;
     });
-  }, [device, searchText, typeFilter]);
+  }, [device, searchText, typeFilter, deviceInstances, typeDevice]);
 
   const paginatedDevice = filteredDevice.slice(
     page * rowsPerPage,
@@ -149,10 +172,24 @@ const ManageDevice = () => {
     }
   };
 
+  const fetchDeviceInstances = async () => {
+    try {
+      const res = await axios.get(`${apiUrl}/device-instances`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const list = res.data?.result ?? res.data?.data ?? res.data ?? [];
+      setDeviceInstances(Array.isArray(list) ? list : []);
+    } catch (error) {
+      console.error("Error fetching device instances:", error);
+    }
+  };
+
   useEffect(() => {
     if (token) {
       fetchDevices();
       fetchDeviceTypes();
+      fetchDeviceInstances();
     }
   }, [token]);
 
@@ -179,6 +216,7 @@ const ManageDevice = () => {
       setNewDeviceDescription("");
       setPage(0);
       fetchDevices();
+      fetchDeviceInstances();
     } catch (error) {
       console.error("Error adding device:", error);
     }
@@ -222,6 +260,7 @@ const ManageDevice = () => {
 
       handleCloseEditDialog();
       fetchDevices();
+      fetchDeviceInstances();
     } catch (error) {
       console.error("Error editing device:", error);
     }
@@ -240,6 +279,7 @@ const ManageDevice = () => {
         "ซ่อนอุปกรณ์และรายการย่อยแล้ว ประวัติการซ่อมยังดูได้ตามเดิม",
       );
       fetchDevices();
+      fetchDeviceInstances();
     } catch (error) {
       console.error("Error deleting device:", error);
       showFeedback(
@@ -295,7 +335,7 @@ const ManageDevice = () => {
               setPage(0);
             }}
             label="ค้นหาอุปกรณ์"
-            placeholder="ค้นหาด้วยชื่ออุปกรณ์ หรือ ID"
+            placeholder="ค้นหาด้วยชื่ออุปกรณ์, ID หรือ รหัสอุปกรณ์ (Serial Number)"
             fullWidth
             InputProps={{
               startAdornment: (
@@ -362,6 +402,30 @@ const ManageDevice = () => {
                       >
                         {item.dev_description}
                       </Typography>
+                    )}
+
+                    {searchText.trim() && getMatchedSerials(item.dev_id).length > 0 && (
+                      <Stack
+                        direction="row"
+                        spacing={0.5}
+                        sx={{ mt: 0.75 }}
+                        flexWrap="wrap"
+                        alignItems="center"
+                      >
+                        <Typography variant="caption" color="text.secondary">
+                          รหัสอุปกรณ์:
+                        </Typography>
+                        {getMatchedSerials(item.dev_id).map((sn, idx) => (
+                          <Chip
+                            key={idx}
+                            label={sn}
+                            size="small"
+                            color="primary"
+                            variant="outlined"
+                            sx={{ height: 20, fontSize: "0.72rem" }}
+                          />
+                        ))}
+                      </Stack>
                     )}
                   </TableCell>
 
@@ -454,6 +518,30 @@ const ManageDevice = () => {
                     >
                       {item.dev_name}
                     </Typography>
+
+                    {searchText.trim() && getMatchedSerials(item.dev_id).length > 0 && (
+                      <Stack
+                        direction="row"
+                        spacing={0.5}
+                        sx={{ mt: 0.5 }}
+                        flexWrap="wrap"
+                        alignItems="center"
+                      >
+                        <Typography variant="caption" color="text.secondary">
+                          รหัสอุปกรณ์:
+                        </Typography>
+                        {getMatchedSerials(item.dev_id).map((sn, idx) => (
+                          <Chip
+                            key={idx}
+                            label={sn}
+                            size="small"
+                            color="primary"
+                            variant="outlined"
+                            sx={{ height: 20, fontSize: "0.72rem" }}
+                          />
+                        ))}
+                      </Stack>
+                    )}
                   </Box>
 
                   <Chip

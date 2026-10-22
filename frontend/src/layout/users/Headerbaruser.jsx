@@ -1,6 +1,7 @@
 import react, { useState } from "react";
 import {
   Box,
+  Divider,
   IconButton,
   Menu,
   MenuItem,
@@ -13,10 +14,13 @@ import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../store/userSlice";
+import { hasAnyPermission, hasPermission } from "../../auth/permissions";
+
 const Headerbaruser = () => {
   const [anchorEl, setAnchorEl] = useState(null);
+  const permissions = useSelector((state) => state.user.permissions);
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -65,10 +69,29 @@ const Headerbaruser = () => {
             open={Boolean(anchorEl)}
             onClose={handleClose}
           >
-            <Link to="/profile" className="menu-bars">
+            {hasPermission(permissions, "view_assigned_ticket") && (
+              <Link to="/technician/index" className="menu-bars" style={{ textDecoration: "none", color: "inherit" }}>
+                <MenuItem onClick={handleClose}>🛠️ ไปที่ระบบงานช่าง</MenuItem>
+              </Link>
+            )}
+            {hasAnyPermission(permissions, ["assign_ticket", "view_all_ticket"]) && (
+              <Link to="/manager/index" className="menu-bars" style={{ textDecoration: "none", color: "inherit" }}>
+                <MenuItem onClick={handleClose}>📋 ไปที่ระบบจัดการ/จ่ายงาน</MenuItem>
+              </Link>
+            )}
+            {hasAnyPermission(permissions, ["manage_users", "manage_roles", "manage_departments"]) && (
+              <Link to="/admin/index" className="menu-bars" style={{ textDecoration: "none", color: "inherit" }}>
+                <MenuItem onClick={handleClose}>⚙️ ไปที่ระบบผู้ดูแลระบบ</MenuItem>
+              </Link>
+            )}
+            {(hasPermission(permissions, "view_assigned_ticket") ||
+              hasAnyPermission(permissions, ["assign_ticket", "view_all_ticket", "manage_users"])) && (
+              <Divider />
+            )}
+            <Link to="/profile" className="menu-bars" style={{ textDecoration: "none", color: "inherit" }}>
               <MenuItem onClick={handleClose}>Profile</MenuItem>
             </Link>
-            <Link to="/login" className="menu-bars">
+            <Link to="/login" className="menu-bars" style={{ textDecoration: "none", color: "inherit" }}>
               <MenuItem onClick={handleLogout}>Log Out</MenuItem>
             </Link>
           </Menu>

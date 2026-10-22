@@ -56,11 +56,22 @@ type TicketsForTechnicianResponse struct {
 	ClosedAt    *time.Time `json:"closed_at"`
 }
 type TicketsAssginTechRequest struct {
-	TicketID int `json:"ticket_id"`
+	TicketID     int     `json:"ticket_id"`
 	// StatusID     int  `json:"status_id"`
-	TechnicianID *int `json:"technician_id"`
-	ManagerID    *int `json:"manager_id"`
+	TechnicianID *int    `json:"technician_id"`
+	ManagerID    *int    `json:"manager_id"`
+	Reason       *string `json:"reason,omitempty"`
 }
+
+type TechnicianUnableToWorkRequest struct {
+	Reason string `json:"reason"`
+}
+
+type UserRejectRepairRequest struct {
+	Reason string `json:"reason"`
+}
+
+
 type TicketsResponseold struct {
 	TicketID          int        `db:"ticket_id" json:"ticket_id"`
 	Title             string     `db:"title" json:"title"`
@@ -114,6 +125,9 @@ type TicketsResponse struct {
 	UserPhone        *string `db:"user_phone" json:"user_phone"`
 	UserRoleID       int     `db:"user_role_id" json:"user_role_id"`
 	UserDepartmentID *int    `db:"user_department_id" json:"user_department_id"`
+
+	// Reassignment / User Rejection reason info
+	ReassignInfo any `db:"-" json:"reassign_info,omitempty"`
 }
 type TicketDetailold struct {
 	TicketID       int     `db:"ticket_id" json:"ticket_id"`
@@ -248,4 +262,8 @@ type TicketDetail struct {
 	// Device Type
 	DeviceTypeID   *int    `db:"device_type_id" json:"device_type_id"`
 	DeviceTypeName *string `db:"device_type_name" json:"device_type_name"`
+
+	// Reassignment Reason info (from backend JSON storage)
+	ReassignInfo any `db:"-" json:"reassign_info,omitempty"`
 }
+

@@ -173,6 +173,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import ProfileInitialsAvatar from "../ProfileInitialsAvatar";
 import { hasAnyPermission, hasPermission } from "../../auth/permissions";
+import { formatRoleName } from "../../auth/roleUtils";
 
 /* ICONS */
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
@@ -181,6 +182,9 @@ import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
 import HistoryToggleOffIcon from "@mui/icons-material/HistoryToggleOff";
 import DevicesOutlinedIcon from "@mui/icons-material/DevicesOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
+import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
 
 const Sidebartech = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -191,8 +195,11 @@ const Sidebartech = () => {
 
   const firstName = useSelector((state) => state.user.first_name);
   const lastName = useSelector((state) => state.user.last_name);
+  const roleName = useSelector((state) => state.user.role_name);
+  const roleId = useSelector((state) => state.user.role_id);
   const permissions = useSelector((state) => state.user.permissions);
   const full_name = `${firstName ?? ""} ${lastName ?? ""}`.trim() || "-";
+  const displayRole = formatRoleName(roleName, roleId);
 
   const menuItems = [
     {
@@ -211,6 +218,24 @@ const Sidebartech = () => {
       path: "/technician/Historyticket",
       icon: <HistoryToggleOffIcon />,
       permission: "view_assigned_ticket",
+    },
+    {
+      title: "จ่ายงาน / มอบหมายงาน",
+      path: "/manager/reportticket",
+      icon: <AssignmentTurnedInIcon />,
+      permission: "assign_ticket",
+    },
+    {
+      title: "แจ้งซ่อมอุปกรณ์",
+      path: "/user/repair-request",
+      icon: <AddCircleOutlineIcon />,
+      permission: "create_ticket",
+    },
+    {
+      title: "งานแจ้งซ่อมของฉัน",
+      path: "/user/repair-history",
+      icon: <FormatListBulletedIcon />,
+      permission: "view_own_ticket",
     },
     {
       title: "จัดการอุปกรณ์",
@@ -354,7 +379,7 @@ const Sidebartech = () => {
                       fontSize: "12px",
                     }}
                   >
-                    Technician
+                    {displayRole}
                   </Typography>
                 </Box>
               </Box>

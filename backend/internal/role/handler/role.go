@@ -130,6 +130,12 @@ func (r roleHandler) DeleteRolesByID(c *fiber.Ctx) error {
 		})
 	}
 
+	if id <= 4 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "ไม่สามารถลบบทบาทหลักของระบบได้",
+		})
+	}
+
 	err = r.roleSrv.DeleteRolesByID(id)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})

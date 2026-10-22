@@ -102,4 +102,5 @@ type UserQueryRepository interface {
 	GetUserWithRolesName() ([]UserWithRolesName, error)
 	GetCurrentUser(int) (*UserWithRolesName, error)
 	GetUserByRolesID(int) ([]UserTechinicianRolesRow, error)
+	GetUsersByPermission(string) ([]UserTechinicianRolesRow, error)
 }

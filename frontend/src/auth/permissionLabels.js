@@ -45,3 +45,39 @@ export const getPermissionDescription = (permission) => {
     "ไม่มีคำอธิบาย"
   );
 };
+
+export const permissionGroups = [
+  {
+    key: "user_module",
+    title: "ระบบแจ้งซ่อม (ผู้ใช้งานทั่วไป)",
+    permissionNames: ["create_ticket", "view_own_ticket", "confirm_repair"],
+  },
+  {
+    key: "tech_module",
+    title: "ระบบงานช่าง (ช่างเทคนิค)",
+    permissionNames: [
+      "view_assigned_ticket",
+      "update_ticket_status",
+      "add_resolution_note",
+      "view_devices",
+    ],
+  },
+  {
+    key: "manager_module",
+    title: "ระบบบริหารจัดการงานซ่อม (ผู้จัดการ)",
+    permissionNames: ["view_all_ticket", "assign_ticket"],
+  },
+  {
+    key: "admin_module",
+    title: "ระบบผู้ดูแลระบบ (Admin)",
+    permissionNames: [
+      "manage_users",
+      "manage_roles",
+      "manage_departments",
+      "manage_devices",
+      "manage_issue_categories",
+      "manage_ticket_statuses",
+    ],
+  },
+];
+

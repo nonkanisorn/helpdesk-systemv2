@@ -22,6 +22,7 @@ import {
   getProfileGradient,
   getProfileInitials,
 } from "../layout/ProfileInitialsAvatar";
+import { formatRoleName } from "../auth/roleUtils";
 
 function Profile() {
   const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5011";
@@ -35,15 +36,16 @@ function Profile() {
 
   const roleMeta = useMemo(() => {
     const roleID = profile?.role_id ?? storedUser?.role_id;
-    const roleName = profile?.role_name;
+    const roleName = profile?.role_name ?? storedUser?.role_name;
+    const formattedRole = formatRoleName(roleName, roleID);
     const map = {
-      1: { label: roleName || "admin", color: "error" },
-      2: { label: roleName || "manager", color: "warning" },
-      3: { label: roleName || "technician", color: "info" },
-      4: { label: roleName || "user", color: "success" },
+      1: { label: formattedRole, color: "error" },
+      2: { label: formattedRole, color: "warning" },
+      3: { label: formattedRole, color: "info" },
+      4: { label: formattedRole, color: "success" },
     };
 
-    return map[Number(roleID)] ?? { label: roleName || "-", color: "default" };
+    return map[Number(roleID)] ?? { label: formattedRole, color: "default" };
   }, [profile, storedUser]);
 
   const statusMeta = useMemo(() => {

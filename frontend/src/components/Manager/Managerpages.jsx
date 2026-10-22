@@ -171,22 +171,30 @@ import {
   Typography,
   Grid,
   Stack,
-  Button,
   Chip,
   Divider,
 } from "@mui/material";
-import SignalCellularAltRoundedIcon from "@mui/icons-material/SignalCellularAltRounded";
 import ConstructionRoundedIcon from "@mui/icons-material/ConstructionRounded";
 import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
 import AssignmentIndRoundedIcon from "@mui/icons-material/AssignmentIndRounded";
 import AccessTimeRoundedIcon from "@mui/icons-material/AccessTimeRounded";
+import WavingHandRoundedIcon from "@mui/icons-material/WavingHandRounded";
+import BuildOutlinedIcon from "@mui/icons-material/BuildOutlined";
+import DevicesOutlinedIcon from "@mui/icons-material/DevicesOutlined";
+import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import PaperuiV2 from "../ui/PaperuiV2";
+import { hasAnyPermission, hasPermission } from "../../auth/permissions";
 
 function Managerpages() {
   const apiUrl = process.env.REACT_APP_API_URL;
-  const token = useSelector((state) => state.user.token);
+  const user = useSelector((state) => state.user);
+  const token = user?.token;
+  const roleName = String(user?.role_name || "").toLowerCase().trim();
+  const permissions = user?.permissions ?? [];
+  const isManager =
+    roleName === "manager" || hasPermission(permissions, "assign_ticket");
 
   const [ticketData, setTicketData] = useState([]);
   const [technicianData, setTechnicianData] = useState([]);
@@ -207,17 +215,19 @@ function Managerpages() {
 
   const fetchDashboardData = async () => {
     try {
-      const [ticketRes, techRes] = await Promise.all([
-        axios.get(`${apiUrl}/tickets`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get(`${apiUrl}/technician/summary`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ]);
+      if (isManager) {
+        const [ticketRes, techRes] = await Promise.all([
+          axios.get(`${apiUrl}/tickets`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get(`${apiUrl}/technician/summary`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
 
-      setTicketData(ticketRes.data.result ?? ticketRes.data ?? []);
-      setTechnicianData(techRes.data.result ?? techRes.data ?? []);
+        setTicketData(ticketRes.data.result ?? ticketRes.data ?? []);
+        setTechnicianData(techRes.data.result ?? techRes.data ?? []);
+      }
     } catch (error) {
       console.error("Error fetching manager dashboard:", error);
     }
@@ -225,7 +235,194 @@ function Managerpages() {
 
   useEffect(() => {
     if (token) fetchDashboardData();
-  }, [token]);
+  }, [token, isManager]);
+
+  if (!isManager) {
+    const displayRoleName = user?.role_name || "นักศึกษาฝึกงาน";
+    const fullName =
+      `${user?.first_name ?? ""} ${user?.last_name ?? ""}`.trim() ||
+      user?.username ||
+      "ผู้ใช้งาน";
+
+    return (
+      <Box sx={{ width: "100%" }}>
+        <Stack spacing={3}>
+          <Paper
+            elevation={2}
+            sx={{
+              p: { xs: 3, sm: 4 },
+              borderRadius: 3,
+              background: "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
+              border: "1px solid #eef2f7",
+            }}
+          >
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={2.5}
+              alignItems={{ xs: "flex-start", sm: "center" }}
+            >
+              <Box
+                sx={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: "18px",
+                  background: "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 8px 20px rgba(37, 99, 235, 0.12)",
+                }}
+              >
+                <WavingHandRoundedIcon sx={{ fontSize: 32, color: "#2563eb" }} />
+              </Box>
+
+              <Box sx={{ flex: 1 }}>
+                <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap">
+                  <Typography variant="h5" fontWeight={700} color="#111827">
+                    ยินดีต้อนรับ {displayRoleName}
+                  </Typography>
+                  <Chip
+                    label={displayRoleName}
+                    size="small"
+                    color="primary"
+                    variant="outlined"
+                    sx={{ fontWeight: 600, borderRadius: "8px" }}
+                  />
+                </Stack>
+                <Typography
+                  variant="body1"
+                  sx={{ color: "#3b82f6", fontWeight: 600, mt: 0.5 }}
+                >
+                  สวัสดี คุณ{fullName}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                  คุณสามารถเลือกเข้าใช้งานเมนูต่าง ๆ ตามสิทธิ์ที่ได้รับมอบหมายได้จากแถบเมนูด้านซ้าย
+                </Typography>
+              </Box>
+            </Stack>
+          </Paper>
+
+          {/* Quick Access Cards */}
+          <Paper
+            elevation={2}
+            sx={{
+              p: { xs: 2.5, sm: 3.5 },
+              borderRadius: 3,
+            }}
+          >
+            <Typography variant="h6" fontWeight={600} sx={{ mb: 1 }}>
+              เมนูการทำงานที่สามารถเข้าถึงได้
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              คลิกการ์ดด้านล่างหรือเลือกจากแถบเมนูด้านซ้ายเพื่อเริ่มต้นทำงาน
+            </Typography>
+
+            <Grid container spacing={2.5}>
+              {hasPermission(permissions, "view_all_ticket") && (
+                <Grid item xs={12} sm={6}>
+                  <Paper
+                    component={Link}
+                    to="/manager/statusticket"
+                    variant="outlined"
+                    sx={{
+                      p: 3,
+                      borderRadius: 3,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 2.5,
+                      textDecoration: "none",
+                      color: "inherit",
+                      transition: "all 0.2s ease-in-out",
+                      borderColor: "#e2e8f0",
+                      "&:hover": {
+                        borderColor: "#2563eb",
+                        boxShadow: "0 8px 24px rgba(37, 99, 235, 0.12)",
+                        transform: "translateY(-2px)",
+                      },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 52,
+                        height: 52,
+                        borderRadius: "14px",
+                        bgcolor: "#eff6ff",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#2563eb",
+                      }}
+                    >
+                      <BuildOutlinedIcon sx={{ fontSize: 28 }} />
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="subtitle1" fontWeight={700} color="#111827">
+                        สถานะการซ่อม
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        ดูรายการและติดตามสถานะงานแจ้งซ่อมทั้งหมดในระบบ
+                      </Typography>
+                    </Box>
+                    <ArrowForwardRoundedIcon sx={{ color: "#94a3b8" }} />
+                  </Paper>
+                </Grid>
+              )}
+
+              {hasAnyPermission(permissions, ["view_devices", "manage_devices"]) && (
+                <Grid item xs={12} sm={6}>
+                  <Paper
+                    component={Link}
+                    to="/manager/manage/device"
+                    variant="outlined"
+                    sx={{
+                      p: 3,
+                      borderRadius: 3,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 2.5,
+                      textDecoration: "none",
+                      color: "inherit",
+                      transition: "all 0.2s ease-in-out",
+                      borderColor: "#e2e8f0",
+                      "&:hover": {
+                        borderColor: "#059669",
+                        boxShadow: "0 8px 24px rgba(5, 150, 105, 0.12)",
+                        transform: "translateY(-2px)",
+                      },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 52,
+                        height: 52,
+                        borderRadius: "14px",
+                        bgcolor: "#ecfdf5",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#059669",
+                      }}
+                    >
+                      <DevicesOutlinedIcon sx={{ fontSize: 28 }} />
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="subtitle1" fontWeight={700} color="#111827">
+                        จัดการอุปกรณ์
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        ดูรายการ ลงทะเบียน และแก้ไขข้อมูลเครื่องอุปกรณ์
+                      </Typography>
+                    </Box>
+                    <ArrowForwardRoundedIcon sx={{ color: "#94a3b8" }} />
+                  </Paper>
+                </Grid>
+              )}
+            </Grid>
+          </Paper>
+        </Stack>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -237,33 +434,15 @@ function Managerpages() {
             borderRadius: 3,
           }}
         >
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            justifyContent="space-between"
-            alignItems={{ xs: "stretch", sm: "center" }}
-            spacing={2}
-            sx={{ mb: 3 }}
-          >
-            <Box>
-              <Typography variant="h5" fontWeight={600}>
-                Dashboard ผู้จัดการ
-              </Typography>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h5" fontWeight={600}>
+              Dashboard ผู้จัดการ
+            </Typography>
 
-              <Typography variant="body2" color="text.secondary">
-                ภาพรวมรายงานการซ่อมทั้งหมด
-              </Typography>
-            </Box>
-
-            <Button
-              component={Link}
-              to="/manager/reportticket"
-              variant="contained"
-              startIcon={<SignalCellularAltRoundedIcon />}
-              sx={{ width: { xs: "100%", sm: "auto" } }}
-            >
-              ดูรายงานเต็ม
-            </Button>
-          </Stack>
+            <Typography variant="body2" color="text.secondary">
+              ภาพรวมรายงานการซ่อมทั้งหมด
+            </Typography>
+          </Box>
 
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6} md={3}>

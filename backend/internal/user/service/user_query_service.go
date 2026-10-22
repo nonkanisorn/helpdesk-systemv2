@@ -138,3 +138,26 @@ func (u userQueryService) GetUserByRolesID(id int) ([]domain.UserResponse, error
 
 	return userRes, nil
 }
+
+func (u userQueryService) GetUsersByPermission(permissionName string) ([]domain.UserResponse, error) {
+	rows, err := u.userQeryRepo.GetUsersByPermission(permissionName)
+	if err != nil {
+		return nil, err
+	}
+	userRes := []domain.UserResponse{}
+	for _, v := range rows {
+		userRole := domain.UserResponse{
+			ID:           v.ID,
+			FirstName:    &v.FirstName,
+			LastName:     &v.LastName,
+			Email:        &v.Email,
+			Phone:        &v.Phone,
+			RoleID:       v.RoleID,
+			DepartmentID: v.DepartmentID,
+			Status:       &v.Status,
+		}
+		userRes = append(userRes, userRole)
+	}
+
+	return userRes, nil
+}

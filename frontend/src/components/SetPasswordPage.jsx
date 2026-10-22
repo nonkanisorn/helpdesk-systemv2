@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Paper,
@@ -18,6 +18,7 @@ import RestartAltOutlinedIcon from "@mui/icons-material/RestartAltOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import axios from "axios";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
@@ -65,8 +66,15 @@ function SetPasswordPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const apiUrl = process.env.REACT_APP_API_URL;
-  const mode = searchParams.get("mode") === "invite" ? "invite" : "reset";
-  const content = pageContent[mode];
+
+  const initialMode = searchParams.get("mode") === "invite" ? "invite" : "reset";
+  const [mode, setMode] = useState(initialMode);
+  const [userEmail, setUserEmail] = useState("");
+  const [verifying, setVerifying] = useState(true);
+  const [tokenInvalid, setTokenInvalid] = useState(false);
+  const [tokenErrorMsg, setTokenErrorMsg] = useState("");
+
+  const content = pageContent[mode] || pageContent.invite;
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -79,6 +87,53 @@ function SetPasswordPage() {
   const [serverError, setServerError] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const verifyToken = async () => {
+      if (!token) {
+        if (isMounted) {
+          setTokenInvalid(true);
+          setTokenErrorMsg("ไม่พบ token สำหรับตั้งรหัสผ่าน");
+          setVerifying(false);
+        }
+        return;
+      }
+
+      try {
+        setVerifying(true);
+        const res = await axios.get(`${apiUrl}/set-password/verify/${token}`);
+        if (!isMounted) return;
+
+        if (res.data?.valid) {
+          if (res.data.mode) {
+            setMode(res.data.mode);
+          }
+          if (res.data.email) {
+            setUserEmail(res.data.email);
+          }
+        }
+      } catch (err) {
+        if (!isMounted) return;
+        setTokenInvalid(true);
+        setTokenErrorMsg(
+          err.response?.data?.error ||
+            "ลิงก์นี้ไม่ถูกต้อง หมดอายุ หรือถูกใช้งานไปแล้ว กรุณาขอลิงก์ใหม่อีกครั้ง",
+        );
+      } finally {
+        if (isMounted) {
+          setVerifying(false);
+        }
+      }
+    };
+
+    verifyToken();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [token, apiUrl]);
 
   const validateForm = () => {
     let valid = true;
@@ -141,6 +196,112 @@ function SetPasswordPage() {
       setLoading(false);
     }
   };
+
+  if (verifying) {
+    return (
+      <Box
+        sx={{
+          minHeight: "100vh",
+          bgcolor: "#f5f7fb",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          px: { xs: 2, sm: 3 },
+          py: 4,
+        }}
+      >
+        <Paper
+          elevation={0}
+          sx={{
+            width: "100%",
+            maxWidth: 460,
+            borderRadius: { xs: 3, sm: 4 },
+            p: { xs: 4, sm: 5 },
+            border: "1px solid #e5e7eb",
+            boxShadow: "0 20px 45px rgba(15, 23, 42, 0.08)",
+            textAlign: "center",
+          }}
+        >
+          <CircularProgress size={40} sx={{ mb: 2 }} />
+          <Typography variant="body1" color="text.secondary">
+            กำลังตรวจสอบความถูกต้องของลิงก์...
+          </Typography>
+        </Paper>
+      </Box>
+    );
+  }
+
+  if (tokenInvalid) {
+    return (
+      <Box
+        sx={{
+          minHeight: "100vh",
+          bgcolor: "#f5f7fb",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          px: { xs: 2, sm: 3 },
+          py: 4,
+        }}
+      >
+        <Paper
+          elevation={0}
+          sx={{
+            width: "100%",
+            maxWidth: 460,
+            borderRadius: { xs: 3, sm: 4 },
+            p: { xs: 3, sm: 4 },
+            border: "1px solid #e5e7eb",
+            boxShadow: "0 20px 45px rgba(15, 23, 42, 0.08)",
+            textAlign: "center",
+          }}
+        >
+          <Stack spacing={3} alignItems="center">
+            <Box
+              sx={{
+                width: 60,
+                height: 60,
+                borderRadius: "50%",
+                bgcolor: "#fee2e2",
+                color: "#dc2626",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <ErrorOutlineIcon fontSize="large" />
+            </Box>
+            <Box>
+              <Typography variant="h5" fontWeight={700}>
+                ลิงก์ไม่ถูกต้องหรือหมดอายุ
+              </Typography>
+              <Typography color="text.secondary" sx={{ mt: 1, fontSize: 14.5 }}>
+                {tokenErrorMsg}
+              </Typography>
+            </Box>
+            <Stack direction="row" spacing={2} sx={{ width: "100%" }}>
+              <Button
+                variant="outlined"
+                fullWidth
+                onClick={() => navigate("/login")}
+                sx={{ borderRadius: 2 }}
+              >
+                ไปหน้าเข้าสู่ระบบ
+              </Button>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={() => navigate("/forgot-password")}
+                sx={{ borderRadius: 2 }}
+              >
+                ขอลิงก์ใหม่
+              </Button>
+            </Stack>
+          </Stack>
+        </Paper>
+      </Box>
+    );
+  }
 
   return (
     <Box
@@ -207,6 +368,24 @@ function SetPasswordPage() {
               >
                 {content.subtitle}
               </Typography>
+
+              {userEmail && (
+                <Typography
+                  sx={{
+                    mt: 1.5,
+                    fontSize: 13.5,
+                    color: content.iconColor,
+                    bgcolor: content.iconBg,
+                    display: "inline-block",
+                    px: 1.5,
+                    py: 0.5,
+                    borderRadius: 1.5,
+                    fontWeight: 600,
+                  }}
+                >
+                  สำหรับ: {userEmail}
+                </Typography>
+              )}
             </Box>
 
             {serverError && <Alert severity="error">{serverError}</Alert>}

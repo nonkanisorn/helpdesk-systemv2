@@ -81,7 +81,7 @@ function User() {
       color: "default",
     },
     7: {
-      label: "รอผู้จัดการตรวจสอบ",
+      label: "ส่งกลับตรวจสอบอีกครั้ง",
       icon: <HourglassEmptyIcon sx={{ color: amber[700] }} fontSize="small" />,
       color: "warning",
     },

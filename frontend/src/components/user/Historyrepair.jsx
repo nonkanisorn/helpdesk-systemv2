@@ -40,14 +40,27 @@ function Historyrepair() {
     4: "รอการยืนยันจากคุณ",
     5: "เสร็จสิ้นแล้ว",
     6: "รออะไหล่",
-    7: "รอผู้จัดการตรวจสอบ",
+    7: "ส่งกลับตรวจสอบอีกครั้ง",
   };
 
-  const chipPropsByStatus = (statusId) => {
-    if (statusId === 5) return { color: "success", variant: "outlined" };
-    if (statusId === 3 || statusId === 6 || statusId === 7)
+  const isRejectedTicket = (ticket) => {
+    const statusId = Number(ticket?.status_id);
+    if (statusId === 5) return false;
+
+    return (
+      statusId === 7 ||
+      Boolean(ticket?.reassign_info?.user_rejection_reason)
+    );
+  };
+
+  const chipPropsByStatus = (statusId, item) => {
+    const id = Number(statusId);
+    if (id === 5) return { color: "success", variant: "outlined" };
+    if (isRejectedTicket(item || { status_id: id }))
+      return { color: "error", variant: "outlined" };
+    if (id === 3 || id === 6)
       return { color: "warning", variant: "outlined" };
-    if (statusId === 4) return { color: "info", variant: "outlined" };
+    if (id === 4) return { color: "info", variant: "outlined" };
 
     return { color: "default", variant: "outlined" };
   };
@@ -70,9 +83,37 @@ function Historyrepair() {
 
   const filteredTickets = useMemo(() => {
     const ids = userStatusGroups[groupKey].ids;
-    if (!ids) return ticketData;
+    const baseList = ids
+      ? ticketData.filter((item) => ids.includes(item.status_id))
+      : ticketData;
 
-    return ticketData.filter((item) => ids.includes(item.status_id));
+    return [...baseList].sort((a, b) => {
+      // 1. เคสส่งกลับ/ไม่ได้รับการยอมรับ ให้ความสำคัญสูงสุด ปักหมุดไว้บนสุดเสมอ
+      const aIsRejected = isRejectedTicket(a);
+      const bIsRejected = isRejectedTicket(b);
+      if (aIsRejected && !bIsRejected) return -1;
+      if (!aIsRejected && bIsRejected) return 1;
+
+      // 2. ภายในกลุ่มเดียวกัน จัดเรียงตามเวลาล่าสุด (หรือ id ล่าสุด)
+      const timeA = new Date(
+        a.reassign_info?.user_rejected_at ||
+        a.reassign_info?.reassigned_at ||
+        a.completed_at ||
+        a.created_at
+      ).getTime();
+      const timeB = new Date(
+        b.reassign_info?.user_rejected_at ||
+        b.reassign_info?.reassigned_at ||
+        b.completed_at ||
+        b.created_at
+      ).getTime();
+
+      if (!isNaN(timeA) && !isNaN(timeB) && timeB !== timeA) {
+        return timeB - timeA;
+      }
+
+      return Number(b.ticket_id || 0) - Number(a.ticket_id || 0);
+    });
   }, [ticketData, groupKey]);
 
   const countByGroup = (key) => {
@@ -220,6 +261,8 @@ function Historyrepair() {
                       p: 2,
                       borderRadius: 2.5,
                       height: "100%",
+                      borderColor: isRejectedTicket(item) ? "error.light" : undefined,
+                      bgcolor: isRejectedTicket(item) ? "rgba(239, 68, 68, 0.03)" : undefined,
                     }}
                   >
                     <Stack spacing={1.5} height="100%">
@@ -236,6 +279,16 @@ function Historyrepair() {
                           >
                             {item.title}
                           </Typography>
+
+                          {isRejectedTicket(item) && item.reassign_info?.user_rejection_reason && (
+                            <Typography
+                              variant="caption"
+                              color="error.main"
+                              sx={{ display: "block", mt: 0.5, fontWeight: 500 }}
+                            >
+                              เหตุผลที่ส่งกลับ: {item.reassign_info.user_rejection_reason}
+                            </Typography>
+                          )}
 
                           <Typography
                             variant="body2"
@@ -267,7 +320,7 @@ function Historyrepair() {
                           <Chip
                             label={chipLabel}
                             size="small"
-                            {...chipPropsByStatus(item.status_id)}
+                            {...chipPropsByStatus(item.status_id, item)}
                           />
                         </Stack>
                       </Stack>

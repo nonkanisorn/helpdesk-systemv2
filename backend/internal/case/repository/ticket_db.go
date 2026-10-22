@@ -94,6 +94,7 @@ func (t ticketRepositoryDB) GetAllTickets() ([]TicketRow, error) {
 		FROM tickets t
 		JOIN users u
 			ON t.user_id = u.id
+		ORDER BY t.created_at DESC, t.id DESC
 	`
 	err := t.db.Select(&ticket, query)
 	if err != nil {

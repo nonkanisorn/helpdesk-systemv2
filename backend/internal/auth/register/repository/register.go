@@ -9,5 +9,8 @@ type RegisterRepository interface {
 	CheckToken(token string) (*domain.Usertest, error)
 	SaveToken(userID *int, token string) error
 	FindUserIDByEmail(email string) (*int, error)
+	FindUserByEmail(email string) (*domain.Usertest, error)
+	VerifyTokenWithUser(token string) (*domain.Usertest, error)
+	InvalidateTokensByUserID(userID int) error
 	MarkTokenUsed(token string) error
 }

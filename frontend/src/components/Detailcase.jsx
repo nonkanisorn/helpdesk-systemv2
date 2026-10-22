@@ -14,6 +14,11 @@ import {
   CircularProgress,
   Snackbar,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
 } from "@mui/material";
 import DateRangeRoundedIcon from "@mui/icons-material/DateRangeRounded";
 import OutlinedFlagRoundedIcon from "@mui/icons-material/OutlinedFlagRounded";
@@ -27,6 +32,10 @@ import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import EditNoteRoundedIcon from "@mui/icons-material/EditNoteRounded";
 import Inventory2RoundedIcon from "@mui/icons-material/Inventory2Rounded";
+import AssignmentReturnRoundedIcon from "@mui/icons-material/AssignmentReturnRounded";
+import PublishedWithChangesRoundedIcon from "@mui/icons-material/PublishedWithChangesRounded";
+import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
+import ReportProblemRoundedIcon from "@mui/icons-material/ReportProblemRounded";
 import Timeline from "@mui/lab/Timeline";
 import TimelineItem from "@mui/lab/TimelineItem";
 import TimelineSeparator from "@mui/lab/TimelineSeparator";
@@ -45,6 +54,10 @@ function Detailcase() {
   const [ticketData, setTicketData] = useState(null);
   const [loadError, setLoadError] = useState("");
   const [loadingAction, setLoadingAction] = useState(false);
+  const [openUnableModal, setOpenUnableModal] = useState(false);
+  const [unableReason, setUnableReason] = useState("");
+  const [openRejectModal, setOpenRejectModal] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
   const [notification, setNotification] = useState({
     open: false,
     severity: "success",
@@ -85,6 +98,15 @@ function Detailcase() {
       label: "รออะไหล่",
       color: "default",
       icon: <PrecisionManufacturingIcon sx={{ color: grey[700] }} />,
+    },
+    7: {
+      label: isEndUserView ? "ส่งกลับตรวจสอบอีกครั้ง" : "รอผู้จัดการตรวจสอบ",
+      color: isEndUserView ? "warning" : "error",
+      icon: (
+        <ErrorOutlineRoundedIcon
+          sx={{ color: isEndUserView ? orange[700] : red[600] }}
+        />
+      ),
     },
   };
 
@@ -257,18 +279,28 @@ function Detailcase() {
     }
   };
 
-  const handleRejectRepairByUser = async () => {
-    const confirmReject = window.confirm(
-      "ต้องการส่งงานกลับไปให้เมเนเจอร์ตรวจสอบอีกครั้งใช่ไหม?",
-    );
-    if (!confirmReject) return;
+  const handleOpenRejectModal = () => {
+    setRejectReason("");
+    setOpenRejectModal(true);
+  };
+
+  const handleConfirmRejectRepair = async () => {
+    const trimmed = rejectReason.trim();
+    if (!trimmed) {
+      setNotification({
+        open: true,
+        severity: "error",
+        message: "กรุณาระบุเหตุผลที่ไม่ยอมรับผลการซ่อม",
+      });
+      return;
+    }
 
     try {
       setLoadingAction(true);
 
       await axios.patch(
         `${apiUrl}/tickets/${ticket_id}/reject-repair`,
-        {},
+        { reason: trimmed },
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -277,15 +309,53 @@ function Detailcase() {
       setNotification({
         open: true,
         severity: "success",
-        message: "ส่งคำขอตรวจสอบอีกครั้งให้เมเนเจอร์แล้ว",
+        message: "ส่งกลับให้ตรวจสอบเรียบร้อยแล้ว",
       });
+      setOpenRejectModal(false);
+      setRejectReason("");
       await fetchDetail();
     } catch (error) {
       console.error("Error rejecting repair:", error);
       setNotification({
         open: true,
         severity: "error",
-        message: "ส่งกลับให้เมเนเจอร์ไม่สำเร็จ",
+        message: error.response?.data?.error || "ส่งกลับให้ตรวจสอบไม่สำเร็จ",
+      });
+    } finally {
+      setLoadingAction(false);
+    }
+  };
+
+  const handleTechnicianUnableToWork = async () => {
+    if (!unableReason.trim()) {
+      alert("กรุณาระบุเหตุผลที่ไม่สามารถปฏิบัติงานได้");
+      return;
+    }
+
+    try {
+      setLoadingAction(true);
+      await axios.patch(
+        `${apiUrl}/technician/${ticket_id}/unable-to-work`,
+        { reason: unableReason.trim() },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      setNotification({
+        open: true,
+        severity: "success",
+        message: "ส่งคืนงานและแจ้งผู้จัดการเรียบร้อยแล้ว",
+      });
+      setOpenUnableModal(false);
+      setUnableReason("");
+      await fetchDetail();
+    } catch (error) {
+      console.error("Error reporting unable to work:", error);
+      setNotification({
+        open: true,
+        severity: "error",
+        message: "แจ้งไม่สามารถปฏิบัติงานไม่สำเร็จ",
       });
     } finally {
       setLoadingAction(false);
@@ -394,6 +464,151 @@ function Detailcase() {
         <Grid container spacing={3}>
           <Grid item xs={12} md={8}>
             <Stack spacing={3}>
+              {/* การ์ดเหตุผลที่ผู้ใช้ขอให้ตรวจสอบอีกครั้ง (ไม่ยอมรับผลการซ่อม) */}
+              {ticketData.reassign_info?.user_rejection_reason && (
+                <Paper
+                  elevation={2}
+                  sx={{
+                    p: { xs: 2, sm: 2.5 },
+                    borderRadius: 3,
+                    border: "1px solid",
+                    borderColor: "error.light",
+                    bgcolor: "#fff5f5",
+                  }}
+                >
+                  <Stack spacing={1.5}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <ReportProblemRoundedIcon color="error" />
+                      <Typography fontWeight={700} color="error.dark">
+                        {isEndUserView
+                          ? "เหตุผลการส่งกลับตรวจสอบอีกครั้ง"
+                          : "เหตุผลการขอให้ตรวจสอบอีกครั้ง (ไม่ยอมรับผลการซ่อม)"}
+                      </Typography>
+                    </Stack>
+
+                    <Box sx={{ pl: 1 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        <b>ผู้ขอตรวจสอบ:</b>{" "}
+                        {ticketData.reassign_info.user_name || "ผู้ใช้งาน"}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          mt: 0.5,
+                          p: 1.5,
+                          borderRadius: 2,
+                          bgcolor: "white",
+                          border: "1px solid #fecaca",
+                          whiteSpace: "pre-line",
+                        }}
+                      >
+                        {ticketData.reassign_info.user_rejection_reason}
+                      </Typography>
+                      {ticketData.reassign_info.user_rejected_at && (
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ mt: 0.5, display: "block" }}
+                        >
+                          แจ้งเมื่อ: {ticketData.reassign_info.user_rejected_at}
+                        </Typography>
+                      )}
+                    </Box>
+                  </Stack>
+                </Paper>
+              )}
+
+              {/* การ์ดประวัติและเหตุผลการเปลี่ยนช่าง (ช่างแจ้งทำไม่ได้ หรือ ผู้จัดการเปลี่ยนช่าง) - แสดงเฉพาะ Manager/Tech ไม่แสดงให้ User */}
+              {!isEndUserView &&
+                (ticketData.reassign_info?.technician_reason ||
+                  ticketData.reassign_info?.manager_reason) && (
+                <Paper
+                  elevation={2}
+                  sx={{
+                    p: { xs: 2, sm: 2.5 },
+                    borderRadius: 3,
+                    border: "1px solid",
+                    borderColor: "warning.light",
+                    bgcolor: "#fffbf2",
+                  }}
+                >
+                  <Stack spacing={1.5}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <WarningAmberRoundedIcon color="warning" />
+                      <Typography fontWeight={700} color="warning.dark">
+                        ประวัติและเหตุผลการเปลี่ยนช่าง
+                      </Typography>
+                    </Stack>
+
+                    {ticketData.reassign_info.technician_reason && (
+                      <Box sx={{ pl: 1 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          <b>ช่างแจ้งไม่สามารถปฏิบัติงานได้</b>{" "}
+                          {ticketData.reassign_info.technician_name &&
+                            `(${ticketData.reassign_info.technician_name})`}:
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            mt: 0.5,
+                            p: 1.5,
+                            borderRadius: 2,
+                            bgcolor: "white",
+                            border: "1px solid #fed7aa",
+                            whiteSpace: "pre-line",
+                          }}
+                        >
+                          {ticketData.reassign_info.technician_reason}
+                        </Typography>
+                        {ticketData.reassign_info.technician_reported_at && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ mt: 0.5, display: "block" }}
+                          >
+                            แจ้งเมื่อ:{" "}
+                            {ticketData.reassign_info.technician_reported_at}
+                          </Typography>
+                        )}
+                      </Box>
+                    )}
+
+                    {ticketData.reassign_info.manager_reason && (
+                      <Box sx={{ pl: 1, mt: 1 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          <b>เหตุผลที่ผู้จัดการเปลี่ยนช่าง</b>{" "}
+                          {ticketData.reassign_info.manager_name &&
+                            `(${ticketData.reassign_info.manager_name})`}:
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            mt: 0.5,
+                            p: 1.5,
+                            borderRadius: 2,
+                            bgcolor: "white",
+                            border: "1px solid #bfdbfe",
+                            whiteSpace: "pre-line",
+                          }}
+                        >
+                          {ticketData.reassign_info.manager_reason}
+                        </Typography>
+                        {ticketData.reassign_info.reassigned_at && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ mt: 0.5, display: "block" }}
+                          >
+                            เปลี่ยนช่างเมื่อ:{" "}
+                            {ticketData.reassign_info.reassigned_at}
+                          </Typography>
+                        )}
+                      </Box>
+                    )}
+                  </Stack>
+                </Paper>
+              )}
+
               <Paper
                 elevation={2}
                 sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}
@@ -788,7 +1003,7 @@ function Detailcase() {
                         color="error"
                         fullWidth
                         disabled={loadingAction}
-                        onClick={handleRejectRepairByUser}
+                        onClick={handleOpenRejectModal}
                       >
                         ขอให้ตรวจสอบอีกครั้ง
                       </Button>
@@ -808,12 +1023,58 @@ function Detailcase() {
                     </Button>
                   )}
 
+                  {canAssignTicket && [2, 3, 6, 7].includes(ticketStatusId) && (
+                    <Button
+                      variant="contained"
+                      color="warning"
+                      fullWidth
+                      startIcon={<PublishedWithChangesRoundedIcon />}
+                      disabled={loadingAction}
+                      onClick={() =>
+                        navigate(`/manager/ticket/assign/${ticket_id}`)
+                      }
+                      sx={{
+                        py: 1.15,
+                        borderRadius: 99,
+                        fontWeight: 700,
+                        textTransform: "none",
+                      }}
+                    >
+                      เปลี่ยนช่าง
+                    </Button>
+                  )}
+
+                  {canUpdateTicketStatus &&
+                    [2, 3, 6].includes(ticketStatusId) && (
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        fullWidth
+                        startIcon={<AssignmentReturnRoundedIcon />}
+                        disabled={loadingAction}
+                        onClick={() => {
+                          setUnableReason("");
+                          setOpenUnableModal(true);
+                        }}
+                        sx={{
+                          py: 1.15,
+                          borderRadius: 99,
+                          fontWeight: 700,
+                          textTransform: "none",
+                        }}
+                      >
+                        ไม่สามารถปฏิบัติงานได้
+                      </Button>
+                    )}
+
                   {!(
-                    (canUpdateTicketStatus && ticketStatusId === 2) ||
+                    (canUpdateTicketStatus &&
+                      [2, 3, 6].includes(ticketStatusId)) ||
                     (canAddResolutionNote &&
                       [3, 4, 5, 6].includes(ticketStatusId)) ||
                     (canConfirmRepair && ticketStatusId === 4) ||
-                    (canAssignTicket && ticketStatusId === 1)
+                    (canAssignTicket &&
+                      [1, 2, 3, 6, 7].includes(ticketStatusId))
                   ) && (
                     <Paper
                       variant="outlined"
@@ -834,6 +1095,96 @@ function Detailcase() {
           </Grid>
         </Grid>
       </Stack>
+
+      {/* Dialog สำหรับช่างแจ้งไม่สามารถปฏิบัติงานได้ */}
+      <Dialog
+        open={openUnableModal}
+        onClose={() => !loadingAction && setOpenUnableModal(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 600 }}>
+          แจ้งไม่สามารถปฏิบัติงานได้
+        </DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            กรุณาระบุเหตุผลที่ไม่สามารถดำเนินการซ่อมรายการนี้ได้ เพื่อส่งคืนงานกลับสู่คิวของผู้จัดการในการพิจารณาเปลี่ยนช่างต่อไป
+          </Typography>
+          <TextField
+            autoFocus
+            fullWidth
+            multiline
+            rows={3}
+            label="เหตุผลที่ไม่สามารถปฏิบัติงานได้"
+            placeholder="เช่น เครื่องมือไม่พร้อม, อุปกรณ์ต้องใช้ความเชี่ยวชาญเฉพาะทาง, ช่างติดภารกิจด่วน"
+            value={unableReason}
+            onChange={(e) => setUnableReason(e.target.value)}
+            disabled={loadingAction}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button
+            onClick={() => setOpenUnableModal(false)}
+            disabled={loadingAction}
+            color="inherit"
+          >
+            ยกเลิก
+          </Button>
+          <Button
+            onClick={handleTechnicianUnableToWork}
+            disabled={loadingAction || !unableReason.trim()}
+            variant="contained"
+            color="error"
+          >
+            {loadingAction ? "กำลังบันทึก..." : "ยืนยันส่งคืนงาน"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Dialog สำหรับผู้ใช้ขอให้ตรวจสอบอีกครั้ง (ไม่ยอมรับผลการซ่อม) */}
+      <Dialog
+        open={openRejectModal}
+        onClose={() => !loadingAction && setOpenRejectModal(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 600 }}>
+          ส่งกลับเพื่อตรวจสอบปัญหาอีกครั้ง
+        </DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            กรุณาระบุเหตุผลหรืออาการที่ยังพบ เพื่อส่งกลับตรวจสอบและดำเนินการแก้ไขเพิ่มเติม
+          </Typography>
+          <TextField
+            autoFocus
+            fullWidth
+            multiline
+            rows={3}
+            label="เหตุผลที่ไม่ยอมรับผลการซ่อม"
+            placeholder="เช่น เครื่องยังเปิดไม่ติดเหมือนเดิม, หน้าจอยังมีเส้นกระพริบ, อาการเดิมยังไม่หาย"
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+            disabled={loadingAction}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button
+            onClick={() => setOpenRejectModal(false)}
+            disabled={loadingAction}
+            color="inherit"
+          >
+            ยกเลิก
+          </Button>
+          <Button
+            onClick={handleConfirmRejectRepair}
+            disabled={loadingAction || !rejectReason.trim()}
+            variant="contained"
+            color="error"
+          >
+            {loadingAction ? "กำลังส่งคำขอ..." : "ส่งกลับตรวจสอบอีกครั้ง"}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar
         open={notification.open}

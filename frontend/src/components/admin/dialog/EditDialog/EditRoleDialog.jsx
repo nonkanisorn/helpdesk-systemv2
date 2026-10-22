@@ -13,12 +13,14 @@ import {
   CircularProgress,
   FormControlLabel,
   FormGroup,
-  Paper,
+  IconButton,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
 import {
   getPermissionDescription,
   getPermissionLabel,
+  permissionGroups,
 } from "../../../../auth/permissionLabels";
 
 function EditRoleDialog({ token, open, onClose, onSuccess, role }) {
@@ -117,100 +119,240 @@ function EditRoleDialog({ token, open, onClose, onSuccess, role }) {
     }
   };
 
+  const categorizedNames = new Set(
+    permissionGroups.flatMap((group) => group.permissionNames),
+  );
+  const uncategorizedPermissions = permissions.filter(
+    (p) => !categorizedNames.has(p.name),
+  );
+
   return (
     <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-      <DialogTitle>
+      <DialogTitle sx={{ px: 3, pt: 3, pb: 1.5 }}>
         <Stack
           direction="row"
           justifyContent="space-between"
-          alignItems="center"
-          gap={2}
+          alignItems="flex-start"
         >
           <Box>
-            <Typography variant="h5" fontWeight={600}>
+            <Typography variant="h6" fontWeight={700}>
               แก้ไขบทบาท
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              แก้ไขชื่อบทบาทสำหรับกำหนดสิทธิ์ของผู้ใช้งาน
+              แก้ไขข้อมูลบทบาทสำหรับกำหนดสิทธิ์ของผู้ใช้งาน
             </Typography>
           </Box>
 
-          <Button onClick={handleClose} color="inherit" disabled={loading}>
-            ✕
-          </Button>
+          <IconButton
+            onClick={handleClose}
+            size="small"
+            color="inherit"
+            disabled={loading}
+            sx={{ mt: -0.5, mr: -0.5, color: "text.secondary" }}
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
         </Stack>
       </DialogTitle>
 
-      <DialogContent dividers>
+      <DialogContent sx={{ px: 3, py: 1 }}>
         <Box component="form" id="edit-role-form" onSubmit={handleUpdate}>
-          <Stack spacing={2.5}>
-            <Box
-              sx={{
-                p: 2,
-                borderRadius: 2,
-                bgcolor: "action.hover",
-              }}
-            >
-              <Typography variant="body2" color="text.secondary">
-                ชื่อบทบาทเดิม
-              </Typography>
-              <Typography fontWeight={600}>{role?.role_name || "-"}</Typography>
-            </Box>
-
+          <Stack spacing={2}>
             <TextField
-              label="ชื่อบทบาทใหม่"
+              label="ชื่อบทบาท"
+              id="edit_role_name"
+              type="text"
               value={roleName}
               onChange={(e) => setRoleName(e.target.value)}
               placeholder="เช่น Administrator"
               fullWidth
               autoFocus
               required
-              error={!roleName.trim()}
               helperText={!roleName.trim() ? "กรุณากรอกชื่อบทบาท" : " "}
+              error={!roleName.trim()}
               disabled={loading}
             />
 
-            <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
-              <Typography fontWeight={600} sx={{ mb: 1 }}>
+            <Box>
+              <Typography
+                variant="body1"
+                fontWeight={600}
+                sx={{ mb: 1, color: "text.primary" }}
+              >
                 สิทธิ์ของบทบาท
               </Typography>
 
-              {loadingPermissions ? (
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <CircularProgress size={20} />
-                  <Typography variant="body2" color="text.secondary">
-                    กำลังโหลดสิทธิ์...
-                  </Typography>
-                </Stack>
-              ) : (
-                <FormGroup>
-                  {permissions.map((permission) => (
-                    <FormControlLabel
-                      key={permission.id}
-                      control={
-                        <Checkbox
-                          checked={selectedPermissionIds.includes(
-                            permission.id,
-                          )}
-                          onChange={() => handlePermissionChange(permission.id)}
-                          disabled={loading}
-                        />
-                      }
-                      label={
-                        <Box>
-                          <Typography variant="body2" fontWeight={500}>
-                            {getPermissionLabel(permission.name)}
+              <Box
+                sx={{
+                  border: "1px solid",
+                  borderColor: "divider",
+                  borderRadius: 1.5,
+                  p: 2,
+                  maxHeight: 330,
+                  overflowY: "auto",
+                }}
+              >
+                {loadingPermissions ? (
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="center"
+                    spacing={1}
+                    sx={{ py: 3 }}
+                  >
+                    <CircularProgress size={20} />
+                    <Typography variant="body2" color="text.secondary">
+                      กำลังโหลดสิทธิ์...
+                    </Typography>
+                  </Stack>
+                ) : (
+                  <Stack spacing={2}>
+                    {permissionGroups.map((group, groupIndex) => {
+                      const groupPermissions = permissions.filter((p) =>
+                        group.permissionNames.includes(p.name),
+                      );
+                      if (groupPermissions.length === 0) return null;
+
+                      return (
+                        <Box
+                          key={group.key}
+                          sx={{
+                            mt: groupIndex > 0 ? 1.5 : 0,
+                            pt: groupIndex > 0 ? 1.5 : 0,
+                            borderTop: groupIndex > 0 ? "1px solid" : "none",
+                            borderColor: "divider",
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              display: "block",
+                              fontWeight: 700,
+                              color: "text.secondary",
+                              letterSpacing: "0.25px",
+                              mb: 1,
+                            }}
+                          >
+                            {group.title}
                           </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {getPermissionDescription(permission)}
-                          </Typography>
+
+                          <FormGroup>
+                            {groupPermissions.map((permission) => (
+                              <FormControlLabel
+                                key={permission.id}
+                                control={
+                                  <Checkbox
+                                    size="small"
+                                    checked={selectedPermissionIds.includes(
+                                      permission.id,
+                                    )}
+                                    onChange={() =>
+                                      handlePermissionChange(permission.id)
+                                    }
+                                    disabled={loading}
+                                    sx={{ mt: -1.2 }}
+                                  />
+                                }
+                                label={
+                                  <Box sx={{ mb: 1 }}>
+                                    <Typography
+                                      variant="body2"
+                                      fontWeight={600}
+                                      color="text.primary"
+                                    >
+                                      {getPermissionLabel(permission.name)}
+                                    </Typography>
+                                    <Typography
+                                      variant="caption"
+                                      color="text.secondary"
+                                      display="block"
+                                    >
+                                      {getPermissionDescription(permission)}
+                                    </Typography>
+                                  </Box>
+                                }
+                                sx={{
+                                  alignItems: "flex-start",
+                                  m: 0,
+                                  mb: 0.5,
+                                }}
+                              />
+                            ))}
+                          </FormGroup>
                         </Box>
-                      }
-                    />
-                  ))}
-                </FormGroup>
-              )}
-            </Paper>
+                      );
+                    })}
+
+                    {uncategorizedPermissions.length > 0 && (
+                      <Box
+                        sx={{
+                          pt: 1.5,
+                          borderTop: "1px solid",
+                          borderColor: "divider",
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            display: "block",
+                            fontWeight: 700,
+                            color: "text.secondary",
+                            letterSpacing: "0.25px",
+                            mb: 1,
+                          }}
+                        >
+                          สิทธิ์อื่นๆ
+                        </Typography>
+
+                        <FormGroup>
+                          {uncategorizedPermissions.map((permission) => (
+                            <FormControlLabel
+                              key={permission.id}
+                              control={
+                                <Checkbox
+                                  size="small"
+                                  checked={selectedPermissionIds.includes(
+                                    permission.id,
+                                  )}
+                                  onChange={() =>
+                                    handlePermissionChange(permission.id)
+                                  }
+                                  disabled={loading}
+                                  sx={{ mt: -1.2 }}
+                                />
+                              }
+                              label={
+                                <Box sx={{ mb: 1 }}>
+                                  <Typography
+                                    variant="body2"
+                                    fontWeight={600}
+                                    color="text.primary"
+                                  >
+                                    {getPermissionLabel(permission.name)}
+                                  </Typography>
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    display="block"
+                                  >
+                                    {getPermissionDescription(permission)}
+                                  </Typography>
+                                </Box>
+                              }
+                              sx={{
+                                alignItems: "flex-start",
+                                m: 0,
+                                mb: 0.5,
+                              }}
+                            />
+                          ))}
+                        </FormGroup>
+                      </Box>
+                    )}
+                  </Stack>
+                )}
+              </Box>
+            </Box>
           </Stack>
         </Box>
       </DialogContent>
@@ -218,8 +360,9 @@ function EditRoleDialog({ token, open, onClose, onSuccess, role }) {
       <DialogActions
         sx={{
           px: 3,
-          py: 2,
-          flexDirection: { xs: "column-reverse", sm: "row" },
+          pb: 3,
+          pt: 1,
+          justifyContent: "flex-end",
           gap: 1,
         }}
       >
@@ -227,7 +370,6 @@ function EditRoleDialog({ token, open, onClose, onSuccess, role }) {
           onClick={handleClose}
           color="inherit"
           disabled={loading}
-          sx={{ width: { xs: "100%", sm: "auto" } }}
         >
           ยกเลิก
         </Button>
@@ -237,7 +379,6 @@ function EditRoleDialog({ token, open, onClose, onSuccess, role }) {
           type="submit"
           variant="contained"
           disabled={!roleName.trim() || loading}
-          sx={{ width: { xs: "100%", sm: "auto" } }}
         >
           {loading ? "กำลังบันทึก..." : "บันทึกการแก้ไข"}
         </Button>

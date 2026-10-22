@@ -56,3 +56,20 @@ func (u userQueryHandler) GetUserByRolesID(c *fiber.Ctx) error {
 		"result":  userTech,
 	})
 }
+
+func (u userQueryHandler) GetUsersByPermission(c *fiber.Ctx) error {
+	permissionName := c.Params("permissionName")
+	if permissionName == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "permission name required"})
+	}
+
+	users, err := u.userQueryService.GetUsersByPermission(permissionName)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"success": true,
+		"result":  users,
+	})
+}

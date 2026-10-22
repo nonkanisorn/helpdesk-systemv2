@@ -77,6 +77,30 @@ func (r registerHandler) RequestPasswordReset(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"success": true,
-		"message": "หากพบอีเมลในระบบ จะส่งลิงก์รีเซ็ตรหัสผ่านให้",
+		"message": "หากพบอีเมลในระบบ ระบบได้ส่งลิงก์ดำเนินการให้เรียบร้อยแล้ว",
+	})
+}
+
+func (r registerHandler) VerifyToken(c *fiber.Ctx) error {
+	token := strings.TrimSpace(c.Params("token"))
+	if token == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"valid": false,
+			"error": "ไม่พบ token สำหรับตั้งรหัสผ่าน",
+		})
+	}
+
+	result, err := r.registerServ.VerifyToken(token)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"valid": false,
+			"error": "ลิงก์นี้ไม่ถูกต้อง หมดอายุ หรือถูกใช้งานไปแล้ว",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"valid": true,
+		"mode":  result.Mode,
+		"email": result.Email,
 	})
 }

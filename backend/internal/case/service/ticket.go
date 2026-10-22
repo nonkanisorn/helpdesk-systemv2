@@ -12,13 +12,14 @@ type TicketQueryService interface {
 	StartJobByTechnicianID(int) error
 	CompletedJobByTechnician(ticketID int, resolutionNote string, serialNumber *string) error
 	WaitingForPartByTechnicianID(ticketID int) error
+	UnableToWorkByTechnician(ticketID int, technicianID *int, technicianName string, reason string) error
 	// ---- end technicina part ----
 	// ---- manager part ----
-	AssignTechToTicket(int, int, int) error
+	AssignTechToTicket(technicianID int, managerID int, ticketID int, managerName string, reason string) error
 	// ---- end manager part ----
 	// ---- user part ----
 	ConfirmAndCloseTicketByUser(int) error
-	RejectRepairByUser(int) error
+	RejectRepairByUser(ticketID int, userID *int, userName string, reason string) error
 	// ---- end user part ----
 	// ----dashboard----
 

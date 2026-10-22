@@ -4,17 +4,22 @@ import (
 	"fmt"
 	"strings"
 
+	registerService "github.com/nonkanisorn/helpdesk-system/internal/auth/register/service"
 	"github.com/nonkanisorn/helpdesk-system/internal/domain"
 	"github.com/nonkanisorn/helpdesk-system/internal/user/repository"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type userService struct {
-	userRepo repository.UserRepository
+	userRepo     repository.UserRepository
+	registerServ registerService.RegisterService
 }
 
-func NewUserService(userRepo repository.UserRepository) UserService {
-	return userService{userRepo: userRepo}
+func NewUserService(userRepo repository.UserRepository, registerServ registerService.RegisterService) UserService {
+	return userService{
+		userRepo:     userRepo,
+		registerServ: registerServ,
+	}
 }
 
 func normalizeUserStatus(status string) (string, error) {
@@ -76,6 +81,8 @@ func (u userService) GetUserByID(id int) (*domain.UserResponse, error) {
 }
 
 func (u userService) UpdateUserByID(id int, req domain.UserUpdateRequest) error {
+	existingUser, _ := u.userRepo.GetByID(id)
+
 	departmentID := req.DepartmentID
 	if departmentID == 0 {
 		departmentID = req.DepID
@@ -105,11 +112,12 @@ func (u userService) UpdateUserByID(id int, req domain.UserUpdateRequest) error 
 		passwordHash = &hashString
 	}
 
+	trimmedNewEmail := strings.TrimSpace(req.Email)
 	err = u.userRepo.UpdateByID(id, repository.UserUpdate{
 		PasswordHash: passwordHash,
 		FirstName:    req.FirstName,
 		LastName:     req.LastName,
-		Email:        req.Email,
+		Email:        trimmedNewEmail,
 		Phone:        req.Phone,
 		RoleID:       req.RoleID,
 		DepartmentID: departmentID,
@@ -117,6 +125,16 @@ func (u userService) UpdateUserByID(id int, req domain.UserUpdateRequest) error 
 	})
 	if err != nil {
 		return err
+	}
+
+	// If user was pending (waiting for initial password setup) and the email changed:
+	// Invalidate previous tokens and automatically send the initial password setup link to the new email.
+	if existingUser != nil && trimmedNewEmail != "" {
+		isPending := (existingUser.Status != nil && *existingUser.Status == "pending") || existingUser.PasswordHash == ""
+		emailChanged := existingUser.Email == nil || !strings.EqualFold(strings.TrimSpace(*existingUser.Email), trimmedNewEmail)
+		if isPending && emailChanged && u.registerServ != nil {
+			_ = u.registerServ.ResendInitialPassword(id, trimmedNewEmail)
+		}
 	}
 
 	return nil

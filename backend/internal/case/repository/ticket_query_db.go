@@ -20,7 +20,7 @@ func NewTicketQueryRepository(db *sqlx.DB) TicketQueryRepository {
 
 func (t ticketQueryRepository) GetTicketsByTechnicianID(techID int) ([]TicketRow, error) {
 	var tickets []TicketRow
-	query := "select * from tickets t where t.technician_id = ?"
+	query := "select * from tickets t where t.technician_id = ? ORDER BY t.created_at DESC, t.id DESC"
 	err := t.db.Select(&tickets, query, techID)
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func (t ticketQueryRepository) GetTicketsByTechnicianID(techID int) ([]TicketRow
 
 func (t ticketQueryRepository) GetTicketsByUsersID(usersID int) ([]TicketRow, error) {
 	var tickets []TicketRow
-	query := "select * from tickets where user_id = ? "
+	query := "select * from tickets where user_id = ? ORDER BY created_at DESC, id DESC"
 	err := t.db.Select(&tickets, query, usersID)
 	if err != nil {
 		return nil, err
@@ -240,6 +240,7 @@ func (t ticketQueryRepository) GetTicketsByStatusID(statusID int) ([]TicketRow, 
 		JOIN users u
 			ON t.user_id = u.id
 		WHERE t.status_id = ?
+		ORDER BY t.created_at DESC, t.id DESC
 	`
 	err := t.db.Select(&tickets, query, statusID)
 	if err != nil {
@@ -325,6 +326,23 @@ func (t ticketQueryRepository) RejectRepairByUser(ticketID int) error {
 	}
 	return nil
 }
+
+func (t ticketQueryRepository) UnableToWorkByTechnician(ticketID int) error {
+	statusID := 7
+	query := `
+		UPDATE tickets
+		SET
+			status_id = ?,
+			started_at = NULL
+		WHERE id = ?
+	`
+	_, err := t.db.Exec(query, statusID, ticketID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 
 func (t ticketQueryRepository) GetTicketForAutoClose() ([]int, error) {
 	var ticketID []int

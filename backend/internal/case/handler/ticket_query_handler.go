@@ -4,7 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
+	jwt "github.com/golang-jwt/jwt/v5"
 	"github.com/gofiber/fiber/v2"
 	"github.com/nonkanisorn/helpdesk-system/internal/case/service"
 	"github.com/nonkanisorn/helpdesk-system/internal/domain"
@@ -85,6 +87,25 @@ func (t ticketsQueryHandler) UpdateStatusTicket(c *fiber.Ctx) error {
 	})
 }
 
+func getUserInfoFromCtx(c *fiber.Ctx) (int, string) {
+	token, ok := c.Locals("user").(*jwt.Token)
+	if !ok || token == nil {
+		return 0, ""
+	}
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return 0, ""
+	}
+	userID := 0
+	if id, ok := claims["user_id"].(float64); ok {
+		userID = int(id)
+	}
+	first, _ := claims["first_name"].(string)
+	last, _ := claims["last_name"].(string)
+	name := strings.TrimSpace(first + " " + last)
+	return userID, name
+}
+
 func (t ticketsQueryHandler) AssignTechToTicket(c *fiber.Ctx) error {
 	var ticketReq domain.TicketsAssginTechRequest
 	id, err := strconv.Atoi(c.Params("id"))
@@ -101,7 +122,60 @@ func (t ticketsQueryHandler) AssignTechToTicket(c *fiber.Ctx) error {
 			"error":   err.Error(),
 		})
 	}
-	err = t.ticketQueryServ.AssignTechToTicket(*ticketReq.TechnicianID, *ticketReq.ManagerID, id)
+
+	_, userName := getUserInfoFromCtx(c)
+	reason := ""
+	if ticketReq.Reason != nil {
+		reason = *ticketReq.Reason
+	}
+
+	managerID := 0
+	if ticketReq.ManagerID != nil {
+		managerID = *ticketReq.ManagerID
+	}
+
+	technicianID := 0
+	if ticketReq.TechnicianID != nil {
+		technicianID = *ticketReq.TechnicianID
+	}
+
+	err = t.ticketQueryServ.AssignTechToTicket(technicianID, managerID, id, userName, reason)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"success": true,
+	})
+}
+
+func (t ticketsQueryHandler) UnableToWorkByTechnician(c *fiber.Ctx) error {
+	ticketID, err := strconv.Atoi(c.Params("ticketID"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"error":   err.Error(),
+		})
+	}
+
+	var req domain.TechnicianUnableToWorkRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"error":   err.Error(),
+		})
+	}
+
+	userID, userName := getUserInfoFromCtx(c)
+	var techID *int
+	if userID > 0 {
+		techID = &userID
+	}
+
+	err = t.ticketQueryServ.UnableToWorkByTechnician(ticketID, techID, userName, req.Reason)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"success": false,
@@ -261,7 +335,30 @@ func (t ticketsQueryHandler) RejectRepairByUser(c *fiber.Ctx) error {
 			"error":   err.Error(),
 		})
 	}
-	err = t.ticketQueryServ.RejectRepairByUser(ticketID)
+
+	var req domain.UserRejectRepairRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"error":   "ข้อมูลไม่ถูกต้อง",
+		})
+	}
+
+	trimmedReason := strings.TrimSpace(req.Reason)
+	if trimmedReason == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"error":   "กรุณาระบุเหตุผลที่ไม่ยอมรับผลการซ่อม",
+		})
+	}
+
+	userID, userName := getUserInfoFromCtx(c)
+	var uID *int
+	if userID > 0 {
+		uID = &userID
+	}
+
+	err = t.ticketQueryServ.RejectRepairByUser(ticketID, uID, userName, trimmedReason)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"success": false,

@@ -41,4 +41,5 @@ type UserQueryService interface {
 	GetUserWithRolesName() ([]UserResponseWithRoleName, error)
 	GetCurrentUser(userID int) (*UserResponseWithRoleName, error)
 	GetUserByRolesID(int) ([]domain.UserResponse, error)
+	GetUsersByPermission(permissionName string) ([]domain.UserResponse, error)
 }

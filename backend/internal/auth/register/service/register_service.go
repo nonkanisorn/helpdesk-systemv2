@@ -90,26 +90,76 @@ func (r registerService) SetPassword(users *domain.Usertest, rawToken string) er
 }
 
 func (r registerService) RequestPasswordReset(email string) error {
-	userID, err := r.registerRepo.FindUserIDByEmail(email)
+	user, err := r.registerRepo.FindUserByEmail(email)
 	if err != nil {
 		return err
 	}
 
-	if userID == nil {
+	if user == nil {
 		return nil
 	}
 
-	rawToken, err := r.gomailService.SendEmailResetPassword(email)
+	// Check whether this user has not completed initial password setup
+	isInvite := (user.Status != nil && *user.Status == "pending") ||
+		(user.PasswordHash == nil || *user.PasswordHash == "")
+
+	var rawToken *string
+	if isInvite {
+		rawToken, err = r.gomailService.SendEmailRegister(email)
+	} else {
+		rawToken, err = r.gomailService.SendEmailResetPassword(email)
+	}
 	if err != nil {
 		return err
 	}
 
+	_ = r.registerRepo.InvalidateTokensByUserID(user.ID)
+
 	hashToken := sha256.Sum256([]byte(*rawToken))
 	hashedToken := hex.EncodeToString(hashToken[:])
-	err = r.registerRepo.SaveToken(userID, hashedToken)
+	err = r.registerRepo.SaveToken(&user.ID, hashedToken)
 	if err != nil {
 		return err
 	}
 
 	return nil
 }
+
+func (r registerService) VerifyToken(rawToken string) (*TokenVerifyResponse, error) {
+	hash := sha256.Sum256([]byte(rawToken))
+	hashedToken := hex.EncodeToString(hash[:])
+	user, err := r.registerRepo.VerifyTokenWithUser(hashedToken)
+	if err != nil {
+		return nil, err
+	}
+
+	mode := "reset"
+	if (user.Status != nil && *user.Status == "pending") || (user.PasswordHash == nil || *user.PasswordHash == "") {
+		mode = "invite"
+	}
+
+	email := ""
+	if user.Email != nil {
+		email = *user.Email
+	}
+
+	return &TokenVerifyResponse{
+		Valid: true,
+		Mode:  mode,
+		Email: email,
+	}, nil
+}
+
+func (r registerService) ResendInitialPassword(userID int, email string) error {
+	_ = r.registerRepo.InvalidateTokensByUserID(userID)
+
+	rawToken, err := r.gomailService.SendEmailRegister(email)
+	if err != nil {
+		return err
+	}
+
+	hashToken := sha256.Sum256([]byte(*rawToken))
+	hashedToken := hex.EncodeToString(hashToken[:])
+	return r.registerRepo.SaveToken(&userID, hashedToken)
+}
+

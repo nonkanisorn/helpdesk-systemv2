@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -22,7 +23,7 @@ func (d deviceInstanceHandler) GetAllDeviceInstance(c *fiber.Ctx) error {
 	if err != nil {
 		fmt.Println(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err,
+			"error": err.Error(),
 		})
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"result": deviceInstance})
@@ -33,7 +34,7 @@ func (d deviceInstanceHandler) Create(c *fiber.Ctx) error {
 	err := c.BodyParser(&req)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err,
+			"error": err.Error(),
 		})
 	}
 	departmentID := req.DepartmentID
@@ -45,8 +46,13 @@ func (d deviceInstanceHandler) Create(c *fiber.Ctx) error {
 		departmentID,
 		req.SerialNumber)
 	if err != nil {
+		if errors.Is(err, domain.ErrDuplicateSerialNumber) {
+			return c.Status(fiber.StatusConflict).JSON(fiber.Map{
+				"error": domain.ErrDuplicateSerialNumber.Error(),
+			})
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err,
+			"error": err.Error(),
 		})
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"success": true})
@@ -80,6 +86,11 @@ func (d deviceInstanceHandler) UpdateDeviceInstanceByID(c *fiber.Ctx) error {
 
 	err = d.deviceInstanceServ.UpdateDeviceInstanceByID(instanceID, departmentID, req.SerialNumber, status)
 	if err != nil {
+		if errors.Is(err, domain.ErrDuplicateSerialNumber) {
+			return c.Status(fiber.StatusConflict).JSON(fiber.Map{
+				"error": domain.ErrDuplicateSerialNumber.Error(),
+			})
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
 		})
@@ -92,14 +103,14 @@ func (d deviceInstanceHandler) DeleteDeviceInstanceByID(c *fiber.Ctx) error {
 	instanceID, err := strconv.Atoi(c.Params("instanceID"))
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err,
+			"error": err.Error(),
 		})
 	}
 
 	err = d.deviceInstanceServ.DeleteDeviceInstanceByID(instanceID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err,
+			"error": err.Error(),
 		})
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"success": true})

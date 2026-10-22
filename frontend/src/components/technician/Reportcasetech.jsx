@@ -33,7 +33,18 @@ function Reportcasetech() {
   const [ticketData, setTicketData] = useState([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-
+  const formatDateThai = (dateString) => {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("th-TH", {
+      year: "numeric",
+      month: "short", // 'short' = ม.ค., 'long' = มกราคม, '2-digit' = 01
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false, // ใช้แบบ 24 ชั่วโมง (เช่น 14:30)
+    }).format(date);
+  };
   const technicianStatusMap = {
     1: "งานใหม่",
     2: "ได้รับมอบหมาย",
@@ -72,11 +83,52 @@ function Reportcasetech() {
     if (token && technicianId) fetchTickets();
   }, [token, technicianId]);
 
-  const assignedTickets = ticketData.filter(
-    (item) => Number(item.status_id) === 2,
+  const isRejectedTicket = (ticket) => {
+    const statusId = Number(ticket?.status_id);
+    if (statusId === 5) return false;
+
+    return (
+      statusId === 7 ||
+      Boolean(ticket?.reassign_info?.user_rejection_reason) ||
+      Boolean(ticket?.resolution_note && statusId === 2)
+    );
+  };
+
+  const assignedTickets = ticketData.filter((item) =>
+    [2, 7].includes(Number(item.status_id)),
   );
 
-  const paginatedTickets = assignedTickets.slice(
+  const sortedAssignedTickets = [...assignedTickets].sort((a, b) => {
+    // 1. เคสส่งกลับ/ไม่ได้รับการยอมรับ ให้ความสำคัญสูงสุด อยู่บนสุดเสมอ (ปักหมุด)
+    const aIsRejected = isRejectedTicket(a);
+    const bIsRejected = isRejectedTicket(b);
+    if (aIsRejected && !bIsRejected) return -1;
+    if (!aIsRejected && bIsRejected) return 1;
+
+    // 2. ภายในกลุ่มเดียวกัน จัดเรียงตามเวลาล่าสุด (หรือ id ล่าสุด)
+    const timeA = new Date(
+      a.reassign_info?.user_rejected_at ||
+      a.reassign_info?.reassigned_at ||
+      a.assigned_at ||
+      a.completed_at ||
+      a.created_at
+    ).getTime();
+    const timeB = new Date(
+      b.reassign_info?.user_rejected_at ||
+      b.reassign_info?.reassigned_at ||
+      b.assigned_at ||
+      b.completed_at ||
+      b.created_at
+    ).getTime();
+
+    if (!isNaN(timeA) && !isNaN(timeB) && timeB !== timeA) {
+      return timeB - timeA;
+    }
+
+    return Number(b.ticket_id || 0) - Number(a.ticket_id || 0);
+  });
+
+  const paginatedTickets = sortedAssignedTickets.slice(
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage,
   );
@@ -138,62 +190,73 @@ function Reportcasetech() {
               <TableRow>
                 <TableCell>เลขที่งาน</TableCell>
                 <TableCell>ชื่องาน</TableCell>
-                <TableCell>ผู้แจ้ง</TableCell>
-                <TableCell>รายละเอียดงาน</TableCell>
+                <TableCell>วันที่ได้รับมอบหมาย</TableCell>
                 <TableCell>สถานะ</TableCell>
                 <TableCell align="right">ดำเนินการ</TableCell>
               </TableRow>
             </TableHead>
 
             <TableBody>
-              {paginatedTickets.map((item) => (
-                <TableRow key={item.ticket_id} hover>
-                  <TableCell>{item.ticket_id}</TableCell>
+              {paginatedTickets.map((item) => {
+                const rejected = isRejectedTicket(item);
+                return (
+                  <TableRow
+                    key={item.ticket_id}
+                    hover
+                    sx={
+                      rejected
+                        ? {
+                            bgcolor: "rgba(239, 68, 68, 0.04)",
+                            "&:hover": {
+                              bgcolor: "rgba(239, 68, 68, 0.08) !important",
+                            },
+                          }
+                        : undefined
+                    }
+                  >
+                    <TableCell>{item.ticket_id}</TableCell>
 
-                  <TableCell>
-                    <Typography fontWeight={500}>{item.title}</Typography>
-                  </TableCell>
+                    <TableCell>
+                      <Typography fontWeight={500}>{item.title}</Typography>
+                      {rejected && item.reassign_info?.user_rejection_reason && (
+                        <Typography
+                          variant="caption"
+                          color="error.main"
+                          sx={{ display: "block", mt: 0.5, fontWeight: 500 }}
+                        >
+                          เหตุผลที่ส่งกลับ: {item.reassign_info.user_rejection_reason}
+                        </Typography>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {formatDateThai(item.assigned_at || item.created_at)} น.
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={
+                          rejected
+                            ? (Number(item.status_id) === 7 ? "รอผู้จัดการตรวจสอบ" : "ส่งกลับแก้ไข")
+                            : (technicianStatusMap[item.status_id] ?? "ได้รับมอบหมาย")
+                        }
+                        size="small"
+                        color={rejected ? "error" : statusChipProps(item.status_id).color}
+                        variant={rejected ? "outlined" : statusChipProps(item.status_id).variant}
+                      />
+                    </TableCell>
 
-                  <TableCell>{item.usersname || "-"}</TableCell>
-
-                  <TableCell>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{
-                        maxWidth: 280,
-                        display: "-webkit-box",
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
-                      }}
-                    >
-                      {item.description || "-"}
-                    </Typography>
-                  </TableCell>
-
-                  <TableCell>
-                    <Chip
-                      label={
-                        technicianStatusMap[item.status_id] ?? "ไม่ทราบสถานะ"
-                      }
-                      size="small"
-                      {...statusChipProps(item.status_id)}
-                    />
-                  </TableCell>
-
-                  <TableCell align="right">
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      onClick={() => handleOpenDetail(item.ticket_id)}
-                      sx={technicianSecondaryButtonSx}
-                    >
-                      จัดการงาน
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+                    <TableCell align="right">
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => handleOpenDetail(item.ticket_id)}
+                        sx={technicianSecondaryButtonSx}
+                      >
+                        จัดการงาน
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
 
               {assignedTickets.length === 0 && (
                 <TableRow>
@@ -212,91 +275,107 @@ function Reportcasetech() {
             display: { xs: "flex", md: "none" },
           }}
         >
-          {paginatedTickets.map((item) => (
-            <Paper
-              key={item.ticket_id}
-              variant="outlined"
-              sx={{
-                p: 2,
-                borderRadius: 2.5,
-              }}
-            >
-              <Stack spacing={1.5}>
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="flex-start"
-                  spacing={2}
-                >
-                  <Box sx={{ minWidth: 0 }}>
+          {paginatedTickets.map((item) => {
+            const rejected = isRejectedTicket(item);
+            return (
+              <Paper
+                key={item.ticket_id}
+                variant="outlined"
+                sx={{
+                  p: 2,
+                  borderRadius: 2.5,
+                  borderColor: rejected ? "error.light" : undefined,
+                  bgcolor: rejected ? "rgba(239, 68, 68, 0.03)" : undefined,
+                }}
+              >
+                <Stack spacing={1.5}>
+                  <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="flex-start"
+                    spacing={2}
+                  >
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography variant="caption" color="text.secondary">
+                        ชื่องาน
+                      </Typography>
+
+                      <Typography
+                        fontWeight={600}
+                        sx={{
+                          mt: 0.25,
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        {item.title}
+                      </Typography>
+                      {rejected && item.reassign_info?.user_rejection_reason && (
+                        <Typography
+                          variant="caption"
+                          color="error.main"
+                          sx={{ display: "block", mt: 0.5, fontWeight: 500 }}
+                        >
+                          เหตุผลที่ส่งกลับ: {item.reassign_info.user_rejection_reason}
+                        </Typography>
+                      )}
+                    </Box>
+
+                    <Chip
+                      label={`เลขที่งาน: ${item.ticket_id}`}
+                      size="small"
+                      variant="outlined"
+                    />
+                  </Stack>
+
+                  <Stack spacing={0.5}>
                     <Typography variant="caption" color="text.secondary">
-                      ชื่องาน
+                      ผู้แจ้ง
+                    </Typography>
+
+                    <Typography variant="body2" fontWeight={500}>
+                      {item.usersname || "-"}
+                    </Typography>
+                  </Stack>
+
+                  <Stack spacing={0.5}>
+                    <Typography variant="caption" color="text.secondary">
+                      รายละเอียดงาน
                     </Typography>
 
                     <Typography
-                      fontWeight={600}
+                      variant="body2"
+                      color="text.secondary"
                       sx={{
-                        mt: 0.25,
                         wordBreak: "break-word",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
                       }}
                     >
-                      {item.title}
+                      {item.description || "-"}
                     </Typography>
-                  </Box>
+                  </Stack>
 
-                  <Chip
-                    label={`เลขที่งาน: ${item.ticket_id}`}
-                    size="small"
-                    variant="outlined"
-                  />
-                </Stack>
+                  <Stack spacing={0.5}>
+                    <Typography variant="caption" color="text.secondary">
+                      สถานะ
+                    </Typography>
 
-                <Stack spacing={0.5}>
-                  <Typography variant="caption" color="text.secondary">
-                    ผู้แจ้ง
-                  </Typography>
+                    <Chip
+                      label={
+                        rejected
+                          ? (Number(item.status_id) === 7 ? "รอผู้จัดการตรวจสอบ" : "ส่งกลับแก้ไข")
+                          : (technicianStatusMap[item.status_id] ?? "ได้รับมอบหมาย")
+                      }
+                      size="small"
+                      color={rejected ? "error" : statusChipProps(item.status_id).color}
+                      variant={rejected ? "outlined" : statusChipProps(item.status_id).variant}
+                      sx={{ width: "fit-content" }}
+                    />
+                  </Stack>
 
-                  <Typography variant="body2" fontWeight={500}>
-                    {item.usersname || "-"}
-                  </Typography>
-                </Stack>
-
-                <Stack spacing={0.5}>
-                  <Typography variant="caption" color="text.secondary">
-                    รายละเอียดงาน
-                  </Typography>
-
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{
-                      wordBreak: "break-word",
-                      display: "-webkit-box",
-                      WebkitLineClamp: 3,
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
-                    }}
-                  >
-                    {item.description || "-"}
-                  </Typography>
-                </Stack>
-
-                <Stack spacing={0.5}>
-                  <Typography variant="caption" color="text.secondary">
-                    สถานะ
-                  </Typography>
-
-                  <Chip
-                    label={
-                      technicianStatusMap[item.status_id] ?? "ไม่ทราบสถานะ"
-                    }
-                    size="small"
-                    sx={{ width: "fit-content" }}
-                    {...statusChipProps(item.status_id)}
-                  />
-                </Stack>
-
-                <Divider />
+                  <Divider />
 
                 <Button
                   variant="contained"
@@ -308,7 +387,8 @@ function Reportcasetech() {
                 </Button>
               </Stack>
             </Paper>
-          ))}
+          );
+        })}
 
           {assignedTickets.length === 0 && (
             <Paper

@@ -1,6 +1,10 @@
 package repository
 
 import (
+	"errors"
+	"strings"
+
+	"github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"github.com/nonkanisorn/helpdesk-system/internal/domain"
 )
@@ -40,6 +44,29 @@ func (d deviceInstanceRepository) GetAll() ([]domain.DeviceInstance, error) {
 	return deviceInstances, nil
 }
 
+func isDuplicateSerialError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var mysqlErr *mysql.MySQLError
+	if errors.As(err, &mysqlErr) && mysqlErr.Number == 1062 {
+		if strings.Contains(mysqlErr.Message, "device_number") {
+			return false
+		}
+		return true
+	}
+	errStr := strings.ToLower(err.Error())
+	if strings.Contains(errStr, "duplicate") {
+		if strings.Contains(errStr, "device_number") {
+			return false
+		}
+		if strings.Contains(errStr, "serial") || strings.Contains(errStr, "1062") || strings.Contains(errStr, "uq_device_instances_serial_number") {
+			return true
+		}
+	}
+	return false
+}
+
 func (d deviceInstanceRepository) Create(deviceID int, depID *int, serialNumber string) error {
 	query := `
 		INSERT INTO device_instances (
@@ -66,6 +93,9 @@ func (d deviceInstanceRepository) Create(deviceID int, depID *int, serialNumber 
 	`
 	_, err := d.db.Exec(query, deviceID, serialNumber, deviceID, depID)
 	if err != nil {
+		if isDuplicateSerialError(err) {
+			return domain.ErrDuplicateSerialNumber
+		}
 		return err
 	}
 	return nil
@@ -83,6 +113,9 @@ func (d deviceInstanceRepository) UpdateDeviceInstanceByID(instanceID int, depID
 
 	_, err := d.db.Exec(query, serialNumber, depID, status, instanceID)
 	if err != nil {
+		if isDuplicateSerialError(err) {
+			return domain.ErrDuplicateSerialNumber
+		}
 		return err
 	}
 

@@ -53,6 +53,8 @@ const EditUserDialog = ({
 
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [initialStatus, setInitialStatus] = useState("active");
+  const [initialEmail, setInitialEmail] = useState("");
 
   useEffect(() => {
     if (!open || !id) return;
@@ -67,6 +69,8 @@ const EditUserDialog = ({
         });
 
         const u = res.data.result ?? res.data;
+        setInitialStatus(u.status ?? "active");
+        setInitialEmail(u.email ?? "");
 
         reset({
           username: u.username ?? "",
@@ -113,8 +117,15 @@ const EditUserDialog = ({
         },
       });
 
+      const emailChanged = data.email?.trim() !== initialEmail?.trim();
+      const isPending = initialStatus === "pending";
+
       onClose?.();
-      onSuccess?.();
+      if (isPending && emailChanged) {
+        onSuccess?.("บันทึกข้อมูลและส่งลิงก์ตั้งรหัสผ่านครั้งแรกไปยังอีเมลใหม่แล้ว");
+      } else {
+        onSuccess?.("บันทึกข้อมูลผู้ใช้เรียบร้อยแล้ว");
+      }
     } catch (err) {
       console.log(err);
       setSubmitError(err.response?.data?.error || "บันทึกข้อมูลผู้ใช้ไม่สำเร็จ");
@@ -171,7 +182,16 @@ const EditUserDialog = ({
                 pt: 1,
               }}
             >
-              <TextField label="อีเมล์" fullWidth {...register("email")} />
+              <TextField
+                label="อีเมล์"
+                fullWidth
+                helperText={
+                  initialStatus === "pending"
+                    ? "หากเปลี่ยนอีเมล ระบบจะส่งลิงก์ตั้งรหัสผ่านครั้งแรกไปยังอีเมลใหม่ให้อัตโนมัติ"
+                    : ""
+                }
+                {...register("email")}
+              />
 
               <TextField
                 label="รหัสผ่านใหม่"

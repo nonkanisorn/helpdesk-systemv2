@@ -100,6 +100,7 @@ type TicketQueryRepository interface {
 	StartJobByTechnicianID(int) error
 	CompletedJobByTechnician(ticketID int, instanceDeviceID *int, resolutionNote string) error
 	WaitingForPartByTechnicianID(ticketID int) error
+	UnableToWorkByTechnician(ticketID int) error
 	// ---- end technicina part ----
 
 	// ---- manager part ----

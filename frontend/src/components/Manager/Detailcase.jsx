@@ -11,11 +11,18 @@ import {
   Stack,
   Typography,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Alert,
 } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
 import EngineeringOutlinedIcon from "@mui/icons-material/EngineeringOutlined";
+import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 import { useSelector } from "react-redux";
 
 export const Detailcase = () => {
@@ -31,6 +38,10 @@ export const Detailcase = () => {
   const [loading, setLoading] = useState(false);
   const [assigningId, setAssigningId] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
+
+  const [selectedTech, setSelectedTech] = useState(null);
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+  const [changeReason, setChangeReason] = useState("");
 
   const roleTechnician = 3;
 
@@ -56,10 +67,16 @@ export const Detailcase = () => {
       setErrorMessage("");
 
       const [technicianResponse, ticketResponse] = await Promise.all([
-        axios.get(`${apiUrl}/users/by-role/${roleTechnician}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get(`${apiUrl}/tickets/${ticket_id}`, {
+        axios
+          .get(`${apiUrl}/users/by-permission/view_assigned_ticket`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          .catch(() =>
+            axios.get(`${apiUrl}/users/by-role/${roleTechnician}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            })
+          ),
+        axios.get(`${apiUrl}/tickets-detail/${ticket_id}`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -70,7 +87,7 @@ export const Detailcase = () => {
           fullName: `${technician.first_name || ""} ${
             technician.last_name || ""
           }`.trim(),
-          avatar: getAvatarUrl(technician.avatar_path),
+          avatar: getAvatarUrl(technician.avatar_path ?? technician.user_img),
           email: technician.email,
           phone: technician.phone,
         })) ?? [];
@@ -90,29 +107,35 @@ export const Detailcase = () => {
     }
   };
 
-  const assignTechnician = async (technicianId) => {
-    const confirmAssign = window.confirm(
-      "ต้องการมอบหมายงานให้ช่างคนนี้ใช่ไหม?",
-    );
-    if (!confirmAssign) return;
+  const handleOpenAssignModal = (tech) => {
+    setSelectedTech(tech);
+    setChangeReason("");
+    setOpenConfirmDialog(true);
+  };
+
+  const executeAssign = async () => {
+    if (!selectedTech) return;
 
     try {
-      setAssigningId(technicianId);
+      setAssigningId(selectedTech.id);
 
       await axios.patch(
         `${apiUrl}/tickets/${ticket_id}/assign-technician`,
         {
-          technician_id: technicianId,
+          technician_id: selectedTech.id,
           manager_id: managerId,
+          reason: changeReason.trim(),
         },
         {
           headers: { Authorization: `Bearer ${token}` },
         },
       );
 
+      setOpenConfirmDialog(false);
       navigate("/manager/reportticket");
     } catch (error) {
       console.error("Error assigning technician:", error);
+      alert("เกิดข้อผิดพลาดในการมอบหมายช่าง");
     } finally {
       setAssigningId(null);
     }
@@ -121,6 +144,14 @@ export const Detailcase = () => {
   useEffect(() => {
     if (token && ticket_id) fetchData();
   }, [token, ticket_id]);
+
+  const currentTechId = ticketData?.technician_id;
+  const isReassign = Boolean(currentTechId);
+  const isWaitingReview = Number(ticketData?.status_id) === 7;
+  const currentTechFullName =
+    `${ticketData?.technician_first_name || ""} ${
+      ticketData?.technician_last_name || ""
+    }`.trim() || (currentTechId ? `รหัสช่าง ${currentTechId}` : "");
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -140,11 +171,13 @@ export const Detailcase = () => {
           >
             <Box>
               <Typography variant="h5" fontWeight={600}>
-                มอบหมายช่าง
+                {isReassign ? "เปลี่ยนช่างเทคนิค" : "มอบหมายช่าง"}
               </Typography>
 
               <Typography variant="body2" color="text.secondary">
-                เลือกช่างที่เหมาะสมเพื่อรับผิดชอบรายการแจ้งซ่อมนี้
+                {isReassign
+                  ? "เลือกช่างคนใหม่เพื่อรับผิดชอบรายการแจ้งซ่อมนี้แทนช่างเดิม"
+                  : "เลือกช่างที่เหมาะสมเพื่อรับผิดชอบรายการแจ้งซ่อมนี้"}
               </Typography>
             </Box>
 
@@ -165,13 +198,39 @@ export const Detailcase = () => {
               }}
             >
               <Typography variant="caption" color="text.secondary">
-                งานที่ต้องมอบหมาย
+                ชื่องานแจ้งซ่อม
               </Typography>
 
               <Typography fontWeight={600} sx={{ wordBreak: "break-word" }}>
                 {ticketData.title}
               </Typography>
             </Paper>
+          )}
+
+          {isReassign && (
+            <Alert
+              severity="warning"
+              icon={<WarningAmberRoundedIcon />}
+              sx={{ mt: 2, borderRadius: 2 }}
+            >
+              <Typography variant="body2">
+                <b>ช่างปัจจุบันที่ได้รับมอบหมาย:</b> {currentTechFullName}
+              </Typography>
+              {ticketData?.reassign_info?.technician_reason && (
+                <Typography variant="body2" sx={{ mt: 0.5 }}>
+                  <b>เหตุผลที่ช่างแจ้งไม่สามารถปฏิบัติงานได้:</b>{" "}
+                  {ticketData.reassign_info.technician_reason}
+                </Typography>
+              )}
+              {ticketData?.reassign_info?.user_rejection_reason && (
+                <Typography variant="body2" sx={{ mt: 0.5, color: "error.main" }}>
+                  <b>ผู้ใช้ขอให้ตรวจสอบอีกครั้ง:</b>{" "}
+                  {ticketData.reassign_info.user_rejection_reason}
+                  {ticketData.reassign_info.user_name &&
+                    ` (แจ้งโดย: ${ticketData.reassign_info.user_name})`}
+                </Typography>
+              )}
+            </Alert>
           )}
         </Paper>
 
@@ -224,110 +283,131 @@ export const Detailcase = () => {
                 </Grid>
               )}
 
-              {technicians.map((tech) => (
-                <Grid item xs={12} md={6} key={tech.id}>
-                  <Paper
-                    variant="outlined"
-                    sx={{
-                      p: 2,
-                      borderRadius: 2.5,
-                      height: "100%",
-                    }}
-                  >
-                    <Stack spacing={2} height="100%">
-                      <Stack
-                        direction={{ xs: "column", sm: "row" }}
-                        spacing={2}
-                        alignItems={{ xs: "center", sm: "flex-start" }}
-                      >
-                        <Avatar
-                          src={tech.avatar}
-                          sx={{
-                            width: 72,
-                            height: 72,
-                          }}
+              {technicians.map((tech) => {
+                const isCurrent = currentTechId && tech.id === currentTechId;
+
+                return (
+                  <Grid item xs={12} md={6} key={tech.id}>
+                    <Paper
+                      variant="outlined"
+                      sx={{
+                        p: 2,
+                        borderRadius: 2.5,
+                        height: "100%",
+                        borderColor: isCurrent ? "warning.main" : undefined,
+                        bgcolor: isCurrent ? "#fffbf2" : undefined,
+                      }}
+                    >
+                      <Stack spacing={2} height="100%">
+                        <Stack
+                          direction={{ xs: "column", sm: "row" }}
+                          spacing={2}
+                          alignItems={{ xs: "center", sm: "flex-start" }}
                         >
-                          <PersonIcon />
-                        </Avatar>
-
-                        <Box sx={{ minWidth: 0, flex: 1 }}>
-                          <Stack
-                            direction="row"
-                            spacing={1}
-                            alignItems="center"
-                            sx={{ mb: 0.5, flexWrap: "wrap", gap: 1 }}
+                          <Avatar
+                            src={tech.avatar}
+                            sx={{
+                              width: 72,
+                              height: 72,
+                            }}
                           >
-                            <Typography
-                              variant="h6"
-                              fontWeight={600}
-                              sx={{ wordBreak: "break-word" }}
-                            >
-                              {tech.fullName || "ไม่ระบุชื่อ"}
-                            </Typography>
+                            <PersonIcon />
+                          </Avatar>
 
-                            <Chip
-                              icon={<EngineeringOutlinedIcon />}
-                              label="ช่าง"
-                              size="small"
-                              variant="outlined"
-                            />
-                          </Stack>
-
-                          <Stack spacing={0.75}>
+                          <Box sx={{ minWidth: 0, flex: 1 }}>
                             <Stack
                               direction="row"
                               spacing={1}
                               alignItems="center"
+                              sx={{ mb: 0.5, flexWrap: "wrap", gap: 1 }}
                             >
-                              <EmailOutlinedIcon
-                                fontSize="small"
-                                color="disabled"
-                              />
                               <Typography
-                                variant="body2"
-                                color="text.secondary"
+                                variant="h6"
+                                fontWeight={600}
                                 sx={{ wordBreak: "break-word" }}
                               >
-                                {tech.email || "-"}
+                                {tech.fullName || "ไม่ระบุชื่อ"}
                               </Typography>
-                            </Stack>
 
-                            <Stack
-                              direction="row"
-                              spacing={1}
-                              alignItems="center"
-                            >
-                              <PhoneOutlinedIcon
-                                fontSize="small"
-                                color="disabled"
+                              <Chip
+                                icon={<EngineeringOutlinedIcon />}
+                                label="ช่าง"
+                                size="small"
+                                variant="outlined"
                               />
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                              >
-                                {tech.phone || "-"}
-                              </Typography>
+
+                              {isCurrent && (
+                                <Chip
+                                  label="ช่างปัจจุบัน"
+                                  color="warning"
+                                  size="small"
+                                />
+                              )}
                             </Stack>
-                          </Stack>
-                        </Box>
+
+                            <Stack spacing={0.75}>
+                              <Stack
+                                direction="row"
+                                spacing={1}
+                                alignItems="center"
+                              >
+                                <EmailOutlinedIcon
+                                  fontSize="small"
+                                  color="disabled"
+                                />
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                  sx={{ wordBreak: "break-word" }}
+                                >
+                                  {tech.email || "-"}
+                                </Typography>
+                              </Stack>
+
+                              <Stack
+                                direction="row"
+                                spacing={1}
+                                alignItems="center"
+                              >
+                                <PhoneOutlinedIcon
+                                  fontSize="small"
+                                  color="disabled"
+                                />
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                >
+                                  {tech.phone || "-"}
+                                </Typography>
+                              </Stack>
+                            </Stack>
+                          </Box>
+                        </Stack>
+
+                        <Box sx={{ flexGrow: 1 }} />
+
+                        <Button
+                          variant="contained"
+                          color={isCurrent && isWaitingReview ? "primary" : isReassign ? "warning" : "primary"}
+                          fullWidth
+                          disabled={(isCurrent && !isWaitingReview) || assigningId === tech.id}
+                          onClick={() => handleOpenAssignModal(tech)}
+                        >
+                          {assigningId === tech.id
+                            ? "กำลังดำเนินการ..."
+                            : isCurrent && isWaitingReview
+                            ? "ส่งกลับให้ช่างคนเดิมแก้ไข"
+                            : isCurrent
+                            ? "ช่างคนปัจจุบัน"
+                            : isReassign
+                            ? "เปลี่ยนเป็นช่างคนนี้"
+                            : "มอบหมายช่าง"}
+                        </Button>
                       </Stack>
-
-                      <Box sx={{ flexGrow: 1 }} />
-
-                      <Button
-                        variant="contained"
-                        fullWidth
-                        disabled={assigningId === tech.id}
-                        onClick={() => assignTechnician(tech.id)}
-                      >
-                        {assigningId === tech.id
-                          ? "กำลังมอบหมาย..."
-                          : "มอบหมายช่าง"}
-                      </Button>
-                    </Stack>
-                  </Paper>
-                </Grid>
-              ))}
+                    </Paper>
+                  </Grid>
+                );
+              })}
 
               {!errorMessage && technicians.length === 0 && (
                 <Grid item xs={12}>
@@ -349,6 +429,89 @@ export const Detailcase = () => {
           )}
         </Paper>
       </Stack>
+
+      {/* Confirmation & Reason Dialog */}
+      {(() => {
+        const isAssigningSameTech =
+          Boolean(selectedTech && currentTechId && selectedTech.id === currentTechId);
+
+        return (
+          <Dialog
+            open={openConfirmDialog}
+            onClose={() => !assigningId && setOpenConfirmDialog(false)}
+            maxWidth="sm"
+            fullWidth
+          >
+            <DialogTitle sx={{ fontWeight: 600 }}>
+              {isAssigningSameTech
+                ? "ยืนยันส่งงานกลับให้ช่างคนเดิม"
+                : isReassign
+                ? "ยืนยันการเปลี่ยนช่างเทคนิค"
+                : "ยืนยันการมอบหมายช่าง"}
+            </DialogTitle>
+            <DialogContent dividers>
+              <Typography variant="body1" sx={{ mb: 2 }}>
+                {isAssigningSameTech ? (
+                  <>
+                    ต้องการส่งรายการแจ้งซ่อมนี้กลับให้{" "}
+                    <b>{selectedTech?.fullName}</b> ดำเนินการตรวจสอบและแก้ไขเพิ่มเติมใช่ไหม?
+                  </>
+                ) : (
+                  <>
+                    ต้องการมอบหมายงานนี้ให้{" "}
+                    <b>{selectedTech?.fullName}</b> ใช่ไหม?
+                  </>
+                )}
+              </Typography>
+
+              {(isReassign || isAssigningSameTech) && (
+                <TextField
+                  autoFocus
+                  fullWidth
+                  multiline
+                  rows={3}
+                  label={
+                    isAssigningSameTech
+                      ? "คำแนะนำเพิ่มเติมถึงช่าง (ไม่บังคับ)"
+                      : "เหตุผลในการเปลี่ยนช่าง (ไม่บังคับ)"
+                  }
+                  placeholder={
+                    isAssigningSameTech
+                      ? "ระบุคำแนะนำ เช่น กรุณาตรวจสอบตามอาการที่ผู้ใช้แจ้งเพิ่มเติม"
+                      : "ระบุเหตุผล เช่น ช่างเดิมติดภารกิจด่วน, มอบหมายผู้เชี่ยวชาญเฉพาะทาง"
+                  }
+                  value={changeReason}
+                  onChange={(e) => setChangeReason(e.target.value)}
+                  disabled={Boolean(assigningId)}
+                />
+              )}
+            </DialogContent>
+            <DialogActions sx={{ p: 2 }}>
+              <Button
+                onClick={() => setOpenConfirmDialog(false)}
+                disabled={Boolean(assigningId)}
+                color="inherit"
+              >
+                ยกเลิก
+              </Button>
+              <Button
+                onClick={executeAssign}
+                disabled={Boolean(assigningId)}
+                variant="contained"
+                color={isAssigningSameTech ? "primary" : isReassign ? "warning" : "primary"}
+              >
+                {assigningId
+                  ? "กำลังบันทึก..."
+                  : isAssigningSameTech
+                  ? "ยืนยันส่งงานต่อ"
+                  : isReassign
+                  ? "ยืนยันเปลี่ยนช่าง"
+                  : "ยืนยันมอบหมาย"}
+              </Button>
+            </DialogActions>
+          </Dialog>
+        );
+      })()}
     </Box>
   );
 };

@@ -235,7 +235,7 @@ function Manageuser() {
     }
 
     const actionText =
-      user.status === "pending" ? "ส่งลิงก์ตั้งรหัสผ่าน" : "ส่งลิงก์รีเซ็ต";
+      user.status === "pending" ? "ส่งลิงก์ตั้งรหัสผ่านครั้งแรก" : "ส่งลิงก์รีเซ็ตรหัสผ่าน";
 
     try {
       setSendingPasswordLinkUserID(user.user_id);
@@ -249,11 +249,11 @@ function Manageuser() {
       showFeedback(
         "success",
         user.status === "pending"
-          ? "ส่งลิงก์ตั้งรหัสผ่านแล้ว"
-          : "ส่งลิงก์รีเซ็ตรหัสผ่านแล้ว",
+          ? "ส่งลิงก์ตั้งรหัสผ่านครั้งแรกเรียบร้อยแล้ว"
+          : "ส่งลิงก์รีเซ็ตรหัสผ่านเรียบร้อยแล้ว",
       );
     } catch (error) {
-      console.error("Error sending reset password:", error);
+      console.error("Error sending password link:", error);
       showFeedback(
         "error",
         getErrorMessage(error, `${actionText}ไม่สำเร็จ`),
@@ -353,7 +353,12 @@ function Manageuser() {
       <EditUserDialog
         open={openEditUserDialog}
         onClose={handleCloseEditUserDialog}
-        onSuccess={fetchUsers}
+        onSuccess={(msg) => {
+          fetchUsers();
+          if (typeof msg === "string") {
+            showFeedback("success", msg);
+          }
+        }}
         id={selectedUserID}
         roleData={roleData}
         depData={depData}

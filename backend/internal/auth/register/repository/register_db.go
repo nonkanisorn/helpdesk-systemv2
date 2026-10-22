@@ -151,6 +151,50 @@ func (r registerRepositoryDB) FindUserIDByEmail(email string) (*int, error) {
 	return &userID, nil
 }
 
+func (r registerRepositoryDB) FindUserByEmail(email string) (*domain.Usertest, error) {
+	var user domain.Usertest
+	query := "SELECT id, email, status, password_hash FROM users WHERE email = ? LIMIT 1"
+
+	err := r.db.Get(&user, query, email)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func (r registerRepositoryDB) VerifyTokenWithUser(token string) (*domain.Usertest, error) {
+	var user domain.Usertest
+	query := `
+		SELECT 
+			t.user_id,
+			u.id,
+			u.email,
+			u.status,
+			u.password_hash
+		FROM user_invitation_tokens t
+		JOIN users u ON t.user_id = u.id
+		WHERE t.token_hash = ?
+			AND t.used_at IS NULL
+			AND (t.expires_at IS NULL OR t.expires_at > NOW())
+		LIMIT 1
+	`
+	err := r.db.Get(&user, query, token)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r registerRepositoryDB) InvalidateTokensByUserID(userID int) error {
+	query := "UPDATE user_invitation_tokens SET used_at = NOW() WHERE user_id = ? AND used_at IS NULL"
+	_, err := r.db.Exec(query, userID)
+	return err
+}
+
 func (r registerRepositoryDB) MarkTokenUsed(token string) error {
 	query := "UPDATE user_invitation_tokens SET used_at = NOW() WHERE token_hash = ?"
 	_, err := r.db.Exec(query, token)

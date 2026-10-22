@@ -6,6 +6,7 @@ import (
 
 	"github.com/nonkanisorn/helpdesk-system/internal/case/repository"
 	"github.com/nonkanisorn/helpdesk-system/internal/domain"
+	"github.com/nonkanisorn/helpdesk-system/internal/storage"
 
 	deviceInstanceQueryRepo "github.com/nonkanisorn/helpdesk-system/internal/device/device_instance/repository"
 )
@@ -60,6 +61,9 @@ func toRes(ticketRow []repository.TicketRow) ([]domain.TicketsResponse, error) {
 			UserRoleID:       v.UserRoleID,
 			UserDepartmentID: v.UserDepartmentID,
 		}
+		if reasonInfo := storage.GetTicketReason(v.ID); reasonInfo != nil {
+			ticket.ReassignInfo = reasonInfo
+		}
 		ticketRes = append(ticketRes, ticket)
 	}
 	// fmt.Println("ticketRow", ticketRow)
@@ -95,13 +99,26 @@ func (t ticketQueryService) UpdateStatusTicket(updateTicketRequest *domain.Updat
 	return nil
 }
 
-func (t ticketQueryService) AssignTechToTicket(technicianID int, managerID int, ticketID int) error {
-	fmt.Println("daszxc", technicianID)
+func (t ticketQueryService) AssignTechToTicket(technicianID int, managerID int, ticketID int, managerName string, reason string) error {
 	err := t.ticketRepo.AssignTechToTickets(technicianID, managerID, ticketID)
 	if err != nil {
 		return err
 	}
 
+	if reason != "" {
+		_ = storage.SaveManagerReason(ticketID, &managerID, managerName, reason)
+	}
+
+	return nil
+}
+
+func (t ticketQueryService) UnableToWorkByTechnician(ticketID int, technicianID *int, technicianName string, reason string) error {
+	err := t.ticketRepo.UnableToWorkByTechnician(ticketID)
+	if err != nil {
+		return err
+	}
+
+	_ = storage.SaveTechnicianReason(ticketID, technicianID, technicianName, reason)
 	return nil
 }
 
@@ -253,11 +270,16 @@ func (t ticketQueryService) ConfirmAndCloseTicketByUser(ticketID int) error {
 	return nil
 }
 
-func (t ticketQueryService) RejectRepairByUser(ticketID int) error {
+func (t ticketQueryService) RejectRepairByUser(ticketID int, userID *int, userName string, reason string) error {
 	err := t.ticketRepo.RejectRepairByUser(ticketID)
 	if err != nil {
 		return err
 	}
+
+	if reason != "" {
+		_ = storage.SaveUserRejectionReason(ticketID, userID, userName, reason)
+	}
+
 	return nil
 }
 
@@ -287,9 +309,14 @@ func (t ticketQueryService) WaitingForPartByTechnicianID(ticketID int) error {
 }
 
 func (t ticketQueryService) GetTicketDetailByID(ticketID int) (*domain.TicketDetail, error) {
-	tickets, err := t.ticketRepo.GetTicketDetailByID(ticketID)
+	ticket, err := t.ticketRepo.GetTicketDetailByID(ticketID)
 	if err != nil {
 		return nil, err
 	}
-	return tickets, nil
+
+	if reasonInfo := storage.GetTicketReason(ticketID); reasonInfo != nil {
+		ticket.ReassignInfo = reasonInfo
+	}
+
+	return ticket, nil
 }

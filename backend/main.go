@@ -105,9 +105,9 @@ func main() {
 	registerRepo := registerRepo.NewRegisterRepository(db)
 	registerServ := registerServ.NewRegisterService(registerRepo, gomailService)
 	registerHandler := registerHand.NewRegisterHandler(registerServ)
-	// app.Post("/register", registerHandler.CreateUser)
 	app.Post("/register", registerHandler.CreateUser)
 	app.Post("/forgot-password", registerHandler.RequestPasswordReset)
+	app.Get("/set-password/verify/:token", registerHandler.VerifyToken)
 	app.Post("/set-password", registerHandler.SetPassword)
 	// login
 	loginRepo := loginRepo.NewLoginRepository(db)
@@ -152,6 +152,7 @@ func main() {
 	app.Patch("technician/:ticketID<int>/start", require("update_ticket_status"), ticketQueryHand.StartJobByTechnicianID)
 	app.Patch("technician/:ticketID<int>/complete", require("add_resolution_note"), ticketQueryHand.CompletedJobByTechnician)
 	app.Patch("technician/:ticketID<int>/waitingpart", require("update_ticket_status"), ticketQueryHand.WaitingForPartByTechnicianID)
+	app.Patch("technician/:ticketID<int>/unable-to-work", require("update_ticket_status"), ticketQueryHand.UnableToWorkByTechnician)
 	app.Patch("/tickets/:ticketID<int>/confirmation", require("confirm_repair"), ticketQueryHand.ConfirmAndCloseTicketByUser)
 	app.Patch("/tickets/:ticketID<int>/reject-repair", require("confirm_repair"), ticketQueryHand.RejectRepairByUser)
 
@@ -165,7 +166,7 @@ func main() {
 	app.Get("/tickets/:ticketID<int>", requireAny("view_own_ticket", "view_all_ticket", "view_assigned_ticket"), ticketHand.GetTicketByID)
 	// User
 	userRepo := userRepo.NewUserRepository(db)
-	userServ := userServ.NewUserService(userRepo)
+	userServ := userServ.NewUserService(userRepo, registerServ)
 	userHand := userHand.NewUserHandler(userServ)
 	app.Get("/users", require("manage_users"), userHand.GetAllUsers)
 	app.Get("/users/:id<int>", require("manage_users"), userHand.GetUserByID)
@@ -173,7 +174,7 @@ func main() {
 	app.Patch("/users/:id<int>/status", require("manage_users"), userHand.UpdateUserStatusByID)
 	app.Delete("/users/:id<int>", require("manage_users"), userHand.DeleteUsersByID)
 	// CheckRoleAdmin
-	app.Get("/admin/ping", require("manage_users"), func(c *fiber.Ctx) error {
+	app.Get("/admin/ping", requireAny("manage_users", "manage_roles", "manage_departments", "manage_devices", "manage_issue_categories", "manage_ticket_statuses"), func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
 			"sucess": true,
 		})
@@ -190,6 +191,7 @@ func main() {
 	userQueryServ := userQueryServ.NewUserQueryService(userQueryRepo, permissionServ)
 	userQueryHandler := userQueryHand.NewUserQueryHandler(userQueryServ)
 	app.Get("/users/by-role/:roleID<int>", requireAny("manage_users", "assign_ticket"), userQueryHandler.GetUserByRolesID)
+	app.Get("/users/by-permission/:permissionName", requireAny("manage_users", "assign_ticket", "view_all_ticket"), userQueryHandler.GetUsersByPermission)
 	app.Get("/users/view", require("manage_users"), userQueryHandler.GetUserWithRolesName)
 	app.Get("/current-user/:id<int>", userQueryHandler.GetCurrentUser)
 	// admin
@@ -288,10 +290,11 @@ func main() {
 				SUM(CASE WHEN t.status_id = 5 THEN 1 ELSE 0 END) AS completed_count,
 				SUM(CASE WHEN t.completed_at IS NOT NULL AND t.status_id = 4 AND t.completed_at + INTERVAL 3 DAY <= NOW() THEN 1 ELSE 0 END) AS overdue_count
 			FROM users u
+			JOIN role_permissions rp ON rp.role_id = u.role_id
+			JOIN permissions p ON rp.permission_id = p.id AND p.name = 'view_assigned_ticket'
 			LEFT JOIN tickets t
 				ON t.technician_id = u.id
-			WHERE u.role_id = 3
-				AND u.status = 'active'
+			WHERE (u.status = 'active' OR u.status IS NULL)
 			GROUP BY u.id, u.first_name, u.last_name
 			ORDER BY u.id
 		`

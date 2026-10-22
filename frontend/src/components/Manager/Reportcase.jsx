@@ -29,7 +29,7 @@ function Reportcase() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const assignmentQueueStatusIds = [1, 7];
+  const assignmentQueueStatusIds = [7, 1];
 
   const managerStatusMap = {
     1: "รอมอบหมาย",
@@ -46,6 +46,25 @@ function Reportcase() {
     7: "error",
   };
 
+  const sortTickets = (tickets) => {
+    return [...tickets].sort((a, b) => {
+      // 1. เคสสถานะ 7 (รอผู้จัดการตรวจสอบ/เคสส่งกลับ) ให้ความสำคัญสูงสุด อยู่บนสุดเสมอ
+      const aIsRejected = Number(a.status_id) === 7;
+      const bIsRejected = Number(b.status_id) === 7;
+      if (aIsRejected && !bIsRejected) return -1;
+      if (!aIsRejected && bIsRejected) return 1;
+
+      // 2. ภายในกลุ่มเดียวกัน จัดเรียงตามเวลาล่าสุด (หรือ id ล่าสุด)
+      const timeA = new Date(a.completed_at || a.created_at).getTime();
+      const timeB = new Date(b.completed_at || b.created_at).getTime();
+      if (!isNaN(timeA) && !isNaN(timeB) && timeB !== timeA) {
+        return timeB - timeA;
+      }
+
+      return Number(b.ticket_id || 0) - Number(a.ticket_id || 0);
+    });
+  };
+
   const fetchTickets = async () => {
     try {
       const responses = await Promise.all(
@@ -56,11 +75,11 @@ function Reportcase() {
         ),
       );
 
-      setTicketData(
-        responses.flatMap((response) =>
-          response.data.result ?? response.data ?? [],
-        ),
+      const allTickets = responses.flatMap(
+        (response) => response.data.result ?? response.data ?? [],
       );
+
+      setTicketData(sortTickets(allTickets));
     } catch (error) {
       console.error("Error fetching report tickets:", error);
     }
@@ -149,7 +168,20 @@ function Reportcase() {
 
             <TableBody>
               {paginatedTickets.map((item) => (
-                <TableRow key={item.ticket_id} hover>
+                <TableRow
+                  key={item.ticket_id}
+                  hover
+                  sx={
+                    Number(item.status_id) === 7
+                      ? {
+                          bgcolor: "rgba(239, 68, 68, 0.04)",
+                          "&:hover": {
+                            bgcolor: "rgba(239, 68, 68, 0.08) !important",
+                          },
+                        }
+                      : undefined
+                  }
+                >
                   <TableCell>{item.ticket_id}</TableCell>
 
                   <TableCell>
@@ -203,6 +235,12 @@ function Reportcase() {
               sx={{
                 p: 2,
                 borderRadius: 2.5,
+                borderColor:
+                  Number(item.status_id) === 7 ? "error.light" : undefined,
+                bgcolor:
+                  Number(item.status_id) === 7
+                    ? "rgba(239, 68, 68, 0.03)"
+                    : undefined,
               }}
             >
               <Stack spacing={1.5}>

@@ -61,6 +61,8 @@ const DeviceDetailPages = ({
     control: addControl,
     handleSubmit: handleAddSubmit,
     reset: resetAddForm,
+    setError: setAddError,
+    clearErrors: clearAddErrors,
   } = useForm({
     defaultValues: { serial_number: "", dep_id: "", status: "active" },
   });
@@ -69,6 +71,8 @@ const DeviceDetailPages = ({
     control: editControl,
     handleSubmit: handleEditSubmit,
     reset: resetEditForm,
+    setError: setEditError,
+    clearErrors: clearEditErrors,
   } = useForm({
     defaultValues: { serial_number: "", dep_id: "", status: "active" },
   });
@@ -100,8 +104,50 @@ const DeviceDetailPages = ({
       dev_description: item.dev_description ?? item.description,
     }));
 
-  const getActionErrorMessage = (err, fallback) =>
-    err.response?.data?.error ?? err.response?.data?.message ?? fallback;
+  const getActionErrorMessage = (err, fallback) => {
+    const errorData = err?.response?.data;
+    if (typeof errorData?.error === "string") {
+      const lower = errorData.error.toLowerCase();
+      if (
+        lower.includes("duplicate") &&
+        (lower.includes("serial") || lower.includes("1062"))
+      ) {
+        return "รหัสอุปกรณ์ (Serial Number) นี้มีอยู่ในระบบแล้ว กรุณาใช้รหัสอื่น";
+      }
+      return errorData.error;
+    }
+    if (typeof errorData?.message === "string") {
+      const lower = errorData.message.toLowerCase();
+      if (
+        lower.includes("duplicate") &&
+        (lower.includes("serial") || lower.includes("1062"))
+      ) {
+        return "รหัสอุปกรณ์ (Serial Number) นี้มีอยู่ในระบบแล้ว กรุณาใช้รหัสอื่น";
+      }
+      return errorData.message;
+    }
+    if (typeof errorData?.error?.Message === "string") {
+      const lower = errorData.error.Message.toLowerCase();
+      if (errorData.error.Number === 1062 || lower.includes("duplicate")) {
+        return "รหัสอุปกรณ์ (Serial Number) นี้มีอยู่ในระบบแล้ว กรุณาใช้รหัสอื่น";
+      }
+      return errorData.error.Message;
+    }
+    if (typeof errorData?.error?.message === "string") {
+      const lower = errorData.error.message.toLowerCase();
+      if (lower.includes("duplicate")) {
+        return "รหัสอุปกรณ์ (Serial Number) นี้มีอยู่ในระบบแล้ว กรุณาใช้รหัสอื่น";
+      }
+      return errorData.error.message;
+    }
+    if (
+      typeof err?.message === "string" &&
+      !err.message.includes("[object Object]")
+    ) {
+      return err.message;
+    }
+    return fallback;
+  };
 
   const getInstanceId = (row) =>
     row?.device_instance_id ?? row?.instance_id ?? row?.id;
@@ -188,20 +234,25 @@ const DeviceDetailPages = ({
 
   const filtered = useMemo(() => {
     const safeDeviceDetail = Array.isArray(deviceDetail) ? deviceDetail : [];
+    const keyword = searchSerial.trim().toLowerCase();
 
     return safeDeviceDetail.filter((item) => {
       const matchSearch =
-        !searchSerial.trim() ||
+        !keyword ||
         String(item.serial_number ?? "")
           .toLowerCase()
-          .includes(searchSerial.trim().toLowerCase());
+          .includes(keyword) ||
+        String(getInstanceId(item) ?? "")
+          .toLowerCase()
+          .includes(keyword) ||
+        getDepartmentName(item.dep_id).toLowerCase().includes(keyword);
 
       const matchStatus =
         statusFilter === "all" || (item.status ?? "active") === statusFilter;
 
       return matchSearch && matchStatus;
     });
-  }, [deviceDetail, searchSerial, statusFilter]);
+  }, [deviceDetail, searchSerial, statusFilter, departments]);
 
   const paginated = filtered.slice(
     page * rowsPerPage,
@@ -212,11 +263,13 @@ const DeviceDetailPages = ({
 
   const openAdd = () => {
     resetAddForm({ serial_number: "", dep_id: "" });
+    clearAddErrors();
     setOpenAddDialog(true);
   };
 
   const closeAdd = () => {
     resetAddForm({ serial_number: "", dep_id: "" });
+    clearAddErrors();
     setOpenAddDialog(false);
   };
 
@@ -229,12 +282,14 @@ const DeviceDetailPages = ({
       status: row.status ?? "active",
     });
 
+    clearEditErrors();
     setOpenEditDialog(true);
   };
 
   const closeEdit = () => {
     setSelectedInstance(null);
     resetEditForm({ serial_number: "", dep_id: "", status: "active" });
+    clearEditErrors();
     setOpenEditDialog(false);
   };
 
@@ -259,7 +314,22 @@ const DeviceDetailPages = ({
       closeAdd();
     } catch (err) {
       console.error("Error adding instance:", err);
-      alert(getActionErrorMessage(err, "เพิ่มรายการอุปกรณ์ไม่สำเร็จ"));
+      const errorMessage = getActionErrorMessage(
+        err,
+        "เพิ่มรายการอุปกรณ์ไม่สำเร็จ",
+      );
+      const isDuplicate =
+        err.response?.status === 409 ||
+        errorMessage.includes("Serial Number") ||
+        errorMessage.includes("รหัสอุปกรณ์");
+
+      if (isDuplicate) {
+        setAddError("serial_number", {
+          type: "manual",
+          message: errorMessage,
+        });
+      }
+      alert(errorMessage);
     }
   };
 
@@ -284,7 +354,22 @@ const DeviceDetailPages = ({
       closeEdit();
     } catch (err) {
       console.error("Error editing instance:", err);
-      alert(getActionErrorMessage(err, "แก้ไขรายการอุปกรณ์ไม่สำเร็จ"));
+      const errorMessage = getActionErrorMessage(
+        err,
+        "แก้ไขรายการอุปกรณ์ไม่สำเร็จ",
+      );
+      const isDuplicate =
+        err.response?.status === 409 ||
+        errorMessage.includes("Serial Number") ||
+        errorMessage.includes("รหัสอุปกรณ์");
+
+      if (isDuplicate) {
+        setEditError("serial_number", {
+          type: "manual",
+          message: errorMessage,
+        });
+      }
+      alert(errorMessage);
     }
   };
 
@@ -762,7 +847,9 @@ const DeviceDetailPages = ({
                 {filtered.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={5} align="center">
-                      ยังไม่มีรายการอุปกรณ์
+                      {searchSerial.trim()
+                        ? "ไม่พบข้อมูลอุปกรณ์ที่ตรงกับเงื่อนไขการค้นหา"
+                        : "ยังไม่มีรายการอุปกรณ์"}
                     </TableCell>
                   </TableRow>
                 )}
@@ -866,7 +953,9 @@ const DeviceDetailPages = ({
                 sx={{ p: 3, borderRadius: 2.5, textAlign: "center" }}
               >
                 <Typography color="text.secondary">
-                  ยังไม่มีรายการอุปกรณ์
+                  {searchSerial.trim()
+                    ? "ไม่พบข้อมูลอุปกรณ์ที่ตรงกับเงื่อนไขการค้นหา"
+                    : "ยังไม่มีรายการอุปกรณ์"}
                 </Typography>
               </Paper>
             )}

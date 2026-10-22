@@ -9,13 +9,18 @@ import HistoryToggleOffIcon from "@mui/icons-material/HistoryToggleOff";
 import ConstructionOutlinedIcon from "@mui/icons-material/ConstructionOutlined";
 import { useSelector } from "react-redux";
 import ProfileInitialsAvatar from "../ProfileInitialsAvatar";
+import { formatRoleName } from "../../auth/roleUtils";
+
 const Sidebaruser = () => {
   const [isCollapsed, setisCollapsed] = useState(false);
   const [toggled, setToggled] = useState(false);
   const [broken, setBroken] = useState(false);
   const firstName = useSelector((state) => state.user.first_name);
   const lastName = useSelector((state) => state.user.last_name);
+  const roleName = useSelector((state) => state.user.role_name);
+  const roleId = useSelector((state) => state.user.role_id);
   const full_name = `${firstName ?? ""} ${lastName ?? ""}`.trim() || "-";
+  const displayRole = formatRoleName(roleName, roleId);
   return (
     <div
       style={{
@@ -75,6 +80,9 @@ const Sidebaruser = () => {
                   <Box textAlign="center">
                     <Typography sx={{ m: "10px 0 0 0", color: "#fff" }}>
                       {full_name}
+                    </Typography>
+                    <Typography sx={{ color: "#94a3b8", fontSize: "12px", mt: "4px" }}>
+                      {displayRole}
                     </Typography>
                   </Box>
                 </Box>

@@ -170,6 +170,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import ProfileInitialsAvatar from "../ProfileInitialsAvatar";
 import { hasAnyPermission, hasPermission } from "../../auth/permissions";
+import { formatRoleName } from "../../auth/roleUtils";
 
 /* ICONS */
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
@@ -189,8 +190,11 @@ const Sidebarmanager = () => {
 
   const firstName = useSelector((state) => state.user.first_name);
   const lastName = useSelector((state) => state.user.last_name);
+  const roleName = useSelector((state) => state.user.role_name);
+  const roleId = useSelector((state) => state.user.role_id);
   const permissions = useSelector((state) => state.user.permissions);
   const full_name = `${firstName ?? ""} ${lastName ?? ""}`.trim() || "-";
+  const displayRole = formatRoleName(roleName, roleId);
 
   const menuItems = [
     {
@@ -360,7 +364,7 @@ const Sidebarmanager = () => {
                       fontSize: "12px",
                     }}
                   >
-                    Manager
+                    {displayRole}
                   </Typography>
                 </Box>
               </Box>

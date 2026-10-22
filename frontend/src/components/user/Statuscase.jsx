@@ -11,11 +11,13 @@ import { useSelector } from "react-redux";
 import {
   Alert,
   Button,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Snackbar,
+  TextField,
   Typography,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
@@ -39,8 +41,19 @@ function Statuscase() {
     message: "",
   });
   const [rejectingTicketId, setRejectingTicketId] = useState(null);
+  const [rejectReason, setRejectReason] = useState("");
   const navigate = useNavigate();
   const canConfirmRepair = hasPermission(permissions, "confirm_repair");
+
+  const isRejectedTicket = (ticket) => {
+    const statusId = Number(ticket?.status_id);
+    if (statusId === 5) return false;
+
+    return (
+      statusId === 7 ||
+      Boolean(ticket?.reassign_info?.user_rejection_reason)
+    );
+  };
 
   const statusMap = {
     1: "แจ้งปัญหาใหม่",
@@ -49,7 +62,7 @@ function Statuscase() {
     4: "ทำเสร็จแล้วรอการยืนยัน",
     5: "เสร็จสิ้น",
     6: "รออะไหล่",
-    7: "รอผู้จัดการตรวจสอบ",
+    7: "ส่งกลับตรวจสอบอีกครั้ง",
   };
 
   const topagedetail = (ticket_id) => {
@@ -85,10 +98,20 @@ function Statuscase() {
   };
 
   const rejectRepairTicket = (ticket_id) => {
+    const trimmed = rejectReason.trim();
+    if (!trimmed) {
+      setNotification({
+        open: true,
+        severity: "error",
+        message: "กรุณาระบุเหตุผลที่ไม่ยอมรับผลการซ่อม",
+      });
+      return;
+    }
+
     axios
       .patch(
         `${apiUrl}/tickets/${ticket_id}/reject-repair`,
-        {},
+        { reason: trimmed },
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -97,9 +120,10 @@ function Statuscase() {
         setNotification({
           open: true,
           severity: "success",
-          message: "ส่งกลับให้ผู้จัดการตรวจสอบแล้ว",
+          message: "ส่งกลับให้ตรวจสอบเรียบร้อยแล้ว",
         });
         setRejectingTicketId(null);
+        setRejectReason("");
         setRefresh((prev) => !prev);
       })
       .catch((err) => {
@@ -107,7 +131,7 @@ function Statuscase() {
         setNotification({
           open: true,
           severity: "error",
-          message: "ส่งกลับให้เมเนเจอร์ไม่สำเร็จ",
+          message: err.response?.data?.error || "ส่งกลับให้ตรวจสอบไม่สำเร็จ",
         });
       });
   };
@@ -145,23 +169,78 @@ function Statuscase() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {ticketData.map((item, index) => {
-              const statusId = Number(item.status_id);
+            {[...ticketData]
+              .filter((item) => Number(item.status_id) !== 5)
+              .sort((a, b) => {
+                const aIsRejected = isRejectedTicket(a);
+                const bIsRejected = isRejectedTicket(b);
+                if (aIsRejected && !bIsRejected) return -1;
+                if (!aIsRejected && bIsRejected) return 1;
 
-              return statusId === 5 ? null : (
-                <TableRow
-                  key={index}
-                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                >
-                  <TableCell>{index + 1}</TableCell>
-                  <TableCell component="th" scope="row">
-                    {item.title}
-                  </TableCell>
+                const timeA = new Date(
+                  a.reassign_info?.user_rejected_at ||
+                  a.reassign_info?.reassigned_at ||
+                  a.completed_at ||
+                  a.created_at
+                ).getTime();
+                const timeB = new Date(
+                  b.reassign_info?.user_rejected_at ||
+                  b.reassign_info?.reassigned_at ||
+                  b.completed_at ||
+                  b.created_at
+                ).getTime();
 
-                  <TableCell>{item.description}</TableCell>
-                  <TableCell>
-                    {item.status_name ?? statusMap[statusId] ?? "-"}
-                  </TableCell>
+                if (!isNaN(timeA) && !isNaN(timeB) && timeB !== timeA) {
+                  return timeB - timeA;
+                }
+                return Number(b.ticket_id || 0) - Number(a.ticket_id || 0);
+              })
+              .map((item, index) => {
+                const statusId = Number(item.status_id);
+                const rejected = isRejectedTicket(item);
+
+                return (
+                  <TableRow
+                    key={item.ticket_id || index}
+                    sx={{
+                      "&:last-child td, &:last-child th": { border: 0 },
+                      ...(rejected && {
+                        bgcolor: "rgba(239, 68, 68, 0.04)",
+                        "&:hover": {
+                          bgcolor: "rgba(239, 68, 68, 0.08) !important",
+                        },
+                      }),
+                    }}
+                  >
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell component="th" scope="row">
+                      <Typography fontWeight={rejected ? 600 : 500}>
+                        {item.title}
+                      </Typography>
+                      {rejected && item.reassign_info?.user_rejection_reason && (
+                        <Typography
+                          variant="caption"
+                          color="error.main"
+                          sx={{ display: "block", mt: 0.5, fontWeight: 500 }}
+                        >
+                          เหตุผลที่ส่งกลับ: {item.reassign_info.user_rejection_reason}
+                        </Typography>
+                      )}
+                    </TableCell>
+
+                    <TableCell>{item.description}</TableCell>
+                    <TableCell>
+                      {rejected ? (
+                        <Chip
+                          label="ส่งกลับตรวจสอบอีกครั้ง"
+                          size="small"
+                          color="error"
+                          variant="outlined"
+                        />
+                      ) : (
+                        item.status_name ?? statusMap[statusId] ?? "-"
+                      )}
+                    </TableCell>
                   <TableCell>
                     <Button
                       variant="contained"
@@ -188,7 +267,10 @@ function Statuscase() {
                         </Button>
 
                         <Button
-                          onClick={() => setRejectingTicketId(item.ticket_id)}
+                          onClick={() => {
+                            setRejectReason("");
+                            setRejectingTicketId(item.ticket_id);
+                          }}
                           variant="outlined"
                           color="error"
                           sx={technicianStatusButtonSx}
@@ -226,13 +308,25 @@ function Statuscase() {
         fullWidth
         maxWidth="sm"
       >
-        <DialogTitle>ไม่ยอมรับผลการซ่อม</DialogTitle>
-        <DialogContent>
-          <Typography color="text.secondary" sx={{ mt: 1 }}>
-            งานนี้จะถูกส่งกลับให้ผู้จัดการตรวจสอบ และมอบหมายช่างเพื่อดำเนินการอีกครั้ง
+        <DialogTitle sx={{ fontWeight: 600 }}>
+          ส่งกลับเพื่อตรวจสอบปัญหาอีกครั้ง
+        </DialogTitle>
+        <DialogContent dividers>
+          <Typography color="text.secondary" sx={{ mb: 2 }}>
+            กรุณาระบุเหตุผลหรืออาการที่ยังพบ เพื่อส่งกลับตรวจสอบและดำเนินการแก้ไขเพิ่มเติม
           </Typography>
+          <TextField
+            autoFocus
+            fullWidth
+            multiline
+            rows={3}
+            label="เหตุผลที่ไม่ยอมรับผลการซ่อม"
+            placeholder="เช่น เครื่องยังเปิดไม่ติดเหมือนเดิม, หน้าจอยังมีเส้นกระพริบ, อาการเดิมยังไม่หาย"
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+          />
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ p: 2 }}>
           <Button
             onClick={() => setRejectingTicketId(null)}
             color="inherit"
@@ -244,9 +338,10 @@ function Statuscase() {
             variant="contained"
             color="error"
             onClick={() => rejectRepairTicket(rejectingTicketId)}
+            disabled={!rejectReason.trim()}
             sx={technicianStatusButtonSx}
           >
-            ส่งกลับให้ผู้จัดการตรวจสอบ
+            ส่งกลับตรวจสอบอีกครั้ง
           </Button>
         </DialogActions>
       </Dialog>

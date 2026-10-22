@@ -66,6 +66,11 @@ function Managerole() {
   };
 
   const handleDelete = async (roleId) => {
+    if (Number(roleId) <= 4) {
+      alert("ไม่สามารถลบบทบาทหลักของระบบได้ (Admin, User, Technician, Manager)");
+      return;
+    }
+
     if (!confirmSoftDelete("บทบาท")) return;
 
     try {
@@ -192,6 +197,7 @@ function Managerole() {
                           variant="outlined"
                           color="error"
                           size="small"
+                          disabled={Number(role.role_id) <= 4}
                           onClick={() => handleDelete(role.role_id)}
                         >
                           ลบ
@@ -273,6 +279,7 @@ function Managerole() {
                       variant="outlined"
                       color="error"
                       fullWidth
+                      disabled={Number(role.role_id) <= 4}
                       onClick={() => handleDelete(role.role_id)}
                     >
                       ลบ

@@ -126,3 +126,31 @@ func (u userQueryRepository) GetUserByRolesID(roleID int) ([]UserTechinicianRole
 
 	return userRoleTech, nil
 }
+
+func (u userQueryRepository) GetUsersByPermission(permissionName string) ([]UserTechinicianRolesRow, error) {
+	var users []UserTechinicianRolesRow
+
+	query := `
+		SELECT DISTINCT
+			u.id,
+			COALESCE(u.first_name, '') AS first_name,
+			COALESCE(u.last_name, '') AS last_name,
+			COALESCE(u.email, '') AS email,
+			COALESCE(u.phone, '') AS phone,
+			COALESCE(u.role_id, 0) AS role_id,
+			COALESCE(u.department_id, 0) AS department_id,
+			COALESCE(u.status, 'active') AS status
+		FROM users u
+		JOIN role_permissions rp ON rp.role_id = u.role_id
+		JOIN permissions p ON rp.permission_id = p.id
+		WHERE p.name = ? AND (u.status = 'active' OR u.status IS NULL)
+		ORDER BY first_name, last_name, id
+	`
+
+	err := u.db.Select(&users, query, permissionName)
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}

@@ -14,10 +14,15 @@ import {
   TablePagination,
   Divider,
   TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 
 import AddDeviceDialog from "../shareDialog/AddDialog/AddDeviceDialog";
@@ -34,11 +39,9 @@ const ManageDevice = () => {
   const [device, setDevice] = useState([]);
   const [typeDevice, setTypeDevice] = useState([]);
   const [deviceInstances, setDeviceInstances] = useState([]);
-  const [serialSearch, setSerialSearch] = useState("");
 
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
-
   const [selectedDevice, setSelectedDevice] = useState(null);
 
   const [newDeviceName, setNewDeviceName] = useState("");
@@ -49,22 +52,11 @@ const ManageDevice = () => {
   const [editDeviceType, setEditDeviceType] = useState("");
   const [editDeviceDescription, setEditDeviceDescription] = useState("");
 
+  const [searchText, setSearchText] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-
-  const normalizedSearch = serialSearch.trim().toLowerCase();
-  const filteredDevices = device.filter((item) => {
-    if (!normalizedSearch) return true;
-    return deviceInstances.some(
-      (instance) =>
-        Number(instance.device_id ?? instance.dev_id) === Number(item.dev_id) &&
-        String(instance.serial_number ?? "").toLowerCase().includes(normalizedSearch),
-    );
-  });
-  const paginatedDevice = filteredDevices.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage,
-  );
 
   const normalizeDeviceTypes = (payload) => {
     const list = Array.isArray(payload)
@@ -101,31 +93,94 @@ const ManageDevice = () => {
 
   const getDeviceTypeName = (typeId) => {
     const found = typeDevice.find(
-      (t) => Number(t.devicetype_id) === Number(typeId),
+      (item) => Number(item.devicetype_id) === Number(typeId),
     );
+
     return found?.devicetype_name ?? "-";
   };
 
-  const fetchDevices = async () => {
-    const res = await axios.get(`${apiUrl}/devices`, {
-      headers: { Authorization: `Bearer ${token}` },
+  const getMatchedSerials = (deviceId) => {
+    const keyword = searchText.trim().toLowerCase();
+    if (!keyword) return [];
+    return deviceInstances
+      .filter(
+        (inst) =>
+          Number(inst.device_id ?? inst.dev_id) === Number(deviceId) &&
+          String(inst.serial_number ?? "").toLowerCase().includes(keyword),
+      )
+      .map((inst) => inst.serial_number)
+      .filter(Boolean);
+  };
+
+  const filteredDevices = useMemo(() => {
+    const keyword = searchText.trim().toLowerCase();
+    const cleanKeyword = keyword.replace(/^#/, "");
+
+    return device.filter((item) => {
+      const matchInstance = deviceInstances.some(
+        (inst) =>
+          Number(inst.device_id ?? inst.dev_id) === Number(item.dev_id) &&
+          String(inst.serial_number ?? "").toLowerCase().includes(keyword),
+      );
+
+      const matchSearch =
+        !keyword ||
+        String(item.dev_name ?? "")
+          .toLowerCase()
+          .includes(keyword) ||
+        String(item.dev_id ?? "")
+          .toLowerCase()
+          .includes(cleanKeyword) ||
+        getDeviceTypeName(item.dev_type).toLowerCase().includes(keyword) ||
+        matchInstance;
+
+      const matchType =
+        typeFilter === "all" || Number(item.dev_type) === Number(typeFilter);
+
+      return matchSearch && matchType;
     });
-    setDevice(normalizeDevices(res.data));
+  }, [device, searchText, typeFilter, deviceInstances, typeDevice]);
+
+  const paginatedDevice = filteredDevices.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage,
+  );
+
+  const fetchDevices = async () => {
+    try {
+      const res = await axios.get(`${apiUrl}/devices`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setDevice(normalizeDevices(res.data));
+    } catch (error) {
+      console.error("Error fetching devices:", error);
+    }
   };
 
   const fetchDeviceTypes = async () => {
-    const res = await axios.get(`${apiUrl}/device-types`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setTypeDevice(normalizeDeviceTypes(res.data));
+    try {
+      const res = await axios.get(`${apiUrl}/device-types`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setTypeDevice(normalizeDeviceTypes(res.data));
+    } catch (error) {
+      console.error("Error fetching device types:", error);
+    }
   };
 
   const fetchDeviceInstances = async () => {
-    const res = await axios.get(`${apiUrl}/device-instances`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const list = res.data?.result ?? res.data?.data ?? res.data ?? [];
-    setDeviceInstances(Array.isArray(list) ? list : []);
+    try {
+      const res = await axios.get(`${apiUrl}/device-instances`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const list = res.data?.result ?? res.data?.data ?? res.data ?? [];
+      setDeviceInstances(Array.isArray(list) ? list : []);
+    } catch (error) {
+      console.error("Error fetching device instances:", error);
+    }
   };
 
   useEffect(() => {
@@ -159,6 +214,7 @@ const ManageDevice = () => {
       setNewDeviceDescription("");
       setPage(0);
       fetchDevices();
+      fetchDeviceInstances();
     } catch (error) {
       console.error("Error adding device:", error);
     }
@@ -184,33 +240,42 @@ const ManageDevice = () => {
   };
 
   const handleEditDevice = async () => {
-    if (!editDeviceName.trim()) return;
+    if (!editDeviceName.trim() || !selectedDevice?.dev_id) return;
 
-    await axios.put(
-      `${apiUrl}/devices/${selectedDevice.dev_id}`,
-      {
-        dev_name: editDeviceName.trim(),
-        name: editDeviceName.trim(),
-        newdevicename: editDeviceName.trim(),
-        dev_type: Number(editDeviceType),
-        device_type_id: Number(editDeviceType),
-        dev_description: editDeviceDescription.trim(),
-        description: editDeviceDescription.trim(),
-      },
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
+    try {
+      await axios.put(
+        `${apiUrl}/devices/${selectedDevice.dev_id}`,
+        {
+          dev_name: editDeviceName.trim(),
+          name: editDeviceName.trim(),
+          dev_type: Number(editDeviceType),
+          device_type_id: Number(editDeviceType),
+          dev_description: editDeviceDescription.trim(),
+          description: editDeviceDescription.trim(),
+        },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
 
-    handleCloseEditDialog();
-    fetchDevices();
+      handleCloseEditDialog();
+      fetchDevices();
+      fetchDeviceInstances();
+    } catch (error) {
+      console.error("Error editing device:", error);
+    }
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
   };
 
   return (
     <Box sx={{ p: { xs: 2, sm: 3 } }}>
-      <Paper sx={{ p: 3, borderRadius: 3 }}>
-        {/* HEADER */}
+      <Paper sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
         <Stack
           direction={{ xs: "column", sm: "row" }}
           justifyContent="space-between"
+          alignItems={{ xs: "stretch", sm: "center" }}
           spacing={2}
           sx={{ mb: 3 }}
         >
@@ -218,8 +283,9 @@ const ManageDevice = () => {
             <Typography variant="h5" fontWeight={600}>
               จัดการอุปกรณ์
             </Typography>
+
             <Typography color="text.secondary">
-              เพิ่ม / แก้ไข / ลบ อุปกรณ์
+              เพิ่ม แก้ไข และดูรายการอุปกรณ์ในระบบ
             </Typography>
           </Box>
 
@@ -232,20 +298,50 @@ const ManageDevice = () => {
           </Button>
         </Stack>
 
-        <TextField
-          fullWidth
-          size="small"
-          label="ค้นหาด้วย Serial Number"
-          placeholder="กรอก Serial Number เพื่อค้นหาอุปกรณ์"
-          value={serialSearch}
-          onChange={(event) => {
-            setSerialSearch(event.target.value);
-            setPage(0);
-          }}
-          sx={{ mb: 2 }}
-        />
+        <Stack
+          direction={{ xs: "column", md: "row" }}
+          spacing={2}
+          sx={{ mb: 3 }}
+        >
+          <TextField
+            value={searchText}
+            onChange={(e) => {
+              setSearchText(e.target.value);
+              setPage(0);
+            }}
+            label="ค้นหาอุปกรณ์"
+            placeholder="ค้นหาด้วยชื่ออุปกรณ์, ID หรือ รหัสอุปกรณ์ (Serial Number)"
+            fullWidth
+            InputProps={{
+              startAdornment: (
+                <SearchIcon sx={{ mr: 1, color: "text.secondary" }} />
+              ),
+            }}
+          />
 
-        {/* DESKTOP TABLE */}
+          <FormControl sx={{ minWidth: { xs: "100%", md: 260 } }}>
+            <InputLabel>ประเภทอุปกรณ์</InputLabel>
+            <Select
+              value={typeFilter}
+              label="ประเภทอุปกรณ์"
+              onChange={(e) => {
+                setTypeFilter(e.target.value);
+                setPage(0);
+              }}
+            >
+              <MenuItem value="all">ทุกประเภท</MenuItem>
+              {typeDevice.map((item) => (
+                <MenuItem
+                  key={item.devicetype_id}
+                  value={String(item.devicetype_id)}
+                >
+                  {item.devicetype_name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Stack>
+
         <TableContainer sx={{ display: { xs: "none", md: "block" } }}>
           <Table>
             <TableHead>
@@ -260,11 +356,52 @@ const ManageDevice = () => {
 
             <TableBody>
               {paginatedDevice.map((item) => (
-                <TableRow key={item.dev_id}>
+                <TableRow key={item.dev_id} hover>
                   <TableCell>{item.dev_id}</TableCell>
 
                   <TableCell>
                     <Typography fontWeight={500}>{item.dev_name}</Typography>
+
+                    {item.dev_description && (
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                          mt: 0.25,
+                          maxWidth: 320,
+                          display: "-webkit-box",
+                          WebkitLineClamp: 1,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {item.dev_description}
+                      </Typography>
+                    )}
+
+                    {searchText.trim() && getMatchedSerials(item.dev_id).length > 0 && (
+                      <Stack
+                        direction="row"
+                        spacing={0.5}
+                        sx={{ mt: 0.75 }}
+                        flexWrap="wrap"
+                        alignItems="center"
+                      >
+                        <Typography variant="caption" color="text.secondary">
+                          รหัสอุปกรณ์:
+                        </Typography>
+                        {getMatchedSerials(item.dev_id).map((sn, idx) => (
+                          <Chip
+                            key={idx}
+                            label={sn}
+                            size="small"
+                            color="primary"
+                            variant="outlined"
+                            sx={{ height: 20, fontSize: "0.72rem" }}
+                          />
+                        ))}
+                      </Stack>
+                    )}
                   </TableCell>
 
                   <TableCell>
@@ -280,11 +417,16 @@ const ManageDevice = () => {
                       label={item.numberofinstancedevice ?? 0}
                       size="small"
                       color="info"
+                      variant="outlined"
                     />
                   </TableCell>
 
                   <TableCell align="right">
-                    <Stack direction="row" spacing={1}>
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      justifyContent="flex-end"
+                    >
                       <Button
                         variant="outlined"
                         size="small"
@@ -307,10 +449,11 @@ const ManageDevice = () => {
                   </TableCell>
                 </TableRow>
               ))}
+
               {filteredDevices.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={5} align="center">
-                    {normalizedSearch ? "ไม่พบอุปกรณ์ที่ตรงกับ Serial Number" : "ยังไม่มีข้อมูลอุปกรณ์"}
+                    ไม่พบข้อมูลอุปกรณ์
                   </TableCell>
                 </TableRow>
               )}
@@ -318,27 +461,107 @@ const ManageDevice = () => {
           </Table>
         </TableContainer>
 
-        {/* ✅ MOBILE (FIX แล้ว มีปุ่มรายการ) */}
         <Stack sx={{ display: { xs: "flex", md: "none" } }} spacing={2}>
           {paginatedDevice.map((item) => (
-            <Paper key={item.dev_id} sx={{ p: 2, borderRadius: 2.5 }}>
+            <Paper
+              key={item.dev_id}
+              variant="outlined"
+              sx={{ p: 2, borderRadius: 2.5 }}
+            >
               <Stack spacing={1.5}>
                 <Stack
                   direction="row"
                   justifyContent="space-between"
                   alignItems="flex-start"
+                  spacing={2}
                 >
-                  <Box>
+                  <Box sx={{ minWidth: 0 }}>
                     <Typography variant="caption" color="text.secondary">
                       ชื่ออุปกรณ์
                     </Typography>
-                    <Typography fontWeight={600}>{item.dev_name}</Typography>
+
+                    <Typography
+                      fontWeight={600}
+                      sx={{ wordBreak: "break-word" }}
+                    >
+                      {item.dev_name}
+                    </Typography>
+
+                    {searchText.trim() && getMatchedSerials(item.dev_id).length > 0 && (
+                      <Stack
+                        direction="row"
+                        spacing={0.5}
+                        sx={{ mt: 0.5 }}
+                        flexWrap="wrap"
+                        alignItems="center"
+                      >
+                        <Typography variant="caption" color="text.secondary">
+                          รหัสอุปกรณ์:
+                        </Typography>
+                        {getMatchedSerials(item.dev_id).map((sn, idx) => (
+                          <Chip
+                            key={idx}
+                            label={sn}
+                            size="small"
+                            color="primary"
+                            variant="outlined"
+                            sx={{ height: 20, fontSize: "0.72rem" }}
+                          />
+                        ))}
+                      </Stack>
+                    )}
                   </Box>
 
-                  <Chip label={`ID: ${item.dev_id}`} size="small" />
+                  <Chip
+                    label={`ID: ${item.dev_id}`}
+                    size="small"
+                    variant="outlined"
+                  />
                 </Stack>
 
-                <Chip label={getDeviceTypeName(item.dev_type)} size="small" />
+                <Stack spacing={0.5}>
+                  <Typography variant="caption" color="text.secondary">
+                    ประเภทอุปกรณ์
+                  </Typography>
+
+                  <Chip
+                    label={getDeviceTypeName(item.dev_type)}
+                    size="small"
+                    variant="outlined"
+                    sx={{ width: "fit-content" }}
+                  />
+                </Stack>
+
+                <Stack spacing={0.5}>
+                  <Typography variant="caption" color="text.secondary">
+                    รายละเอียดอุปกรณ์
+                  </Typography>
+
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                      wordBreak: "break-word",
+                      whiteSpace: "pre-line",
+                    }}
+                  >
+                    {item.dev_description || "-"}
+                  </Typography>
+                </Stack>
+
+                <Stack spacing={0.5}>
+                  <Typography variant="caption" color="text.secondary">
+                    จำนวนรายการอุปกรณ์
+                  </Typography>
+
+                  <Chip
+                    label={item.numberofinstancedevice ?? 0}
+                    size="small"
+                    color="info"
+                    variant="outlined"
+                    sx={{ width: "fit-content" }}
+                  />
+                </Stack>
 
                 <Divider />
 
@@ -365,11 +588,17 @@ const ManageDevice = () => {
               </Stack>
             </Paper>
           ))}
+
           {filteredDevices.length === 0 && (
-            <Paper sx={{ p: 3, textAlign: "center", borderRadius: 2.5 }}>
-              <Typography color="text.secondary">
-                {normalizedSearch ? "ไม่พบอุปกรณ์ที่ตรงกับ Serial Number" : "ยังไม่มีข้อมูลอุปกรณ์"}
-              </Typography>
+            <Paper
+              variant="outlined"
+              sx={{
+                p: 3,
+                borderRadius: 2.5,
+                textAlign: "center",
+              }}
+            >
+              <Typography color="text.secondary">ไม่พบข้อมูลอุปกรณ์</Typography>
             </Paper>
           )}
         </Stack>
@@ -378,15 +607,30 @@ const ManageDevice = () => {
           component="div"
           count={filteredDevices.length}
           page={page}
-          onPageChange={(e, newPage) => setPage(newPage)}
+          onPageChange={(event, newPage) => setPage(newPage)}
           rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={(e) =>
-            setRowsPerPage(parseInt(e.target.value, 10))
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          rowsPerPageOptions={[5, 10, 25]}
+          labelRowsPerPage="แถวต่อหน้า"
+          labelDisplayedRows={({ from, to, count }) =>
+            `${from}-${to} จาก ${count}`
           }
+          sx={{
+            mt: 2,
+            ".MuiTablePagination-toolbar": {
+              px: { xs: 0, sm: 2 },
+              flexWrap: "wrap",
+              justifyContent: { xs: "center", sm: "flex-end" },
+              gap: 1,
+            },
+            ".MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows":
+              {
+                m: 0,
+              },
+          }}
         />
       </Paper>
 
-      {/* ADD */}
       <AddDeviceDialog
         open={openAddDialog}
         onClose={() => setOpenAddDialog(false)}
@@ -400,7 +644,6 @@ const ManageDevice = () => {
         setNewDeviceDescription={setNewDeviceDescription}
       />
 
-      {/* EDIT */}
       <EditDeviceDialog
         open={openEditDialog}
         onClose={handleCloseEditDialog}

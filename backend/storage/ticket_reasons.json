@@ -1,0 +1,48 @@
+{
+  "11": {
+    "ticket_id": 11,
+    "user_id": 3,
+    "user_name": "ยศกร  อุดมเดชรักษา",
+    "user_rejection_reason": "ยังใช้งานไม่ได้",
+    "user_rejected_at": "2026-10-17 06:49:21"
+  },
+  "19": {
+    "ticket_id": 19,
+    "technician_id": 35,
+    "technician_name": "คณิศร ขันตีสา",
+    "technician_reason": "dd",
+    "technician_reported_at": "2026-10-14 23:01:25"
+  },
+  "20": {
+    "ticket_id": 20,
+    "user_id": 12,
+    "user_name": "ยศกร  อุดมเดชรักษา",
+    "user_rejection_reason": "อิอิ",
+    "user_rejected_at": "2026-10-15 12:33:23"
+  },
+  "21": {
+    "ticket_id": 21,
+    "technician_id": 11,
+    "technician_name": "เจิมจันทร์  จรัสวงศ์",
+    "technician_reason": "ป่วย",
+    "technician_reported_at": "2026-10-15 13:22:26"
+  },
+  "22": {
+    "ticket_id": 22,
+    "technician_id": 11,
+    "technician_name": "เจิมจันทร์  จรัสวงศ์",
+    "technician_reason": "ๅๅๅๅๅๅ",
+    "technician_reported_at": "2026-10-15 13:31:27",
+    "user_id": 12,
+    "user_name": "ยศกร  อุดมเดชรักษา",
+    "user_rejection_reason": "พังอีกแล้วววว",
+    "user_rejected_at": "2026-10-15 13:34:49"
+  },
+  "8": {
+    "ticket_id": 8,
+    "user_id": 3,
+    "user_name": "ยศกร  อุดมเดชรักษา",
+    "user_rejection_reason": "\"หลังช่างแจ้งว่าแก้ไขแล้ว ได้มีการเปิดประชุมจริงช่วงเช้า มีผู้เข้าร่วมประชุม 8 คน ปรากฏว่ายังมีอาการ Wi-Fi หลุดพร้อมกันทั้งห้องทุก 15 นาทีเหมือนเดิม สัญลักษณ์ Wi-Fi ขึ้นเต็มแต่ไม่สามารถเปิดอินเทอร์เน็ตได้ ผู้ใช้จึง ปฏิเสธผลการซ่อม เพื่อส่งเรื่องกลับไปให้หัวหน้างานพิจารณาครับ\"",
+    "user_rejected_at": "2026-10-17 07:16:10"
+  }
+}
